@@ -186,7 +186,7 @@ function download(data, filename, type) {
     }
 }
 
-function getHref(n){
+function getPath(n){
     subpath = (typeof n === "number") ? n : false;
     var href = window.location.pathname.split("/");
     href.splice(0,1);
@@ -210,5 +210,17 @@ function addFn(func) {
     document.head.appendChild(dienScript);
 }
 
+function getSearchParams(){
+	let trimmedSearch = location.search.substring(1);
 
-addFn([getHref,download,log,addFn]);
+	return trimmedSearch?JSON.parse(
+		'{"' + trimmedSearch.replace(/&/g, '","').replace(/=/g,'":"') + '"}', 
+		function(key, value) { 
+			return key===""?value:decodeURIComponent(value) 
+		}
+	)
+	:
+	{};
+}
+
+addFn([getPath, getSearchParams,download,log,addFn]);
