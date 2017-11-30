@@ -186,9 +186,10 @@ function download(data, filename, type) {
     }
 }
 
-function getPath(n){
-    subpath = (typeof n === "number") ? n : false;
-    var href = window.location.pathname.split("/");
+function getPath(win, n){
+	if (!(typeof win === "object" && win.document)) win = window;	
+	subpath = (typeof win === "number") ? win : (typeof n === "number") ? n : false;
+    var href = win.location.pathname.split("/");
     href.splice(0,1);
     if (subpath && href[subpath]) {
         return href[subpath];
