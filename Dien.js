@@ -56,9 +56,9 @@
         },
 		//replace text with given text. Can completely replace a text node containing a string with a new Text
 		replaceText(...args){
-			if (arguments.length = 2){
+			if (1 < arguments.length < 4)){
 				if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
-					$(this).textNodes(searchT).each(function(){
+					$(this).textNodes(searchT, (typeof arguments[2] === "boolean") && arguments[2]).each(function(){
 						this.data=replaceT;
 					});
 					return this;
