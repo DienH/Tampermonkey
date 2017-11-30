@@ -8,12 +8,15 @@
                 if (typeof arguments[i] === "string"){
                     filter += (filter) ? "|" : "";
                     filter += arguments[i];
-                }
+                }else if (Array.isArray(arguments[i])){
+					filter += (filter) ? "|" : "";
+					filter += arguments[i].join("|");
+				}
                 i++;
             }
             lastArg = arguments[arguments.length-1];
             if(typeof lastArg === "boolean" && lastArg) {recursive = true;}
-            that = (recursive) ? this.find("*") : this;
+            that = (recursive) ? this.find("*").addBack() : this;
             that.each(function() {
                 $sel = $sel.add($(this).contents());
             });
@@ -30,40 +33,38 @@
             return $sel;
         },
 
-        // display text of selected elements
+        // display text of selected elements.
         textContent(...args) {
-            let recursive = false, i = 0;
+            let recursive = false, i = 0, searchT = [];
             for(i in arguments){
-                if (typeof arguments[i] === "boolean") {
-                    recursive = (recursive) ? true : args[i];
-                }else{
-                    if (typeof searchT === "undefined" && typeof arguments[i] === "string"){
-                        searchT = arguments[i];
-                    }else{
-                        replaceT = arguments[i];
+                switch (typeof arguments[i]){
+					case ("boolean"):
+						recursive = (recursive) ? true : arguments[i];
+						break;
+					case ("string"):
+                        searchT.push(arguments[i]);
+						break;
+					case ("object"):
+						break;
                     }
                 }
-            }
-            //replaces first text node with given text, and delete every other text nodes
-            if (replaceT === "string") {
-                //select text nodes from
-                $(this).textNodes(recursive ? true : "").each(function(i){
-                    //change text of first textnode
-                    if (!i) {
-                        this.data = txt;
-                    }else{
-                        this.remove();
-                    }
-                });
-                return this;
-            }else if(typeof changeText === "function"){
-                //replace every text node with new text returned by callback function
-                /*$(this).textNodes().each(function(i, el){
-					if ()
-				}*/
-            }
-            return $(this).textNodes().text();
+			//select text nodes, possibly filtered by a string
+			$(this).textNodes(searchT, recursive ? true : "").text()/*//.each(function(i){
+				//change text of first textnode
+				this.data;
+			})//*/;
         },
+		//replace text with given text. Can completely replace a text node containing a string with a new Text
+		replaceText(...args){
+			if (arguments.length = 2){
+				if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
+					$(this).textNodes(searchT).each(function(){
+						this.data=replaceT;
+					});
+					return this;
+				}
+			}
+		}
         // return href attribute or change href attribute
         href(link){
             changeLink = (typeof link === "string") ? true : false;
@@ -187,8 +188,7 @@ function download(data, filename, type) {
 }
 
 function getPath(win, n){
-	if (!(typeof win === "object" && win.document)) win = window;	
-	log(win.location);
+	if (!(typeof win === "object" && win.document)) win = window;
 	subpath = (typeof win === "number") ? win : (typeof n === "number") ? n : false;
     var href = win.location.pathname.split("/");
     href.splice(0,1);
