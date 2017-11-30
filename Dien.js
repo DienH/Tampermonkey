@@ -38,21 +38,21 @@
             let recursive = false, i = 0, searchT = [];
             for(i in arguments){
                 switch (typeof arguments[i]){
-					case ("boolean"):
-						recursive = (recursive) ? true : arguments[i];
-						break;
-					case ("string"):
-                        searchT.push(arguments[i]);
-						break;
-					case ("object"):
-						break;
-                    }
-                }
-			//select text nodes, possibly filtered by a string
-			$(this).textNodes(searchT, recursive ? true : "").text()/*//.each(function(i){
-				//change text of first textnode
-				this.data;
-			})//*/;
+			case ("boolean"):
+				recursive = (recursive) ? true : arguments[i];
+				break;
+			case ("string"):
+                        	searchT.push(arguments[i]);
+				break;
+			case ("object"):
+				break;
+		}
+	    }
+		//select text nodes, possibly filtered by a string
+		$(this).textNodes(searchT, recursive ? true : "").text()/*//.each(function(i){
+			//change text of first textnode
+			this.data;
+		})//*/;
         },
 		//replace text with given text. Can completely replace a text node containing a string with a new Text
 		replaceText(...args){
