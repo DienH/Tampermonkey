@@ -64,7 +64,7 @@
 					return this;
 				}
 			}
-		}
+		},
         // return href attribute or change href attribute
         href(link){
             changeLink = (typeof link === "string") ? true : false;
