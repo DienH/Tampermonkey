@@ -188,6 +188,7 @@ function download(data, filename, type) {
 
 function getPath(win, n){
 	if (!(typeof win === "object" && win.document)) win = window;	
+	log(win.location);
 	subpath = (typeof win === "number") ? win : (typeof n === "number") ? n : false;
     var href = win.location.pathname.split("/");
     href.splice(0,1);
