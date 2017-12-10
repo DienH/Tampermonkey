@@ -95,25 +95,44 @@
         },
 
         // jQuery implementation of Mutation observer
-        observe(callback, options) {
-            options = options || { subtree:true, childList:true, characterData:true };
-            var name = "observer"+Date.now();
-            function cb(changes) { callback.call(node, changes, this); }
-            mutationObserver = new MutationObserver(cb);
+        observe(callback, options, name) {
+			let listOptions = {
+				"text":"characterData", 
+				"characterData":"characterData",
+				"string":"characterData",
+				"attributes":"attributes",
+				"attr":"attributes",
+				"childList":"childlist",
+				"child":"childList",
+				"children":"childList",
+				"subtree":"subtree",
+				"recursive":"subtree",
+				"sub":"subtree"
+				}, opt={};				
+			if (Array.isArray(options)) {
+				for (var i of options){
+					opt[listOptions[i]]=true;
+				}
+			}
+			options = Object.assign({ attributes: true, childList:true, characterData:true }, (typeof options === "object") ? options : {});
+            var nameObserver = name || options.name || (typeof options === "string") ? options : "observer"+Date.now();
+            mutationObserver = new MutationObserver(callback);
             return $(this).each(function() {
                 var node = this;
                 if(!node.observers) node.observers = [];
-                node.observers[name] = mutationObserver;
-                node.observers[name].observe(node, options);
+                node.observers[nameObserver] = mutationObserver;
+                node.observers[nameObserver].observe(node, options);
             });
+        }
+        change(cb, o, n) {
+            return $(this).observe(cb, o, n);
         },
-        change(cb, e) {
-            return $(this).observe(cb, e);
-        },
-        disconnect() {
+        disconnect(name) {
             return $(this).each(function(){
-                if (this.observer) {
-                    this.observer.disconnect();
+                if (this.observers) {
+					for (i in this.observers){
+						this.observers[i].disconnect();
+					}
                 }
             });
         },
