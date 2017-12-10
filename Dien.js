@@ -124,7 +124,7 @@
                 node.observers[nameObserver].observe(node, options);
             });
         }
-        change(cb, o, n) {
+        changes(cb, o, n) {
             return $(this).observe(cb, o, n);
         },
         disconnect(name) {
