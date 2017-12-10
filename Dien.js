@@ -123,7 +123,7 @@
                 node.observers[nameObserver] = mutationObserver;
                 node.observers[nameObserver].observe(node, options);
             });
-        }
+        },
         changes(cb, o, n) {
             return $(this).observe(cb, o, n);
         },
