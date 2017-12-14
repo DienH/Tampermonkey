@@ -165,6 +165,13 @@
 				});
 			}*/
         },
+		middleclick(callback){
+			return $(this).mousedown(function(e){
+				if (e.button === 1){
+					
+				}
+			})
+		},
         fakeClick(){
             $(this).each(function(){
                 var middle = $(this).middle();
