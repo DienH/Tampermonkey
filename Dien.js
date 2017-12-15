@@ -116,7 +116,7 @@
 			options = Object.assign({ attributes: true, childList:true, characterData:true }, (typeof options === "object") ? options : {});
             var nameObserver = name || options.name || (typeof options === "string") ? options : "observer"+Date.now();
             mutationObserver = new MutationObserver(callback);
-            return $(this).each(function() {
+            return this.each(function() {
                 var node = this;
                 if(!node.observers) node.observers = [];
                 node.observers[nameObserver] = mutationObserver;
@@ -124,10 +124,10 @@
             });
         },
         changes(cb, o, n) {
-            return $(this).observe(cb, o, n);
+            return this.observe(cb, o, n);
         },
         disconnect(name) {
-            return $(this).each(function(){
+            return this.each(function(){
                 if (this.observers) {
 					for (i in this.observers){
 						this.observers[i].disconnect();
