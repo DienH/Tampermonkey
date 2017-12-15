@@ -171,7 +171,7 @@
 			return this;
 		},
 		middleclick(callback){
-			return $(this).mouseup(function(e){
+			return this.mouseup(function(e){
 				if (e.button === 1){
 					callback.call(this,e);
 				}
