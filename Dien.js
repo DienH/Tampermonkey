@@ -90,8 +90,7 @@
             }
         },
         do(callback){
-            $(this).first().each(callback);
-            return this;
+            returnthis.each(callback);
         },
 
         // jQuery implementation of Mutation observer
@@ -172,9 +171,9 @@
 			return this;
 		},
 		middleclick(callback){
-			return $(this).mousedown(function(e){
+			return $(this).mouseup(function(e){
 				if (e.button === 1){
-					
+					callback.call(this,e);
 				}
 			})
 		},
