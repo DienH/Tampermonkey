@@ -165,6 +165,12 @@
 				});
 			}*/
         },
+		center() {
+			this.css("position","absolute");
+			this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() + "px");
+			this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
+			return this;
+		},
 		middleclick(callback){
 			return $(this).mousedown(function(e){
 				if (e.button === 1){
