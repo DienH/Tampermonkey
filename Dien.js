@@ -118,11 +118,11 @@
             }
 
             opt = $.type(options) === "object" ? options : (Object.keys(opt).length) ? opt : {attributes: true, childList:true, characterData:true, subtree:true };
-            var nameObserver = name || options.name || ((typeof callback === "string") ? callback : "observer"+Date.now());
+            nameObserver = name || options.name || ((typeof callback === "string") ? callback : "observer"+Date.now());
             mutationObserver = new MutationObserver((typeof callback === "function") ? callback : options);
             return this.each(function() {
                 var node = this;
-                if(!node.observers) node.observers = [];
+                if(!node.observers) node.observers = {};
                 node.observers[nameObserver] = mutationObserver;
                 node.observers[nameObserver].observe(node, opt);
             });
