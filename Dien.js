@@ -94,7 +94,7 @@
         },
 
         // jQuery implementation of Mutation observer
-        observe(callback, options, name) {
+        observe(options, callback, name) {
 			let listOptions = {
 				"text":"characterData", 
 				"characterData":"characterData",
@@ -107,24 +107,28 @@
 				"subtree":"subtree",
 				"recursive":"subtree",
 				"sub":"subtree"
-				}, opt={};				
+                }, opt={};
+            if(typeof options === "string"){
+                options = options.split(" ");
+            }
 			if (Array.isArray(options)) {
 				for (var i of options){
 					opt[listOptions[i]]=true;
 				}
-			}
-			options = Object.assign({ attributes: true, childList:true, characterData:true }, (typeof options === "object") ? options : {});
-            var nameObserver = name || options.name || (typeof options === "string") ? options : "observer"+Date.now();
-            mutationObserver = new MutationObserver(callback);
+            }
+
+            opt = $.type(options) === "object" ? options : (Object.keys(opt).length) ? opt : {attributes: true, childList:true, characterData:true, subtree:true };
+            var nameObserver = name || options.name || (typeof callback === "string") ? callback : "observer"+Date.now();
+            mutationObserver = new MutationObserver((typeof callback === "function") ? callback : options);
             return this.each(function() {
                 var node = this;
                 if(!node.observers) node.observers = [];
                 node.observers[nameObserver] = mutationObserver;
-                node.observers[nameObserver].observe(node, options);
+                node.observers[nameObserver].observe(node, opt);
             });
         },
-        changes(cb, o, n) {
-            return this.observe(cb, o, n);
+        changes(o, cb, n) {
+            return this.observe(o, cb, n);
         },
         disconnect(name) {
             return this.each(function(){
