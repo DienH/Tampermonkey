@@ -117,7 +117,7 @@
 				}
             }
 
-            opt = $.type(options) === "object" ? options : (Object.keys(opt).length) ? opt : {attributes: true, childList:true, characterData:true, subtree:true };
+            opt = (Object.keys(opt).length) ? opt : {attributes: true, childList:true, characterData:true, subtree:true };
             var nameObserver = name || options.name || (typeof callback === "string") ? callback : "observer"+Date.now();
             mutationObserver = new MutationObserver((typeof callback === "function") ? callback : options);
             return this.each(function() {
