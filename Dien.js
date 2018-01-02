@@ -174,9 +174,10 @@
 			this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
 			return this;
 		},
-		middleclick(callback){
+		middleclick(callback, options){
 			return this.mouseup(function(e){
 				if (e.button === 1){
+					if (options) if (options.preventDefault) e.preventDefault();
 					callback.call(this,e);
 				}
 			})
