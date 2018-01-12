@@ -171,8 +171,7 @@
 		center() {
 			this.css("position","absolute");
 			this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() + "px");
-			this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
-			return this;
+			return this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
 		},
 		middleclick(callback, options){
 			return this.mouseup(function(e){
@@ -183,7 +182,7 @@
 			})
 		},
         fakeClick(){
-            $(this).each(function(){
+            return this.each(function(){
                 var middle = $(this).middle();
                 var click = new MouseEvent("click", {
                     button:1,
@@ -196,8 +195,31 @@
                 });
                 this.dispatchEvent(click);
             });
-            return this;
-        }
+        },
+		hidden(display){
+			if (typeof display === "boolean") {dispNone = display}else{dispNone = false};
+			return this.each(function(){
+				this.style.visibility = 'hidden';
+				if (dispNone) this.style.display = 'none';
+			});
+		},
+		visible(display){
+			if (typeof display === "text") {dispNone = true}else{dispNone = false};
+			return this.each(function(){
+				this.style.visibility = 'visible';
+				if (dispNone) this.style.display = display;
+			});
+		},
+		toggleV(display){
+			if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};			
+			return this.each(function(){
+				if (this.style.visibility === 'visible'){
+					this.style.visibility = 'hidden';
+				}else{
+					this.style.visibility = 'visible';
+				}
+			});
+		}
     });
 }($));
 
@@ -226,7 +248,9 @@ function download(data, filename, type) {
 function getPath(win, n){
 	if (!(typeof win === "object" && win.document)) win = window;
 	subpath = (typeof win === "number") ? win : (typeof n === "number") ? n : false;
-    var href = win.location.pathname.split("/");
+	let path = win.location.pathname;
+    let href = path.split("/");
+	href["path"] = path;
     href.splice(0,1);
     if (subpath && href[subpath]) {
         return href[subpath];
