@@ -227,6 +227,17 @@ function log(...thing){
     return console.log(...thing);
 }
 function download(data, filename, type) {
+	if (typeof data === "string") {
+		let href = document.createElement("a");
+		href.href = data;
+		if (href.pathname){
+			let downFrame = document.createElement("iframe");
+			downFrame.style.display = "none";
+			downFrame.src = data;
+			downFrame.onload = function(e){e.target.remove();};
+			return true;
+		}
+	}
     if (!type) type = "text";
     var file = new Blob([data], {type: type});
     if (window.navigator.msSaveOrOpenBlob) /* IE10+ */
@@ -235,7 +246,7 @@ function download(data, filename, type) {
         var a = document.createElement("a"),
             url = URL.createObjectURL(file);
         a.href = url;
-        a.download = filename;
+        a.download = (typeof filename ==="string") ? filename : "Download.txt";
         document.body.appendChild(a);
         a.click();
         setTimeout(function() {
