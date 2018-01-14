@@ -9,8 +9,8 @@
 // @match        myzuka.me/*
 // @match        myzuka.club/*
 // @match        http://go.mail.ru/*
-// @updateURL    https://rawgit.com/DienH/Tampermonkey/master/myzuka.js
-// @downloadURL  https://rawgit.com/DienH/Tampermonkey/master/myzuka.js
+// @updateURL    https://raw.githubusercontent.com/DienH/Tampermonkey/master/myzuka.js
+// @downloadURL  https://raw.githubusercontent.com/DienH/Tampermonkey/master/myzuka.js
 // @require      https://code.jquery.com/jquery.js
 // @require      https://rawgit.com/DienH/Tampermonkey/master/Dien.js
 // @grant        GM_getValue
