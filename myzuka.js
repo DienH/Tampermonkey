@@ -2,7 +2,7 @@
 // @icon         http://manywork.ru/files/user/3100/portfolio/yes/1414902476-5214590_s.jpg
 // @name         Super Myzuka
 // @namespace    http://tampermonkey.net/
-// @version      0.3.7
+// @version      0.3.7.1
 // @description  Myzuka.club optimisée
 // @author       Dien ©
 // @match        myzuka.fm/*
