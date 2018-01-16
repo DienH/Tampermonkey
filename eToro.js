@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         eToro
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.2.2
 // @description  Enhanced eToro
 // @author       Dien
 // @match        https://www.etoro.com/*
@@ -18,23 +18,23 @@
 // @grant        window.focus
 // @grant        unsafeWindow
 // @run-at       document-idle
+
 // ==/UserScript==
-
-
 µ = unsafeWindow;
 µ$ = µ.$;
 µ.$$ = $;
-
-
 function waiting(){
     if (typeof waiter !== "undefined") clearTimeout(waiter);
     waiter = setTimeout(function(){eToro();}, 500);
 }
+
 function stat(data){
     stat.lastData = data[data.length-1];
+    stat.prevData = data[data.length-2];
     if (!stat.prev) stat.prev = data[data.length-2];
     let keys = Object.keys(stat.lastData);
     if(!stat.adx) {
+        let adx = keys.filter(key => key.search("ADX")>-1);
         stat.adx={
             adx:keys.filter(key => key.search("ADX ADX")>-1).join(""),
             dip:keys.filter(key => key.search("\\+DI")>-1).join(""),
@@ -42,10 +42,11 @@ function stat(data){
             atr:"atr",
             range:"trueRange"
         };
+        let bollinger = keys.filter(key => key.search("Bollinger")>-1);
         stat.bollinger={
-            T:keys.filter(key => key.search("Top Bollinger")>-1).join(""),
-            B:keys.filter(key => key.search("Bottom Bollinger")>-1).join(""),
-            M:keys.filter(key => key.search("Median Bollinger")>-1).join("")
+            T:bollinger.filter(key => key.search("Top")>-1).join(""),
+            B:bollinger.filter(key => key.search("Bottom")>-1).join(""),
+            M:bollinger.filter(key => key.search("Median")>-1).join("")
         };
         stat.rsi=keys.filter(key => key.search("RSI rsi")>-1).join("");
         stat.stoch={
@@ -53,46 +54,24 @@ function stat(data){
             fast:keys.filter(key => key.search("stoch")>-1 && key.search("true")>-1 && key.search("true\\)_3")===-1).join("")
         };
         stat.psar = keys.filter(key => key.search("PSAR")>-1).join("");
+        let macd = keys.filter(key => key.search("macd")>-1);
+        stat.macd = {
+            m : macd.filter(key => key.search("MACD")>-1).join(""),
+            s : macd.filter(key => key.search("Signal")>-1).join(""),
+            m1 : macd.filter(key => key.search("Signal")>-1).join(""),
+            m2 : macd.filter(key => key.search("Signal")>-1).join(""),
+            hist : macd.filter(key => key.search("hist")>-1).join("")
+        };
+        let chaikin = keys.filter(key => key.search("Chaikin")>-1);
+        stat.chaikin = {
+            m : chaikin.filter(key => key.search("MA")>-1).join(""),
+            r : chaikin.filter(key => key.search("Result")>-1).join(""),
+            HL : chaikin.filter(key => key.search("High")>-1).join("")
+        };
     }
     stat.prev = stat.lastData;
 }
-
-function valueStats(list){
-    let now = Date.now();
-    let listNames = Object.keys(list);
-    for (let k in listNames){
-        if (!list[k].stats || !list[k].stats.index) list[k].stats = {index:{}};
-        let listNameTimes = Object.keys(list[k]);
-        for (let t in listNameTimes){
-            if (t === "stats"){continue;}
-            let tN = Number(t);
-            let diffTime = now - tN;
-            if (diffTime >= 86400000){
-                let n = Math.floor((diffTime - 86400000)/86400000)+1;
-                if (!list[k].stats.index["j"+n]){
-                    list[k].stats.index["j"+n] = tN;
-                    list[k].stats[t] = list[k][t];
-                    list[k].stats[t].push(1);
-                }else {
-                    let oldT = list[k].stats.index["j"+n],
-                        [sell1, buy1, num1] = list[k].stats[""+list[k].stats.index["j"+n]], [sell2, buy2, num2=1] = list[k][t],
-                        prices = [(sell1+sell2*num2), (buy1+buy2*num2), num1+num2];
-                    if(tN > oldT){
-                        list[k].stats.index["j"+n]=tN;
-                        list[k].stats[t] = prices;
-                        delete list[k].stats[""+oldT];
-                    }else{
-                        list[k].stats[oldT] = prices;
-                    }
-                }
-                delete list[k][t];
-            }else if (diffTime >= 3600000){
-            }else if (diffTime >= 300000){
-            }else if (diffTime >= 10000){
-            }
-        }
-    }
-}
+statF = stat;
 
 function eToro(m){
     //$(document).on("turbolinks:load", function(e){log(e);});
@@ -151,7 +130,6 @@ function eToro(m){
                          Number($(this).closest(".etoro-sell-button").next().find(".etoro-price-value>span").text())
                         ];
                 }
-
             });
             if ($('body').hasClass("spread")) eToro.watchReady = true;
             break;
@@ -161,7 +139,7 @@ function eToro(m){
                 if (!eToro.iframe){
                     eToro.$title = $('title');
                     if(!eToro.$title.attr("changed")){
-                        eToro.title =eToro.$title.text().split("change ")[1] || $('.symbolDescription').text()+" - eToro";
+                        eToro.title =eToro.$title.text().split("rate ")[1] || $('.symbolDescription').text()+" - eToro";
                         eToro.$title.text($('ui-buysell-buttons.etoro-sell-button span').text()+" : "+eToro.title).attr("changed", true);
                     }
                     let $drawMenu = $('div.cq-menu-item.draw');
@@ -170,6 +148,23 @@ function eToro(m){
                             measureMenu = '<div class="cq-menu-item calliper icon"><span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" enable-background="new 0 0 24 24" height="24px" id="Layer_1" version="1.1" viewBox="0 0 24 24" width="24px" xml:space="preserve"><path d="M24,24l-0.8-3.4L18,12c2.4-1.8,4-5,4-8h-1c0,3-1.4,5.5-3.5,7.1L13.7,5C13.9,4.7,14,4.3,14,4c0-0.7-1-1.4-1-1.7V1  c0-0.6-0.4-1-1-1s-1,0.4-1,1v1.3c-1,0.3-1,1-1,1.7c0,0.4,0.1,0.7,0.3,1L0.8,20.6L0,24l2.6-2.3L7.7,13c1.3,0.6,2.7,1,4.3,1  c1.5,0,3-0.4,4.3-1l5.2,8.6L24,24z M12,3c0.6,0,1,0.4,1,1s-0.4,1-1,1s-1-0.4-1-1S11.4,3,12,3z M12,13c-1.3,0-2.6-0.3-3.7-0.8L12,6  c0,0,0,0,0,0s0,0,0,0l3.7,6.2C14.6,12.7,13.3,13,12,13z"/></svg></span><div class="bridge"></div></div>',
                             toolsMenu = '<div class="cq-menu-item tools icon"><span><svg class="icon icon-tools"><path d="M8.955 14.532c0.526 0.525 2.554 2.665 2.554 2.665l1.124-1.159-1.762-1.82 3.382-3.592c0 0-1.526-1.488-0.858-0.895 0.639-2.372 0.057-5.018-1.745-6.883-1.786-1.85-4.324-2.456-6.604-1.819l3.864 3.991-1.017 3.916-3.783 1.045-3.862-3.992c-0.616 2.357-0.030 4.979 1.76 6.83 1.878 1.941 4.582 2.512 6.948 1.714zM21.838 18.413l-4.66 4.603 7.685 7.963c0.627 0.65 1.453 0.975 2.277 0.975 0.82 0 1.645-0.324 2.275-0.975 1.258-1.301 1.258-3.406 0-4.707l-7.578-7.859zM31.99 5.057l-4.894-5.057-14.427 14.916 1.762 1.82-8.635 8.925-1.974 1.055-2.788 4.549 0.71 0.736 4.401-2.883 1.020-2.041 8.636-8.924 1.763 1.82 14.427-14.916z"></path></svg></span><div class="bridge"></div></div>';
                         $drawMenu.after($(pencilMenu+measureMenu+toolsMenu)).click();
+                        $('div.cq-menu-item.settings>ul');
+                        $('instrument-chart').addClass("normal-chart").next().remove();
+                        $('div.crosshairs.on').each(function(){$('div.hu').css("display", "inline-block").prependTo("div.menus");});
+                        /*$('<a class="e-btn light i-ptc-action stop closing-frame-button"><span class="i-ptc-action-icon sprite"><a/>').appendTo()*/
+                        $('a.i-stock-chart-info').click(function(e){
+                            e.preventDefault();e.stopPropagation();
+                            //$('div.i-chart-frame-container').visible();
+                        }).append($('<div class="i-chart-frame-container"><iframe class="i-chart-frame" src=/portfolio/'+eToro.marketName+'>')).find('span.i-chart-info').remove();
+                        $("<li>Download dataset</li>").insertBefore($('div.cq-menu-item.settings>ul>li.divider:eq(0)')).click(function(){
+                            let date = (new Date(Date.now()).toLocaleString()).split(" ");
+                            date.splice(1,1);
+                            (date = date.join("-").split("/").join("-").split(":")).pop();
+                            date = date.join("h");
+                            //let dataset = JSON.stringify(eToro.chart.stx.chart.dataSet);
+                            let dataset = JSON2CSV(eToro.chart.stx.chart.dataSet);
+                            download(dataset, eToro.marketName+" - "+$('div.cq-menu-item.period.menu>span').text()+" - "+date+".csv");
+                        });
                     }
                     if(!$('div.cq-menu-item.pencil>ul')[0]){
                         let ulDrop = '<ul class="e-drop-select-box">',
@@ -197,9 +192,6 @@ function eToro(m){
                                 $('<li>').text($(that).text()).addClass($(that).attr("class")).each(function(){this.orig=i;}).click(function(){$drawMenu.click();$(toolsOldMenu).eq(this.orig).click();}).appendTo($("ul", $toolsMenu));
                             }
                         );
-                        $('div.cq-menu-item.settings>ul');
-                        $('instrument-chart').addClass("normal-chart").next().remove();
-                        $('div.crosshairs.on').each(function(){$('div.hu').css("display", "inline-block");});
                     }
                     $('li.stx-menu-content.add:not(".clearer")').prepend('<a class="clear-symbol-search">✖</a>').addClass("clearer").each(function(){
                         $(this).children("a").click(function(){$(this).next("input").val("");});
@@ -239,11 +231,17 @@ function eToro(m){
                 });
             }
             break;
+        case "portfolio":
+            if(eToro.iframe){
+                if (!$('label.close-all-positions-check-box').prev('input:not(:checked)').click().end().length)$('div[data-etoro-automation-id="drop-down-actions-option-instrument-close"]').click();
+                $('html').addClass("iframed");
+            }
+            //$('label.close-all-positions-check-box').click();
+            //$('button.close-all-positions-button')
+            break;
     }
     eToro.oldPath = eToro.path;
-
 }
-
 let style = `
 div.cq-menu-item.draw {display:none!important;}
 div.menus ul.e-drop-select-box li {padding:10px 12px;}
@@ -257,21 +255,36 @@ div.icon svg {width: 32px; height: 32px; stroke-width: 0; fill: #fff;}
 div.icon:hover svg {fill: #20a5ee;}
 div.icon.tools > span {transform: scale(0.7);padding:8px;}
 div.icon.calliper > span {transform: scale(0.7);padding:8px;}
-a.i-stock-chart-info {top:54px;left:10px;border-top-right-radius: 10px; border-bottom-right-radius: 10px; padding: 10px 20px;transition:width 0.8s;width:170px;}
-a.i-stock-chart-info:hover {width: 350px;}
-a.i-stock-chart-info span.i-chart-info {position:absolute;float:left;visibility:hidden;opacity:0;transition:visibility 0s 0.3s, opacity 0.8s;}
-a.i-stock-chart-info:hover span.i-chart-info {opacity:1;visibility:visible;}
-div.hu {left:0; top:115px;}
+
+a.i-stock-chart-info {top:54px;left:10px;border-top-right-radius: 10px; border-bottom-right-radius: 10px; padding: 10px 20px;transition:height 0.5s;width:auto;height:54px;}
+a.i-stock-chart-info:hover {height: 120px;}
+a.i-stock-chart-info span.i-chart-amount {float:left;}
+a.i-stock-chart-info span.i-chart-info {display:none;}
+.i-ptc-action.stop.closing-frame-button{float:right;width:40px;height:34px;}
+.i-chart-frame{width:120px;height:60px;}
+.i-chart-frame-container{visibility:hidden;opacity:0;transition: opacity 0.3s 0.3s;}
+a.i-stock-chart-info:hover .i-chart-frame-container {visibility:visible;opacity:1;}
+
+html.iframed, html.iframed body {background:transparent!important;}
+html.iframed ui-layout *, .iframed .close-all-positions-avatar, .iframed .close-all-positions-details-container, .iframed .w-sm-amount-info-close {display:none;background:transparent!important;}
+.iframed .close-all-positions-w-sm, .iframed .uidialog-content  {background:transparent!important;}
+.iframed .w-share-header-nav-button-x, .iframed .close-all-positions-note, .iframed .w-sm-disclaimer, .w-confirmation-modal-title {display:none!important;}
+.iframed .close-all-positions-button-wrapper{padding-top:0;margin-top:5px}
+.iframed .w-sm-amount-info-unit, .iframed .execution-main-head {padding: 6px 20px;}
+.iframed .close-all-positions-button-wrapper {position:absolute;top:0;left:0}
+.iframed .close-all-positions-button {width:120px!important;min-width:120px!important}
+
+div.hu {top:0;background-color:transparent!important;border:none!important}
 
 div.modal-backdrop, div.modal.edit.execution.main-resize {display: none!important;}
 div.modal.stx-dialog {padding:0;width:500px}
 div.uidialog-overlay {display:none;}
-#open-position-view {position:fixed;bottom:unset;right:unset;}
 
+#open-position-view {position:fixed;bottom:unset;right:unset;}
 #menuCompare #compareSymbol {width: 93%;margin-left: 2%;}
 li.stx-menu-content.add {cursor:default!important;}
-
 .head-label.spread {width:8%;}
+
 .table-cell .etoro-buy-button {width: 85%; padding-right: 10px;}
 .table-cell .etoro-sell-button {width: 85%;}
 .market-spread {position: absolute; right: 10px; padding:6px; font-weight: 600;}
@@ -280,8 +293,9 @@ iframe.etoro-chart-dialog {width:66vw!important; height:66vh!important;}
 instrument-chart.dialog-chart {position: fixed; top: 0; left: 0; width: 100%; height: 100%!important;}
 instrument-chart.normal-chart {height:100%!important;}
 .etoro-horizontal .negative .etoro-price-value, .etoro-horizontal .negative .etoro-price-name, .etoro-horizontal .positive .etoro-price-value, .etoro-horizontal .positive .etoro-price-name {animation:none!important;}
+
+.title.inner-header-nav-button.dropdown-menu div.drop-select-box {max-height:calc(100vh - 70px)}
 `;
 GM_addStyle(style);
-
 $("body").observe("child sub", waiting);
 eToro();
