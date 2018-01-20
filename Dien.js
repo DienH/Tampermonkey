@@ -288,7 +288,9 @@ function getSearchParams(){
 function JSON2CSV(JSONdata, title){
     let items = typeof JSONdata != 'object' ? JSON.parse(JSONdata) : JSONdata;
     const replacer = (key, value) => value === null ? '' : value; // specify how you want to handle null values here
-    const header1 = Object.keys(items[0]), header2 = Object.keys(items[items.length-1]), header = (header2.length > header1.length) ? header2 : header1;
+    const header1 = Object.keys(items[0]), header2 = Object.keys(items[items.length-1]);
+    let header = (header2.length > header1.length) ? header2 : header1;
+	header = header.map(name => name.replace(/\,/g,"."));
     let csv = items.map(row => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','));
     csv.unshift(header.join(','));
     if (title && typeof title === "string"){csv.unshift(title+"\r\n");}
