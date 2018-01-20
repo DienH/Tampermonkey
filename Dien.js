@@ -228,7 +228,7 @@ function log(...thing){
 }
 function download(data, filename, type) {
     if (!type) type = "text";
-    var file = new Blob([data], {type: type});
+    var file = new Blob(typeof data === "object" ? data, [data], {type: type});
     if (window.navigator.msSaveOrOpenBlob) /* IE10+ */
         window.navigator.msSaveOrOpenBlob(file, filename);
     else { /* Others */
@@ -291,6 +291,7 @@ function JSON2CSV(JSONdata, title){
     const header1 = Object.keys(items[0]), header2 = Object.keys(items[items.length-1]);
     let header = (header2.length > header1.length) ? header2 : header1;
     let csv = items.map(row => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','));
+	debugger;
 	header = header.map(name => name.replace(/\,/g,"."));
     csv.unshift(header.join(','));
     if (title && typeof title === "string"){csv.unshift(title+"\r\n");}
