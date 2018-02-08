@@ -2,15 +2,15 @@
 // @icon         http://manywork.ru/files/user/3100/portfolio/yes/1414902476-5214590_s.jpg
 // @name         Super Myzuka
 // @namespace    http://tampermonkey.net/
-// @version      0.3.7.1
+// @version      0.3.7.2
 // @description  Myzuka.club optimisée
 // @author       Dien ©
 // @match        myzuka.fm/*
 // @match        myzuka.me/*
 // @match        myzuka.club/*
 // @match        http://go.mail.ru/*
-// @updateURL    https://raw.githubusercontent.com/DienH/Tampermonkey/master/myzuka.js
-// @downloadURL  https://raw.githubusercontent.com/DienH/Tampermonkey/master/myzuka.js
+// @updateURL    https://rawgit.com/DienH/Tampermonkey/master/myzuka.js
+// @downloadURL  https://rawgit.com/DienH/Tampermonkey/master/myzuka.js
 // @require      https://code.jquery.com/jquery.js
 // @require      https://rawgit.com/DienH/Tampermonkey/master/Dien.js
 // @grant        GM_getValue
@@ -234,7 +234,8 @@ function myzukaLoad(){
             return txt.replace("Скачать", "Télécharger");})
             .text(" Télécharger").prepend($("<span class='glyphicon glyphicon-save'>::before")).off("click").filter(':not([href*="/Download"])').on("click", function(){
             $.get(this.href, function(data){
-                window.open($('div.options>div.top>a[itemprop]:eq(0)', data).attr("href"));
+                GM_download($('div.options>div.top>a[itemprop]:eq(0)', data).attr("href"), $(".main-details+.player-inline .details", data).text().replace(/\n|\s\s/g,"")+".mp3");
+                //window.open($('div.options>div.top>a[itemprop]:eq(0)', data).attr("href"));
             });
             return false;
         });

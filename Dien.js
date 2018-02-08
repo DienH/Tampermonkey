@@ -296,4 +296,6 @@ function JSON2CSV(JSONdata, title){
     if (title && typeof title === "string"){csv.unshift(title+"\r\n");}
     return csv.join('\r\n');
 }
+
 addFn([getPath, getSearchParams,download,log,addFn, JSON2CSV]);
+
