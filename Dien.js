@@ -90,7 +90,7 @@
             }
         },
         do(callback){
-            returnthis.each(callback);
+            return this.eq(0).each(callback).end();
         },
 
         // jQuery implementation of Mutation observer
@@ -227,19 +227,8 @@ function log(...thing){
     return console.log(...thing);
 }
 function download(data, filename, type) {
-	if (typeof data === "string") {
-		let href = document.createElement("a");
-		href.href = data;
-		if (href.pathname){
-			let downFrame = document.createElement("iframe");
-			downFrame.style.display = "none";
-			downFrame.src = data;
-			downFrame.onload = function(e){e.target.remove();};
-			return true;
-		}
-	}
     if (!type) type = "text";
-    var file = new Blob([data], {type: type});
+    var file = new Blob(typeof data === "object" ? data : [data], {type: type});
     if (window.navigator.msSaveOrOpenBlob) /* IE10+ */
         window.navigator.msSaveOrOpenBlob(file, filename);
     else { /* Others */
@@ -296,4 +285,15 @@ function getSearchParams(){
 	{};
 }
 
-addFn([getPath, getSearchParams,download,log,addFn]);
+function JSON2CSV(JSONdata, title){
+    let items = typeof JSONdata != 'object' ? JSON.parse(JSONdata) : JSONdata;
+    const replacer = (key, value) => value === null ? '' : value; // specify how you want to handle null values here
+    const header1 = Object.keys(items[0]), header2 = Object.keys(items[items.length-1]);
+    let header = (header2.length > header1.length) ? header2 : header1;
+    let csv = items.map(row => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','));
+	header = header.map(name => name.replace(/\,/g,"."));
+    csv.unshift(header.join(','));
+    if (title && typeof title === "string"){csv.unshift(title+"\r\n");}
+    return csv.join('\r\n');
+}
+addFn([getPath, getSearchParams,download,log,addFn, JSON2CSV]);
