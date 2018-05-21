@@ -1,12 +1,10 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @icon         http://manywork.ru/files/user/3100/portfolio/yes/1414902476-5214590_s.jpg
 // @name         Super Myzuka
 // @namespace    http://tampermonkey.net/
-// @version      0.3.7.2
+// @version      0.3.8
 // @description  Myzuka.club optimisée
 // @author       Dien ©
-// @match        myzuka.fm/*
-// @match        myzuka.me/*
 // @match        myzuka.club/*
 // @match        http://go.mail.ru/*
 // @updateURL    https://rawgit.com/DienH/Tampermonkey/master/myzuka.js
@@ -26,7 +24,6 @@
 µ = unsafeWindow;
 µ$ = µ.$;
 unsafeWindow.$$ = $;
-//$.get("https://cdn.rawgit.com/DienH/Tampermonkey/master/Dien.js", function(data){console.log(data);});
 
 (function($) {
     $.fn.translate = function(word){
@@ -61,66 +58,23 @@ if (document.location.hostname === "go.mail.ru"){
     return;
 }
 
-var classes =
-    `
-#SearchText {padding-top:4px;}
-.rbt .button-a.rbtb.dl {margin:11px;}
-.rbtb, .button-a {font: bold 13px/30px Tahoma,sans-serif!important;}
-a.button-a.dl {padding: 0px 11px;height: 30px;}
-.button-a.rbtb.dl {background:#52a55c;margin:0;margin-right:11px;}
-body {background:#ccc!important}
-div.main, div.content, div.inner {background:#ccc!important}
-div.main {border-top:none!important;margin-top:73px;}
-.tbl tr:nth-child(2n+1) {background: #c0c0c0!important;}
-.labels {margin-top:0!important}
-.profile-bar {background: #ddd!important;box-shadow: 0px 0px 12px 7px #ddd;}
-div.all {background: transparent!important;}
-div.mainHeader {box-shadow:0px 0px 15px 7px #ddd; background:#ddd; position:fixed;top:0;z-index:95;}
-div.mainHeader div {position:relative;}
-div.main-nav {height:45px;padding: 3px 15px 3px;}
-div.header {height:50px!important;padding:10px 19px 0!important;}
-div.pagin-letters {padding: 10px 10px 5px 15px;}
-div.pagin-letters li {border-left: 1px solid #ccc;}
-.tooltip {position:fixed!important;width:140px;}
-.glyphicon.glyphicon-upload:before {content: " ";}
-.glyphicon-up {font-family: 'Glyphicons Halflings';}
-.button-upload {padding:10px;}
-a:hover {color: #fa6a13!important;}
-a.button-a:hover {color: #fff!important;}
-.main-nav li a:hover, .main-nav .active a {color: #fff!important;}
-.pagin-letters a:hover {color: #000!important;}
-.player-inline .options .add-to-pl {color: #3bafda;float: right;cursor: pointer;font-size:large;}
-.player-inline .options .save-to-pl {font-size:large;}
-.player-inline .options div.top {text-align: right;padding-top:3px;}
-.player-inline .options .add-to-pl.big-song {margin-top: 20px;}
-.player-inline .options .data {padding-top:3px!important;}
-.options .top span {margin-top:5px;}
-.add-to-pl:before {content: "";}
-h1, h2, h3, h4 {font-family: Tahoma,Geneva,sans-serif!important;font-weight: bold!important;}
-.custom-volume {height: 6px;}
-.jp-volume-bar-value {height:0!important}
-.header div.logo {background:initial;}
-div.logo a {color: #f96913;font-size: 30px;font-weight: bolder;margin: -12px;margin-left: 15px;}
-div.logo a:before {content:"muzyka";}
-
-`;
-GM_addStyle(classes);
 
 
-$jPe = µ$('#jplayer_N');
+var $jPe = µ$('#jplayer_N');
+
 function volume(e){
-    var jPVolBar = µ$('.jp-volume-bar');
     if (!e){
         volume.vol = GM_getValue("volume", 0.2);
-        jPVolBar.prepend($('<div class="lter custom-volume">').css("width", volume.vol*100+"%"));
+        µ$('.jp-volume-bar').prepend($('<div class="lter custom-volume">').css("width", volume.vol*100+"%"));
         $jPe.jPlayer('volume', volume.vol * volume.vol);
         if (GM_getValue("mute", false)){
             $jPe.jPlayer('mute');
             $('div.lter.custom-volume').hide();
         }
-        $("body").on("jPlayer_volumechange", volume);
-    }else{
-        var jPopts = e.jPlayer.options;
+        $jPe.on("jPlayer_volumechange", volume);
+        $(window).on('mousewheel', volume);
+    }else if (e.type === "jPlayer_volumechange"){
+        let jPopts = e.jPlayer.options;
         if (!jPopts.muted && jPopts.volume !== volume.vol){
             $('div.lter.custom-volume').css("width", jPopts.volume*100+"%");
             GM_setValue("volume", jPopts.volume);
@@ -128,6 +82,16 @@ function volume(e){
             $jPe.jPlayer('volume', volume.vol);
         }
         GM_setValue("mute", jPopts.muted);
+    }else if (e.type === "mousewheel")
+    {
+        if (e.target.classList.contains("jp-volume") || $(e.target).parents().is(".jp-volume"))
+        {
+            e.preventDefault();
+            volume.vol = volume.vol + (0.01 + volume.vol * volume.vol * 0.07) *(e.originalEvent.wheelDelta > 0 ? 1 : -1);
+            volume.vol = volume.vol > 1 ? 1 : volume.vol < 0 ? 0 : volume.vol;
+            $jPe.jPlayer('volume', volume.vol);
+            $('div.lter.custom-volume').css("width", Math.sqrt(volume.vol)*100+"%");
+        }
     }
 }
 
@@ -140,13 +104,19 @@ function downloadSongs(i){
         }
     }
     setTimeout(function(){
-        if(($song = $('div.player-inline')[i])){
-            log("Downloading song ",i);
-            $.get($('div.options>div.top>a', $song).attr("href"), function(data){
+        let $song = $('div.player-inline>div.play>span:eq('+i+')'), artistAlbumName = $('h1').text();
+        if($song.length){
+            log("Downloading song",i+1, $song);
+            GM_download($song.data("url"), artistAlbumName + " - "+(i < 9 ? "0"+(i+1):""+(i+1))+" - "+$('div.details>p>a', $song.parent().parent()).text()+".mp3");
+            /* $.get($('div.options>div.top>a', $song).attr("href"), function(data){
                 artistName = $('div.details>a', $song).text();
-                GM_download($('div.options>div.top>a[itemprop]', data).attr("href"),artistName+" - "+albumName+" - "+(i < 9 ? "0"+(i+1):""+(i+1))+" - "+$('div.details>p>a', $song).text()+".mp3");
-                downloadSongs(++i);
-            });
+                GM_download($('div.options>div.top>a[itemprop]', data).attr("href"),artistName+" - "+albumName+" - "+(i < 9 ? "0"+(i+1):""+(i+1))+" - "+);
+                /*GM_download({
+                    url:$('div.options>div.top>a[itemprop]', data).attr("href"),
+                    name:artistName+" - "+albumName+" - "+(i < 9 ? "0"+(i+1):""+(i+1))+" - "+$('div.details>p>a', $song).text()+".mp3"
+                });
+            });*/
+            downloadSongs(++i);
         }else{downloadSongs.started = false;/*setTimeout(window.focus,1000);*/}
     }, 300);
 }
@@ -156,6 +126,7 @@ function myzukaLoad(){
     if(document.body.classList.contains("disabled")){setTimeout(myzukaLoad, 500);return;}
     if (myzukaLoad.href ? myzukaLoad.href !== window.location.href : true){
         myzukaLoad.started = true;
+        if (!$('#downloadFrame').length) {$('<iframe id="downloadFrame">').appendTo('body');}
         var path = getPath();
 
         switch (path[0]){
@@ -173,14 +144,13 @@ function myzukaLoad(){
                     $('#bodyContent>h1').text()+
                     " | Album | Muzyka.me"
                 );
-                albumName = $('meta[itemprop="name"]').attr("content");
                 $('div.main-details a.v2').attr("href", "#").text(" Télécharger l'album").prepend($("<span class='glyphicon glyphicon-save'>::before")).on("click", function(){
                     downloadSongs(0);
                     return false;
                 })
                     .siblings("p").remove().end()
-                    .siblings("button.favorite-btn").children("#f_text").text("Ajouter aux favoris").end()
-                    .siblings("button.play-all").replaceText(".", " Lire tout l'album");
+                    .siblings("button.play-all").replaceText(".", " Lire tout l'album").end()
+                    .siblings("button").children("#f_text").text("Ajouter aux favoris");
                 break;
             case "Artist":
                 $('a, td, h3, h1, h2, select, span').translate(wordAr);
@@ -227,18 +197,21 @@ function myzukaLoad(){
                 $('title').text(window.location.pathname.split("/")[1]+" | Muzyka.me");
         }
 
-        $('iframe').parent().add('#follow_btn, a.rbt, #TVZavr').remove();
+        $('iframe:not("#downloadFrame")').parent().add('#follow_btn, a.rbt, #TVZavr').remove();
         $('a, td, th, h3, h1, h2, select, span').translate(wordR);
         $('div.options>div.top').children("span.ico-plus").removeClass("ico-plus").addClass("glyphicon").siblings("a")
             .filter(':not(.no-ajaxy):not([itemprop="audio"]), [itemprop="audio"]').attr("class", "rbtb button-a dl").attr("title",function(a, txt){
             return txt.replace("Скачать", "Télécharger");})
-            .text(" Télécharger").prepend($("<span class='glyphicon glyphicon-save'>::before")).off("click").filter(':not([href*="/Download"])').on("click", function(){
-            $.get(this.href, function(data){
+            .text(" Télécharger").prepend($("<span class='glyphicon glyphicon-save'>::before")).off("click").filter(':not([href*="/Download"])')
+            .on("click", function(){
+            let $song = $('#play_' + $(this).siblings(".add-to-pl").data("id") + ' span');
+            GM_download($song.data("url"), $song.data("title"));
+            /*$.get(this.href, function(data){
+                log($('div.options>div.top>a[itemprop]:eq(0)', data).attr("href"));
                 GM_download($('div.options>div.top>a[itemprop]:eq(0)', data).attr("href"), $(".main-details+.player-inline .details", data).text().replace(/\n|\s\s/g,"")+".mp3");
                 //window.open($('div.options>div.top>a[itemprop]:eq(0)', data).attr("href"));
-            });
-            return false;
-        });
+            });*/
+            return false;});
         $('div.icons, div.time').each(function(){
             //console.log($(this).parent().siblings("div.options"));
             if (this.className ==="time") {
@@ -251,6 +224,7 @@ function myzukaLoad(){
                 $(this).remove();
             }
         });
+        $('.jp-controls a.jp-pause').parent().addClass("jp-playpause");
         if(path[0] === "Album"){
         }
         //$('a:not([data-events]):not([itemprop="audio"]):not(.no-ajaxy)').attr("data-events", "on").click(function(){myzukaLoad();});
@@ -437,5 +411,57 @@ $('div.main-nav, div.mainHeader>div.pagin-letters').hide();
 
 
 for(var i=0;i<word[0].length;i++){$('a, td, h3, div.profile-bar div').not('#bodyContent *, #bodyContent, html, head, title, body').filter(':contains('+word[0][i]+')').html(function(a, txt){return txt.replace(word[0][i], word[1][i]);});}
+
 volume(false);
+
+
+var classes =`
+div.alert.alert-warning.alert-dismissible {display:none;!important}
+#SearchText {padding-top:4px;}
+.rbt .button-a.rbtb.dl {margin:11px;}
+.rbtb, .button-a {font: bold 13px/30px Tahoma,sans-serif!important;}
+a.button-a.dl {padding: 0px 11px;height: 30px;}
+.button-a.rbtb.dl {background:#52a55c;margin:0;margin-right:11px;}
+body {background:#ccc!important}
+div.main, div.content, div.inner {background:#ccc!important}
+div.main {border-top:none!important;margin-top:73px;}
+.tbl tr:nth-child(2n+1) {background: #c0c0c0!important;}
+.labels {margin-top:0!important}
+.profile-bar {background: #ddd!important;box-shadow: 0px 0px 12px 7px #ddd;}
+div.all {background: transparent!important;}
+div.mainHeader {box-shadow:0px 0px 15px 7px #ddd; background:#ddd; position:fixed;top:0;z-index:95;width:auto!important;margin:inherit;left:0;right:0;min-width: inherit;max-width: inherit;}
+div.mainHeader div {position:relative;}
+div.main-nav {height:45px;padding: 3px 15px 3px;}
+div.header {height:50px!important;padding:10px 19px 0!important;}
+div.pagin-letters {padding: 10px 10px 5px 15px;}
+div.pagin-letters li {border-left: 1px solid #ccc;}
+.tooltip {position:fixed!important;width:140px;}
+.glyphicon.glyphicon-upload:before {content: " ";}
+.glyphicon-up {font-family: 'Glyphicons Halflings';}
+.button-upload {padding:10px;}
+a:hover {color: #fa6a13!important;}
+a.button-a:hover {color: #fff!important;}
+.main-nav li a:hover, .main-nav .active a {color: #fff!important;}
+.pagin-letters a:hover {color: #000!important;}
+.player-inline .options .add-to-pl {color: #3bafda;float: right;cursor: pointer;font-size:large;}
+.player-inline .options .save-to-pl {font-size:large;}
+.player-inline .options div.top {text-align: right;padding-top:3px;}
+.player-inline .options .add-to-pl.big-song {margin-top: 20px;}
+.player-inline .options .data {padding-top:3px!important;}
+.options .top span {margin-top:5px;}
+.add-to-pl:before {content: "";}
+h1, h2, h3, h4 {font-family: Tahoma,Geneva,sans-serif!important;font-weight: bold!important;}
+.jp-controls .jp-volume {width: 110px!important;}
+.custom-volume {height: 100%;}
+.jp-pause {margin-top: -5px}
+.jp-controls .jp-volume-bar {height:30%;}
+.jp-controls .jp-volume-bar-value {height:0!important}
+.jp-controls .jp-play, .jp-controls .jp-pause {line-height: initial;}
+.jp-controls .jp-playpause {vertical-align:bottom;padding-bottom:2px}
+.header div.logo {background:initial;}
+div.logo a {color: #f96913;font-size: 30px;font-weight: bolder;margin: -12px;margin-left: 15px;}
+div.logo a:before {content:"muzyka";}
+#downloadFrame {display:none;}
+`;
+GM_addStyle(classes);
 myzukaLoad();
