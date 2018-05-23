@@ -221,7 +221,7 @@
 			});
 		}
     });
-}($));
+}($ || jQuery));
 
 function log(...thing){
     return console.log(...thing);
