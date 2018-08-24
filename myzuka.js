@@ -2,27 +2,39 @@
 // @icon         http://manywork.ru/files/user/3100/portfolio/yes/1414902476-5214590_s.jpg
 // @name         Super Myzuka
 // @namespace    http://tampermonkey.net/
-// @version      0.3.8
+// @version      0.4.0
 // @description  Myzuka.club optimisée
 // @author       Dien ©
 // @match        myzuka.club/*
 // @match        http://go.mail.ru/*
+// @domain       *.imyz.me
 // @updateURL    https://rawgit.com/DienH/Tampermonkey/master/myzuka.js
 // @downloadURL  https://rawgit.com/DienH/Tampermonkey/master/myzuka.js
-// @require      https://code.jquery.com/jquery.js
+// @require      https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js
+// @resource     jQueryUICSS https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css
+// @require      https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/jquery.ui-contextmenu/1.18.1/jquery.ui-contextmenu.min.js
 // @require      https://rawgit.com/DienH/Tampermonkey/master/Dien.js
+// @resource     GlyphiconsCSS http://www.aetherbyte.com/forum/styles/digi/theme/fonts/glyphicons-pro-1.9.2/css/glyphicons.css
+// Glyphicons    http://www.aetherbyte.com/forum/styles/digi/theme/fonts/glyphicons-pro-1.9.2/fonts/
+// @connect      *
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_addStyle
+// @grant        GM_xmlhttpRequest
+// @grant        GM_getResourceText
 // @grant        GM_download
 // @grant        window.focus
 // @grant        unsafeWindow
-// @noframes
 // @run-at       document-idle
 // ==/UserScript==
 
-µ = unsafeWindow;
-µ$ = µ.$;
+
+var µ = unsafeWindow, µ$=µ.$;
+if (!$)
+{
+    var $ = window.jQuery
+    }
 unsafeWindow.$$ = $;
 
 (function($) {
@@ -37,7 +49,7 @@ unsafeWindow.$$ = $;
         }
         return this;
     };
-}(jQuery));
+}(window.jQuery));
 
 String.prototype.replaceAll = function(search, replacement) {
     var target = this;
@@ -60,12 +72,12 @@ if (document.location.hostname === "go.mail.ru"){
 
 
 
-var $jPe = µ$('#jplayer_N');
+var $jPe = µ.$('#jplayer_N'), $jPN = $('#jp_container_N');
 
 function volume(e){
     if (!e){
         volume.vol = GM_getValue("volume", 0.2);
-        µ$('.jp-volume-bar').prepend($('<div class="lter custom-volume">').css("width", volume.vol*100+"%"));
+        µ.$('.jp-volume-bar').prepend($('<div class="lter custom-volume">').css("width", volume.vol*100+"%"));
         $jPe.jPlayer('volume', volume.vol * volume.vol);
         if (GM_getValue("mute", false)){
             $jPe.jPlayer('mute');
@@ -106,27 +118,56 @@ function downloadSongs(i){
     setTimeout(function(){
         let $song = $('div.player-inline>div.play>span:eq('+i+')'), artistAlbumName = $('h1').text();
         if($song.length){
-            log("Downloading song",i+1, $song);
+            log("Downloading song #"+(i+1));
             GM_download($song.data("url"), artistAlbumName + " - "+(i < 9 ? "0"+(i+1):""+(i+1))+" - "+$('div.details>p>a', $song.parent().parent()).text()+".mp3");
-            /* $.get($('div.options>div.top>a', $song).attr("href"), function(data){
-                artistName = $('div.details>a', $song).text();
-                GM_download($('div.options>div.top>a[itemprop]', data).attr("href"),artistName+" - "+albumName+" - "+(i < 9 ? "0"+(i+1):""+(i+1))+" - "+);
-                /*GM_download({
-                    url:$('div.options>div.top>a[itemprop]', data).attr("href"),
-                    name:artistName+" - "+albumName+" - "+(i < 9 ? "0"+(i+1):""+(i+1))+" - "+$('div.details>p>a', $song).text()+".mp3"
-                });
-            });*/
             downloadSongs(++i);
-        }else{downloadSongs.started = false;/*setTimeout(window.focus,1000);*/}
+        }else{downloadSongs.started = false;}
     }, 300);
 }
+function currentlyPlayingSong(e){
+    let media = Object.assign(e.jPlayer.status.media), songUrl = media.mp3.split("?")[0].split("/"), $jPTitle = $jPN.find('.jp-title')
+    media.artist=[]
+    songUrl.splice(songUrl.length-2,1)
+    songUrl=songUrl.join("/")
+    $.get(songUrl, function(data){
+        let details = $('div.main-details .cont tbody', data)
+        details.find('a[href*="/Artist"]').each(function(i){media.artist[i]={name:$(this).text().trim(),Url:$(this).href()}})
+        details.find('a[href*="/Album"]').do(function(){media.album={name:$(this).text().trim(),Url:$(this).href()}})
+        media.song={name:$('#bodyContent .breadcrumbs span[itemprop="title"]', data).text(), Url:songUrl}
+        let $img = $('div.main-details .vis img', data)
+        media.artwork= $('div.main-details .vis img', data).attr("src")
+        $jPN.find('.jp-artwork img').attr("src", media.artwork)
 
+        //$jPTitle.children('td').children().unwrap()
+    })
+    $jPN.find('.jp-title').each(function(){this.media = media})
+}
+function saveMP3(link, name) {
+    GM_xmlhttpRequest({
+        method:"GET",
+        url:link,
+        binary:true,
+        responseType:"blob",
+        overrideMimeType:"audio/mpeg",
+        onload:function(response){
+            let a = document.createElement("a"),
+                blobUrl = window.URL.createObjectURL(response.response);
+                //blob = new Blob(response.responseText, {type: "audio/mpeg"}),
+            a.style = "display: none";
+            a.download = name+".mp3"
+            a.href = blobUrl;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(blobUrl);
+            a.remove()
+        }
+    })
+}
 function myzukaLoad(){
     if(!myzukaLoad.started){myzukaLoad.started = false;}else{return;}
     if(document.body.classList.contains("disabled")){setTimeout(myzukaLoad, 500);return;}
     if (myzukaLoad.href ? myzukaLoad.href !== window.location.href : true){
         myzukaLoad.started = true;
-        if (!$('#downloadFrame').length) {$('<iframe id="downloadFrame">').appendTo('body');}
         var path = getPath();
 
         switch (path[0]){
@@ -197,23 +238,24 @@ function myzukaLoad(){
                 $('title').text(window.location.pathname.split("/")[1]+" | Muzyka.me");
         }
 
-        $('iframe:not("#downloadFrame")').parent().add('#follow_btn, a.rbt, #TVZavr').remove();
+        $('iframe').parent().add('#follow_btn, a.rbt, #TVZavr').remove();
         $('a, td, th, h3, h1, h2, select, span').translate(wordR);
         $('div.options>div.top').children("span.ico-plus").removeClass("ico-plus").addClass("glyphicon").siblings("a")
             .filter(':not(.no-ajaxy):not([itemprop="audio"]), [itemprop="audio"]').attr("class", "rbtb button-a dl").attr("title",function(a, txt){
             return txt.replace("Скачать", "Télécharger");})
             .text(" Télécharger").prepend($("<span class='glyphicon glyphicon-save'>::before")).off("click").filter(':not([href*="/Download"])')
             .on("click", function(){
-            let $song = $('#play_' + $(this).siblings(".add-to-pl").data("id") + ' span');
-            GM_download($song.data("url"), $song.data("title"));
-            /*$.get(this.href, function(data){
-                log($('div.options>div.top>a[itemprop]:eq(0)', data).attr("href"));
-                GM_download($('div.options>div.top>a[itemprop]:eq(0)', data).attr("href"), $(".main-details+.player-inline .details", data).text().replace(/\n|\s\s/g,"")+".mp3");
-                //window.open($('div.options>div.top>a[itemprop]:eq(0)', data).attr("href"));
-            });*/
+            let $song = $('#play_' + $(this).siblings(".add-to-pl").data("id") + ' span'), songName;
+            if (path[0] === "Album") {
+                songName = $('h1').text()+ " - "+$song.parent().siblings(".position").text().trim()+" - "+$('div.details>p>a', $song.parent().parent()).text()+".mp3";
+            } else {
+                songName = $song.data("title")
+            }
+            saveMP3($song.data("url"), songName)
+            //µ$.get(location.origin+$song.data("url"))
+            //GM_download(location.origin+$song.data("url"), songName);
             return false;});
         $('div.icons, div.time').each(function(){
-            //console.log($(this).parent().siblings("div.options"));
             if (this.className ==="time") {
                 $(this).parent().siblings("div.options").children("div.data").append($('<span class="sep">|</span>')).append(this);
                 this.setTagName("span");
@@ -224,9 +266,65 @@ function myzukaLoad(){
                 $(this).remove();
             }
         });
-        $('.jp-controls a.jp-pause').parent().addClass("jp-playpause");
-        if(path[0] === "Album"){
+        $('a.jp-pause', $jPN).parent().addClass("jp-playpause");
+        if (!$('#playerContextMenu').length) {
+            let playerContextMenu =`
+<ul id="playerContextMenu">
+<li data-command="download"><div><span>Télécharger</span><span class="glyphicons glyphicons-download-alt contextmenu-icon"></span></div></li>
+<li data-command="gotoSong"><div><span>Afficher la musique</span><span class="glyphicons glyphicons-music contextmenu-icon"></span></div></li>
+<li data-command="gotoArtist"><div>Bouh</div></li>
+<li data-command="gotoAlbum"><div><span>Afficher l'album</span><span class="glyphicons glyphicons-cd contextmenu-icon"></span></div></li>
+</ul>
+`;
+            $(playerContextMenu).appendTo('body')
+            $('<div class="hidden-xs hidden-sm jp-slashtime text-xs text-muted">/</div>').insertBefore('.jp-current-time+.jp-duration')
+            $('<div class="jp-artwork"><img src></img></div>').insertBefore('.jp-controls .jp-progress')
         }
+        $('div.jp-progress').contextmenu({
+            delegate:this,
+            /*
+            menu:[
+                {title:"Télécharger", cmd:"download", uiIcon: "ui-icon-disk"},
+                {title:"Aller à l'album", cmd:"goToAlbum"},
+                {title:"Aller à l'artiste", cmd:"goToArtist", uiIcon: "ui-icon-person"}
+            ],
+            */
+            menu:$('#playerContextMenu'),
+            select:function(e, ui){
+                let media = $jPN.find('.jp-title').prop("media")
+                if(!media){return false}
+                switch(ui.cmd.split("-")[0]) {
+                    case "download" :
+                        log(media.mp3)
+                        //GM_download(media.mp3, media.title+".mp3")
+                        break;
+                    case "gotoSong" :
+                        µ.$("<a class='hidden' href="+media.song.Url+"></a>").appendTo('#bodyContent').click()
+                        break;
+                    case "gotoAlbum" :
+                        µ.$("<a class='hidden' href="+media.album.Url+"></a>").appendTo('#bodyContent').click()
+                        break;
+                    case "gotoArtist" :
+                        µ.$("<a class='hidden' href="+media.artist[ui.cmd.split("-")[1] || 0].Url+"></a>").appendTo('#bodyContent').click()
+                        break;
+                    default:
+                        break;
+                }
+            },
+            beforeOpen:function(e, ui){
+                let media = $jPN.find('.jp-title').prop("media")
+                if(!media){return false}
+                if (media.artist.length > 1)
+                {
+                    let artistSubMenu = []
+                    media.artist.forEach(function(val, i){artistSubMenu[i]={title:"<span>"+val.name+"</span><span class='glyphicons glyphicons-user contextmenu-icon'></span>",cmd:"gotoArtist-"+i}})
+                    $(e.delegateTarget).contextmenu('setEntry', "gotoArtist", {title:"<span>Afficher l'artiste</span><span class='glyphicons glyphicons-group contextmenu-icon'></span>", cmd:"gotoArtist", children:artistSubMenu})
+                }else{
+                    $(e.delegateTarget).contextmenu('setEntry', "gotoArtist", {title:"<span>Afficher l'artiste</span><span class='glyphicons glyphicons-user contextmenu-icon'></span>", cmd:"gotoArtist"})
+                }
+            }
+        })
+        $jPe.on("jPlayer_play", currentlyPlayingSong)
         //$('a:not([data-events]):not([itemprop="audio"]):not(.no-ajaxy)').attr("data-events", "on").click(function(){myzukaLoad();});
         //title//*/
     }
@@ -397,8 +495,8 @@ setTimeout(function(){
 }, 500);
 $('div.logo>a').text("");
 $('a[data-toggle="tooltip"]').mouseover(function(e){
-    x = $(this).offset().left + ($(this).width() - $('div.tooltip').width()) / 2;
-    y = $(this).offset().top + $(this).height() + 10;
+    let x = $(this).offset().left + ($(this).width() - $('div.tooltip').width()) / 2,
+        y = $(this).offset().top + $(this).height() + 10;
     $('div.tooltip').offset({top:y, left:x});
 }).attr("data-original-title", function(a, txt){
     return txt.replace(txt, wordT[1][wordT[0].indexOf(txt)]);
@@ -458,10 +556,29 @@ h1, h2, h3, h4 {font-family: Tahoma,Geneva,sans-serif!important;font-weight: bol
 .jp-controls .jp-volume-bar-value {height:0!important}
 .jp-controls .jp-play, .jp-controls .jp-pause {line-height: initial;}
 .jp-controls .jp-playpause {vertical-align:bottom;padding-bottom:2px}
+.jp-controls .jp-slashtime {width:10px}
+.jp-controls .jp-current-time {padding-left: 15px;width: 55px;}
+.jp-controls .jp-progress {padding:0;}
+.jp-controls .jp-progress {padding:0;}
 .header div.logo {background:initial;}
 div.logo a {color: #f96913;font-size: 30px;font-weight: bolder;margin: -12px;margin-left: 15px;}
 div.logo a:before {content:"muzyka";}
-#downloadFrame {display:none;}
+#playerContextMenu {display:none;position:fixed!important;top:50px;left:50px;}
+#playerContextMenu.ui-menu-icons .ui-menu-item {padding-left:0;}
+#playerContextMenu ul .ui-menu-item {padding-left:5px;white-space:nowrap;}
+#playerContextMenu span {padding-left:30px;}
+.glyphicon-cd:before {content:"\\e201"}
+#playerContextMenu .glyphicons {float:left;left:0.3em;padding-left:0;position:absolute;}
+#playerContextMenu .ui-icon {display:none}
+.ui-contextmenu.ui-widget-content .ui-state-active, .ui-contextmenu .ui-state-active {border:1px solid #ffff;font-weight:initial;color:#3bafda;}
+.ui-contextmenu .ui-state-active .ui-icon {filter:hue-rotate(180deg);}
+#downloadFrame {display:block;position:fixed;top:50px;left:50px;width:500px;height:80vh;}
 `;
 GM_addStyle(classes);
-myzukaLoad();
+GM_addStyle(GM_getResourceText("GlyphiconsCSS"))
+if (1+location.host.search("myzuka"))
+{
+    myzukaLoad();
+}else{
+    log(location.href)
+}
