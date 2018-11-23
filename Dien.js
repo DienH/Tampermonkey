@@ -227,22 +227,23 @@ function log(...thing){
     return console.log(...thing);
 }
 function download(data, filename, type) {
-    if (!type) type = "text";
-    var file = new Blob(typeof data === "object" ? data : [data], {type: type});
-    if (window.navigator.msSaveOrOpenBlob) /* IE10+ */
-        window.navigator.msSaveOrOpenBlob(file, filename);
-    else { /* Others */
-        var a = document.createElement("a"),
-            url = URL.createObjectURL(file);
-        a.href = url;
-        a.download = (typeof filename ==="string") ? filename : "Download.txt";
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(function() {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }, 0);
-    }
+    let url,a = document.createElement("a")
+    try{
+        url = new URL(data)
+    }catch(e){
+        url=0
+        if (!type) type = "text";
+        let file = new Blob(typeof data === "object" ? data : [data], {type: type});
+        }
+    url = url || URL.createObjectURL(file);
+    a.href = url;
+    a.download = (typeof filename ==="string") ? filename : "Download.txt";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 0);
 }
 
 function getPath(win, n){
