@@ -1,8 +1,9 @@
-﻿// ==UserScript==
-// @icon         http://manywork.ru/files/user/3100/portfolio/yes/1414902476-5214590_s.jpg
+// ==UserScript==
+// icon         http://manywork.ru/files/user/3100/portfolio/yes/1414902476-5214590_s.jpg
+// @icon         http://www.userlogos.org/files/logos/abudayev/myzuka.jpg
 // @name         Super Myzuka
 // @namespace    http://tampermonkey.net/
-// @version      0.4.0
+// @version      0.4.2
 // @description  Myzuka.club optimisée
 // @author       Dien ©
 // @match        myzuka.club/*
@@ -169,21 +170,22 @@ function myzukaLoad(){
     if (myzukaLoad.href ? myzukaLoad.href !== window.location.href : true){
         myzukaLoad.started = true;
         var path = getPath();
+        let artistName;
 
         switch (path[0]){
             case "Song":
                 $('title').text(
-                    $('div.breadcrumbs>a[href*="Artist"]>span').text()+//Artist
+                    $('div.breadcrumbs>a[href*="Artist/"]>span').text()+//Artist
                     " - "+$('div.breadcrumbs>span').text()+//Song
                     " (album "+$('div.breadcrumbs>a[href*="Album"]>span').text()+//Album
-                    ") | Musique | Muzyka.me"
+                    ") | Musique | Muzyka"
                 );
                 break;
             case "Album":
                 $('a, td, h3, h1, h2, select, span').translate(wordAl);
                 $('title').text(
                     $('#bodyContent>h1').text()+
-                    " | Album | Muzyka.me"
+                    " | Album | Muzyka"
                 );
                 $('div.main-details a.v2').attr("href", "#").text(" Télécharger l'album").prepend($("<span class='glyphicon glyphicon-save'>::before")).on("click", function(){
                     downloadSongs(0);
@@ -195,9 +197,10 @@ function myzukaLoad(){
                 break;
             case "Artist":
                 $('a, td, h3, h1, h2, select, span').translate(wordAr);
+                artistName = $('#bodyContent>h1').text()
                 $('title').text(
-                    $('#bodyContent>h1').text()+
-                    " | Artiste | Muzyka.me");
+                    ((artistName.search("группы")+1) ? artistName.substr(15).slice(0,-1) : artistName.substr(8).slice(0,-1))+
+                    " | Artiste | Muzyka");
                 break;
             case "Letter":
                 $('title').text(
@@ -207,7 +210,7 @@ function myzukaLoad(){
             case "Upload":
                 $('a, td, th, h3, h1, h2, select, span').translate(wordU);
                 $('a[href="/Upload/Album"]:not(:has(span.glyphicon))').prepend($('<span class="glyphicon glyphicon-upload">::before')).wrapInner($('<button class="button-upload">')).parent().textNodes().remove().end().children('a[href*="Chat"]').remove();
-                $('title').text(window.location.pathname.split("/")[1]+" | Muzyka.me");
+                $('title').text(window.location.pathname.split("/")[1]+" | Muzyka");
                 $('input[value="Сохранить"]').attr("value", " Enregistrer ");
                 if (path[1]) switch (path[1]){
                     case "ViewAlbum":
@@ -235,7 +238,7 @@ function myzukaLoad(){
                 }
                 break;
             default:
-                $('title').text(window.location.pathname.split("/")[1]+" | Muzyka.me");
+                $('title').text(window.location.pathname.split("/")[1]+" | Muzyka");
         }
 
         $('iframe').parent().add('#follow_btn, a.rbt, #TVZavr').remove();
@@ -247,7 +250,7 @@ function myzukaLoad(){
             .on("click", function(){
             let $song = $('#play_' + $(this).siblings(".add-to-pl").data("id") + ' span'), songName;
             if (path[0] === "Album") {
-                songName = $('h1').text()+ " - "+$song.parent().siblings(".position").text().trim()+" - "+$('div.details>p>a', $song.parent().parent()).text()+".mp3";
+                songName = $('h1').text()+ " - "+$song.parent().siblings(".position").text().trim()+" - "+$('div.details>p>a', $song.parent().parent()).text();
             } else {
                 songName = $song.data("title")
             }
@@ -295,8 +298,7 @@ function myzukaLoad(){
                 if(!media){return false}
                 switch(ui.cmd.split("-")[0]) {
                     case "download" :
-                        log(media.mp3)
-                        //GM_download(media.mp3, media.title+".mp3")
+                        GM_download(media.mp3, media.title+".mp3")
                         break;
                     case "gotoSong" :
                         µ.$("<a class='hidden' href="+media.song.Url+"></a>").appendTo('#bodyContent').click()
@@ -336,9 +338,6 @@ function myzukaLoad(){
 
 function headerScroll(event) {
     headerScroll.event = event.type;
-    /*/console.log(event);
-    ///$(window).off("scroll", headerScroll);
-    if (!headerScroll.lastScroll){headerScroll.lastScroll = 0;}//*/
     if ((headerScroll.lastScroll < window.scrollY || headerScroll.event === "mouseleave" /*/&& !$(event.relatedTarget).parents('div.mainHeader')[0]/*/) && $('div.main-nav').is(":visible")){
         $('div.main-nav, div.mainHeader>div.pagin-letters').slideUp({queue: false, duration: 500, complete:function(){$(this).attr("style", "").css("display", "none");}});
     }else if ((headerScroll.lastScroll > window.scrollY || headerScroll.event ==="mouseenter") && $('div.main-nav').is(":hidden")){
@@ -347,6 +346,38 @@ function headerScroll(event) {
     headerScroll.lastScroll = window.scrollY;
 }
 
+document.addEventListener('keydown', function keyShortcut(e) {
+    if (!e) e=event || window.event;
+    log(e.code)
+    if (!$(':focus').length)
+    {
+        if (e.code=="Space") {
+            e.preventDefault();
+            e.stopPropagation();
+            if ($('#jp_audio_0').prop("paused"))
+            {
+                $jPe.jPlayer('play')
+            } else {
+                $jPe.jPlayer('pause')
+            }
+        } else if (e.code =="d"){
+            e.preventDefault();
+            e.stopPropagation();
+            if ($('#jp_audio_0').attr("src"))
+            {
+                let media = $jPN.find('.jp-title').prop("media")
+                GM_download(media.mp3, media.title+".mp3")
+            }
+        } else if(e.ctrlKey && e.code == "ArrowLeft")
+        {
+            µ$('a.jp-previous').click()
+        } else if(e.ctrlKey && e.code == "ArrowRight")
+        {
+            µ$('a.jp-next').click()
+        }
+    }
+    return false
+});
 var word = [
     ["Хиты", "топ аплоадеров", "популярные исполнители", "Все исполнители", "популярные жанры", "Все жанры", "Альбомы", "Сборники", "Саундтреки", "Радио", "ТОП-250", "Плейлисты", "Чат", "Добавить альбом", "Отключить рекламу", "Войти", "Регистрация", "топ аплоадеров", "Ваш рейтинг", "Ваш статус", "Обычный", "оценки", "избранное", "лента"], 
     ["Hits", "Top Uploaders", "Top Artistes", "Tous les artistes", "Top Genres", "Tous les genres", "Albums", "Compilations", "B-O", "Radio-Web", "Top 250", "Playlists", "Chat", "Ajouter un album", "Premium", "Connexion", "Inscription", "Top Uploaders", "Note", "Statut", "Normal", "Votes", "Favoris", "Flux"]
