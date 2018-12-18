@@ -227,13 +227,13 @@ function log(...thing){
     return console.log(...thing);
 }
 function download(data, filename, type) {
-    let url,a = document.createElement("a")
+    let url,a = document.createElement("a"), file
     try{
         url = new URL(data)
     }catch(e){
         url=0
         if (!type) type = "text";
-        let file = new Blob(typeof data === "object" ? data : [data], {type: type});
+        file = new Blob(typeof data === "object" ? data : [data], {type: type});
         }
     url = url || URL.createObjectURL(file);
     a.href = url;
