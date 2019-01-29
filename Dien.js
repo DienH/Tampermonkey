@@ -92,14 +92,38 @@
 	id(newID){
 		if (typeof newID == "string")
 		{
-			return $(this).attr("id", newID)
+			return this.attr("id", newID)
 		} else {
-			return $(this).attr("id")
+			return this.attr("id")
 		}
+	},
+	up(selector){
+		return this.parent(selector)
 	},
         do(callback){
             return this.eq(0).each(callback).end();
         },
+	class(newClassString){
+		let classesList = [], classesAddList = [], classesRemoveList = []
+		if (typeof newClassString == "string")
+		{
+			if (newClassString.startsWith("+ ") || newClassString.startsWith("- "))
+			{
+				newClassString = " "+newClassString
+				classesList = newClassString.split(" + ")
+				classesList = classesList.map(function(t,i){return (i>0 ? "+ ":"")+t}).join("\n\t\n").split(" - ").map(function(t,i){return (i>0 ? "- ":"")+t}).join("\n\t\n").split("\n\t\n").slice(1)
+				classesAddList = (" "+classesList.filter(t=>t.startsWith("+ ")).join(" ")).replace(/ \+ /g, " ")
+				classesRemoveList = (" "+classesList.filter(t=>t.startsWith("- ")).join(" ")).replace(/ - /g, " ")
+				return this.addClass(classesAddList).removeClass(classesRemoveList)
+			} else {
+				return this.attr("class", newClassString)
+			}
+		} else if (typeof newClassString == "object") {
+			classesAddList = newClassesString["+"]+" "+newClassesString["add"]
+			classesRemoveList = newClassesString["-"]+" "+newClassesString["remove"]
+			return this.addClass(classesAddList).removeClass(classesRemoveList)
+		}
+	},
 
         // jQuery implementation of Mutation observer
         observe(options, callback, name) {
