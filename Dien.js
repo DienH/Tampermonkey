@@ -54,17 +54,17 @@
 			this.data;
 		})//*/;
         },
-		//replace text with given text. Can completely replace a text node containing a string with a new Text
-		replaceText(...args){
-			if (1 < arguments.length < 4){
-				if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
-					$(this).textNodes(searchT, (typeof arguments[2] === "boolean") && arguments[2]).each(function(){
-						this.data=replaceT;
-					});
-					return this;
-				}
+	//replace text with given text. Can completely replace a text node containing a string with a new Text
+	replaceText(...args){
+		if (1 < arguments.length < 4){
+			if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
+				$(this).textNodes(searchT, (typeof arguments[2] === "boolean") && arguments[2]).each(function(){
+					this.data=replaceT;
+				});
+				return this;
 			}
-		},
+		}
+	},
         // return href attribute or change href attribute
         href(link){
             changeLink = (typeof link === "string") ? true : false;
@@ -73,8 +73,8 @@
         },
         //attribute or property shortcut
         a(attribute, value){
-            var attr = $(this).attr(attribute);
-            var useAttr = (typeof attr === "undefined") ? false : true;
+            let attr = $(this).attr(attribute);
+            let useAttr = (typeof attr === "undefined") ? false : true;
             if (useAttr){
                 if (typeof value === "undefined"){
                     return $(this).attr(attribute);
@@ -89,6 +89,14 @@
                 }
             }
         },
+	id(newID){
+		if (typeof newID == "string")
+		{
+			return $(this).attr("id", newID)
+		} else {
+			return $(this).attr("id")
+		}
+	},
         do(callback){
             return this.eq(0).each(callback).end();
         },
@@ -168,19 +176,19 @@
 				});
 			}*/
         },
-		center() {
+	center() {
 			this.css("position","absolute");
 			this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() + "px");
 			return this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
 		},
-		middleclick(callback, options){
-			return this.mouseup(function(e){
-				if (e.button === 1){
-					if (options) if (options.preventDefault) e.preventDefault();
+	middleclick(callback, options){
+		return this.mouseup(function(e){
+			if (e.button === 1){
+				if (options) if (options.preventDefault) e.preventDefault();
 					callback.call(this,e);
-				}
-			})
-		},
+			}
+		})
+	},
         fakeClick(){
             return this.each(function(){
                 var middle = $(this).middle();
@@ -196,30 +204,30 @@
                 this.dispatchEvent(click);
             });
         },
-		hidden(display){
-			if (typeof display === "boolean") {dispNone = display}else{dispNone = false};
-			return this.each(function(){
+	hidden(display){
+		if (typeof display === "boolean") {dispNone = display}else{dispNone = false};
+		return this.each(function(){
+			this.style.visibility = 'hidden';
+			if (dispNone) this.style.display = 'none';
+		});
+	},
+	visible(display){
+		if (typeof display === "text") {dispNone = true}else{dispNone = false};
+		return this.each(function(){
+			this.style.visibility = 'visible';
+			if (dispNone) this.style.display = display;
+		});
+	},
+	toggleV(display){
+		if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};			
+		return this.each(function(){
+			if (this.style.visibility === 'visible'){
 				this.style.visibility = 'hidden';
-				if (dispNone) this.style.display = 'none';
-			});
-		},
-		visible(display){
-			if (typeof display === "text") {dispNone = true}else{dispNone = false};
-			return this.each(function(){
+			}else{
 				this.style.visibility = 'visible';
-				if (dispNone) this.style.display = display;
-			});
-		},
-		toggleV(display){
-			if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};			
-			return this.each(function(){
-				if (this.style.visibility === 'visible'){
-					this.style.visibility = 'hidden';
-				}else{
-					this.style.visibility = 'visible';
-				}
-			});
-		}
+			}
+		});
+	}
     });
 }($ || jQuery));
 
