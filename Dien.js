@@ -100,6 +100,9 @@
 	up(selector){
 		return this.parent(selector)
 	},
+	child(selector){
+		return this.children(selector)
+	},
         do(callback){
             return this.eq(0).each(callback).end();
         },
