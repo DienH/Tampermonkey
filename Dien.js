@@ -38,33 +38,33 @@
             let recursive = false, i = 0, searchT = [];
             for(i in arguments){
                 switch (typeof arguments[i]){
-			case ("boolean"):
-				recursive = (recursive) ? true : arguments[i];
-				break;
-			case ("string"):
-                        	searchT.push(arguments[i]);
-				break;
-			case ("object"):
-				break;
-		}
-	    }
-		//select text nodes, possibly filtered by a string
-		$(this).textNodes(searchT, recursive ? true : "").text()/*//.each(function(i){
-			//change text of first textnode
-			this.data;
-		})//*/;
-        },
-	//replace text with given text. Can completely replace a text node containing a string with a new Text
-	replaceText(...args){
-		if (1 < arguments.length < 4){
-			if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
-				$(this).textNodes(searchT, (typeof arguments[2] === "boolean") && arguments[2]).each(function(){
-					this.data=replaceT;
-				});
-				return this;
+					case ("boolean"):
+						recursive = (recursive) ? true : arguments[i];
+						break;
+					case ("string"):
+									searchT.push(arguments[i]);
+						break;
+					case ("object"):
+						break;
+				}
 			}
-		}
-	},
+			//select text nodes, possibly filtered by a string
+			$(this).textNodes(searchT, recursive ? true : "").text()/*//.each(function(i){
+				//change text of first textnode
+				this.data;
+			})//*/;
+        },
+		//replace text with given text. Can completely replace a text node containing a string with a new Text
+		replaceText(...args){
+			if (1 < arguments.length < 4){
+				if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
+					$(this).textNodes(searchT, (typeof arguments[2] === "boolean") && arguments[2]).each(function(){
+						this.data=replaceT;
+					});
+					return this;
+				}
+			}
+		},
         // return href attribute or change href attribute
         href(link){
             changeLink = (typeof link === "string") ? true : false;
@@ -89,46 +89,52 @@
                 }
             }
         },
-	id(newID){
-		if (typeof newID == "string")
-		{
-			return this.attr("id", newID)
-		} else {
-			return this.attr("id")
-		}
-	},
-	up(selector){
-		return this.parent(selector)
-	},
-	child(selector){
-		return this.children(selector)
-	},
-        do(callback){
-            return this.eq(0).each(callback).end();
-        },
-	class(newClassString){
-		let classesList = [], classesAddList = [], classesRemoveList = []
-		if typeof newClassString == undefined){
-			return this.attr("class")
-		} else if (typeof newClassString == "string")
-		{
-			if (newClassString.startsWith("+ ") || newClassString.startsWith("- "))
+		id(newID){
+			if (typeof newID == "string")
 			{
-				newClassString = " "+newClassString
-				classesList = newClassString.split(" + ")
-				classesList = classesList.map(function(t,i){return (i>0 ? "+ ":"")+t}).join("\n\t\n").split(" - ").map(function(t,i){return (i>0 ? "- ":"")+t}).join("\n\t\n").split("\n\t\n").slice(1)
-				classesAddList = (" "+classesList.filter(t=>t.startsWith("+ ")).join(" ")).replace(/ \+ /g, " ")
-				classesRemoveList = (" "+classesList.filter(t=>t.startsWith("- ")).join(" ")).replace(/ - /g, " ")
-				return this.addClass(classesAddList).removeClass(classesRemoveList)
+				return this.attr("id", newID)
 			} else {
-				return this.attr("class", newClassString)
+				return this.attr("id")
 			}
-		} else if (typeof newClassString == "object") {
-			classesAddList = newClassesString["+"]+" "+newClassesString["add"]
-			classesRemoveList = newClassesString["-"]+" "+newClassesString["remove"]
-			return this.addClass(classesAddList).removeClass(classesRemoveList)
-		}
-	},
+		},
+		up(selector){
+			return this.parent(selector)
+		},
+		child(selector){
+			return this.children(selector)
+		},
+			do(callback){
+				return this.eq(0).each(callback).end();
+			},
+		class(newClassString){
+			let classesList = [], classesAddList = [], classesRemoveList = []
+			if (typeof newClassString == "undefined"){
+				return this.attr("class")
+			} else if (typeof newClassString == "string"){
+				if (newClassString.startsWith("+ ") || newClassString.startsWith("- "))
+				{
+					newClassString = " "+newClassString
+					classesList = newClassString.split(" + ")
+					classesList = classesList.map(function(t,i){return (i>0 ? "+ ":"")+t}).join("\n\t\n").split(" - ").map(function(t,i){return (i>0 ? "- ":"")+t}).join("\n\t\n").split("\n\t\n").slice(1)
+					classesAddList = (" "+classesList.filter(t=>t.startsWith("+ ")).join(" ")).replace(/ \+ /g, " ")
+					classesRemoveList = (" "+classesList.filter(t=>t.startsWith("- ")).join(" ")).replace(/ - /g, " ")
+					return this.addClass(classesAddList).removeClass(classesRemoveList)
+				} else {
+					return this.attr("class", newClassString)
+				}
+			} else if (typeof newClassString == "object") {
+				classesAddList = newClassesString["+"]+" "+newClassesString["add"]
+				classesRemoveList = newClassesString["-"]+" "+newClassesString["remove"]
+				return this.addClass(classesAddList).removeClass(classesRemoveList)
+			}
+		},
+		classList(){
+			let classesList = {}
+			$(this).each(function(){
+				Object.values(this.classList).forEach(function(c){classesList[c]=true})
+			})
+			return Object.keys(classesList)
+		},
 
         // jQuery implementation of Mutation observer
         observe(options, callback, name) {
@@ -205,19 +211,19 @@
 				});
 			}*/
         },
-	center() {
-			this.css("position","absolute");
-			this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() + "px");
-			return this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
+		center() {
+				this.css("position","absolute");
+				this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() + "px");
+				return this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
+			},
+		middleclick(callback, options){
+			return this.mouseup(function(e){
+				if (e.button === 1){
+					if (options) if (options.preventDefault) e.preventDefault();
+						callback.call(this,e);
+				}
+			})
 		},
-	middleclick(callback, options){
-		return this.mouseup(function(e){
-			if (e.button === 1){
-				if (options) if (options.preventDefault) e.preventDefault();
-					callback.call(this,e);
-			}
-		})
-	},
         fakeClick(){
             return this.each(function(){
                 var middle = $(this).middle();
@@ -233,30 +239,30 @@
                 this.dispatchEvent(click);
             });
         },
-	hidden(display){
-		if (typeof display === "boolean") {dispNone = display}else{dispNone = false};
-		return this.each(function(){
-			this.style.visibility = 'hidden';
-			if (dispNone) this.style.display = 'none';
-		});
-	},
-	visible(display){
-		if (typeof display === "text") {dispNone = true}else{dispNone = false};
-		return this.each(function(){
-			this.style.visibility = 'visible';
-			if (dispNone) this.style.display = display;
-		});
-	},
-	toggleV(display){
-		if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};			
-		return this.each(function(){
-			if (this.style.visibility === 'visible'){
+		hidden(display){
+			if (typeof display === "boolean") {dispNone = display}else{dispNone = false};
+			return this.each(function(){
 				this.style.visibility = 'hidden';
-			}else{
+				if (dispNone) this.style.display = 'none';
+			});
+		},
+		visible(display){
+			if (typeof display === "text") {dispNone = true}else{dispNone = false};
+			return this.each(function(){
 				this.style.visibility = 'visible';
-			}
-		});
-	}
+				if (dispNone) this.style.display = display;
+			});
+		},
+		toggleV(display){
+			if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};			
+			return this.each(function(){
+				if (this.style.visibility === 'visible'){
+					this.style.visibility = 'hidden';
+				}else{
+					this.style.visibility = 'visible';
+				}
+			});
+		}
     });
 }($ || jQuery));
 
@@ -336,4 +342,3 @@ function JSON2CSV(JSONdata, title){
 }
 
 addFn([getPath, getSearchParams,download,log,addFn, JSON2CSV]);
-
