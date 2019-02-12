@@ -341,4 +341,8 @@ function JSON2CSV(JSONdata, title){
     return csv.join('\r\n');
 }
 
+String.prototype.capitalize = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase()
+}
+
 addFn([getPath, getSearchParams,download,log,addFn, JSON2CSV]);
