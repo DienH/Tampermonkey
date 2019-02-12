@@ -108,7 +108,9 @@
         },
 	class(newClassString){
 		let classesList = [], classesAddList = [], classesRemoveList = []
-		if (typeof newClassString == "string")
+		if typeof newClassString == undefined){
+			return this.attr("class")
+		} else if (typeof newClassString == "string")
 		{
 			if (newClassString.startsWith("+ ") || newClassString.startsWith("- "))
 			{
