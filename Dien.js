@@ -261,30 +261,38 @@
                 this.dispatchEvent(click);
             });
         },
-		hidden(display){
-			if (typeof display === "boolean") {dispNone = display}else{dispNone = false};
-			return this.each(function(){
+	hidden(display){
+		if (typeof display === "boolean") {dispNone = display}else{dispNone = false};
+		return this.each(function(){
+			this.style.visibility = 'hidden';
+			if (dispNone) this.style.display = 'none';
+		});
+	},
+	visible(display){
+		if (typeof display === "text") {dispNone = true}else{dispNone = false};
+		return this.each(function(){
+			this.style.visibility = 'visible';
+			if (dispNone) this.style.display = display;
+		});
+	},
+	toggleV(display){
+		if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};			
+		return this.each(function(){
+			if (this.style.visibility === 'visible'){
 				this.style.visibility = 'hidden';
-				if (dispNone) this.style.display = 'none';
-			});
-		},
-		visible(display){
-			if (typeof display === "text") {dispNone = true}else{dispNone = false};
-			return this.each(function(){
+			}else{
 				this.style.visibility = 'visible';
-				if (dispNone) this.style.display = display;
-			});
-		},
-		toggleV(display){
-			if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};			
-			return this.each(function(){
-				if (this.style.visibility === 'visible'){
-					this.style.visibility = 'hidden';
-				}else{
-					this.style.visibility = 'visible';
-				}
-			});
+			}
+		});
+	},
+	log(...thing){
+		if (thing.length){
+			console.log(...thing);
+		} else {
+			console.log(this);
 		}
+    		return this
+	}
     });
 }($ || jQuery));
 
