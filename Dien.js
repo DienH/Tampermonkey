@@ -77,7 +77,7 @@
             return $(this).attr("src");
         },
         //attribute or property shortcut
-        a(array, attribute, ?value){
+        a(array, attribute, value){
 		if (typeof array !== "boolean"){
 			value = attribute
 			attribute = array
