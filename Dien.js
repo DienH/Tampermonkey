@@ -287,7 +287,11 @@
 	},
 	log(...thing){
 		if (thing.length){
-			console.log(...thing);
+			if (typeof thing[0] == "function"){
+				console.log(thing[0](this))
+			}else{
+				console.log(...thing);
+			}
 		} else {
 			console.log(this);
 		}
