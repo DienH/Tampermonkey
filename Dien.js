@@ -88,7 +88,7 @@
             if (useAttr){
                 if (typeof value === "undefined"){
 			if (array){
-				let elements = this, vals = [];
+				let elements = $(this), vals = [];
 				for(var i=0;typeof(elements[i])!='undefined';vals.push(elements[i++].getAttribute(attribute)));
 				return vals
 			} else {
@@ -100,7 +100,7 @@
             }else{
                 if (typeof value === "undefined"){
 			if (array){
-				let elements = this, vals = [];
+				let elements = $(this), vals = [];
 				for(var i=0;typeof(elements[i])!='undefined';vals.push(elements[i++][attribute]));
 				return vals
 			} else {
