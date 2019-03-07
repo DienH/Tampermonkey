@@ -42,7 +42,7 @@
 						recursive = (recursive) ? true : arguments[i];
 						break;
 					case ("string"):
-									searchT.push(arguments[i]);
+						searchT.push(arguments[i]);
 						break;
 					case ("object"):
 						break;
@@ -54,87 +54,109 @@
 				this.data;
 			})//*/;
         },
-		//replace text with given text. Can completely replace a text node containing a string with a new Text
-		replaceText(...args){
-			if (1 < arguments.length < 4){
-				if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
-					$(this).textNodes(searchT, (typeof arguments[2] === "boolean") && arguments[2]).each(function(){
-						this.data=replaceT;
-					});
-					return this;
-				}
+	//replace text with given text. Can completely replace a text node containing a string with a new Text
+	replaceText(...args){
+		if (1 < arguments.length < 4){
+			if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
+				$(this).textNodes(searchT, (typeof arguments[2] === "boolean") && arguments[2]).each(function(){
+					this.data=replaceT;
+				});
+				return this;
 			}
-		},
+		}
+	},
         // return href attribute or change href attribute
         href(link){
             changeLink = (typeof link === "string") ? true : false;
             if (changeLink) return $(this).attr("href", link);
             return $(this).attr("href");
         },
+        src(link){
+            changeLink = (typeof link === "string") ? true : false;
+            if (changeLink) return $(this).attr("src", link);
+            return $(this).attr("src");
+        },
         //attribute or property shortcut
-        a(attribute, value){
+        a(array, attribute, ?value){
+		if (typeof array !== "boolean"){
+			value = attribute
+			attribute = array
+			array = false
+		}
             let attr = $(this).attr(attribute);
             let useAttr = (typeof attr === "undefined") ? false : true;
             if (useAttr){
                 if (typeof value === "undefined"){
-                    return $(this).attr(attribute);
+			if (array){
+				let elements = this, vals = [];
+				for(var i=0;typeof(elements[i])!='undefined';vals.push(elements[i++].getAttribute(attribute)));
+				return vals
+			} else {
+				return attr;
+			}
                 }else{
                     return $(this).attr(attribute, value);
                 }
             }else{
                 if (typeof value === "undefined"){
-                    return $(this).prop(attribute);
+			if (array){
+				let elements = this, vals = [];
+				for(var i=0;typeof(elements[i])!='undefined';vals.push(elements[i++][attribute]));
+				return vals
+			} else {
+                    		return $(this).prop(attribute);
+			}
                 }else{
                     return $(this).prop(attribute, value);
                 }
             }
         },
-		id(newID){
-			if (typeof newID == "string")
+	id(newID){
+		if (typeof newID == "string")
+		{
+			return this.attr("id", newID)
+		} else {
+			return this.attr("id")
+		}
+	},
+	up(selector){
+		return this.parent(selector)
+	},
+	child(selector){
+		return this.children(selector)
+	},
+		do(callback){
+			return this.eq(0).each(callback).end();
+		},
+	class(newClassString){
+		let classesList = [], classesAddList = [], classesRemoveList = []
+		if (typeof newClassString == "undefined"){
+			return this.attr("class")
+		} else if (typeof newClassString == "string"){
+			if (newClassString.startsWith("+ ") || newClassString.startsWith("- "))
 			{
-				return this.attr("id", newID)
-			} else {
-				return this.attr("id")
-			}
-		},
-		up(selector){
-			return this.parent(selector)
-		},
-		child(selector){
-			return this.children(selector)
-		},
-			do(callback){
-				return this.eq(0).each(callback).end();
-			},
-		class(newClassString){
-			let classesList = [], classesAddList = [], classesRemoveList = []
-			if (typeof newClassString == "undefined"){
-				return this.attr("class")
-			} else if (typeof newClassString == "string"){
-				if (newClassString.startsWith("+ ") || newClassString.startsWith("- "))
-				{
-					newClassString = " "+newClassString
-					classesList = newClassString.split(" + ")
-					classesList = classesList.map(function(t,i){return (i>0 ? "+ ":"")+t}).join("\n\t\n").split(" - ").map(function(t,i){return (i>0 ? "- ":"")+t}).join("\n\t\n").split("\n\t\n").slice(1)
-					classesAddList = (" "+classesList.filter(t=>t.startsWith("+ ")).join(" ")).replace(/ \+ /g, " ")
-					classesRemoveList = (" "+classesList.filter(t=>t.startsWith("- ")).join(" ")).replace(/ - /g, " ")
-					return this.addClass(classesAddList).removeClass(classesRemoveList)
-				} else {
-					return this.attr("class", newClassString)
-				}
-			} else if (typeof newClassString == "object") {
-				classesAddList = newClassesString["+"]+" "+newClassesString["add"]
-				classesRemoveList = newClassesString["-"]+" "+newClassesString["remove"]
+				newClassString = " "+newClassString
+				classesList = newClassString.split(" + ")
+				classesList = classesList.map(function(t,i){return (i>0 ? "+ ":"")+t}).join("\n\t\n").split(" - ").map(function(t,i){return (i>0 ? "- ":"")+t}).join("\n\t\n").split("\n\t\n").slice(1)
+				classesAddList = (" "+classesList.filter(t=>t.startsWith("+ ")).join(" ")).replace(/ \+ /g, " ")
+				classesRemoveList = (" "+classesList.filter(t=>t.startsWith("- ")).join(" ")).replace(/ - /g, " ")
 				return this.addClass(classesAddList).removeClass(classesRemoveList)
+			} else {
+				return this.attr("class", newClassString)
 			}
-		},
-		classList(){
-			let classesList = {}
-			$(this).each(function(){
-				Object.values(this.classList).forEach(function(c){classesList[c]=true})
-			})
-			return Object.keys(classesList)
-		},
+		} else if (typeof newClassString == "object") {
+			classesAddList = newClassesString["+"]+" "+newClassesString["add"]
+			classesRemoveList = newClassesString["-"]+" "+newClassesString["remove"]
+			return this.addClass(classesAddList).removeClass(classesRemoveList)
+		}
+	},
+	classList(){
+		let classesList = {}
+		$(this).each(function(){
+			Object.values(this.classList).forEach(function(c){classesList[c]=true})
+		})
+		return Object.keys(classesList)
+	},
 
         // jQuery implementation of Mutation observer
         observe(options, callback, name) {
