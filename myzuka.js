@@ -593,7 +593,7 @@ h1, h2, h3, h4 {font-family: Tahoma,Geneva,sans-serif!important;font-weight: bol
 .jp-controls .jp-progress {padding:0;}
 .header div.logo {background:initial;}
 div.logo a {color: #f96913;font-size: 30px;font-weight: bolder;margin: -12px;margin-left: 15px;}
-div.logo a:before {content:"muzyka";}
+div.logo a:before {content:"myzuka";font-family: Broadway;font-size: 26px;}
 #playerContextMenu {display:none;position:fixed!important;top:50px;left:50px;}
 #playerContextMenu.ui-menu-icons .ui-menu-item {padding-left:0;}
 #playerContextMenu ul .ui-menu-item {padding-left:5px;white-space:nowrap;}
