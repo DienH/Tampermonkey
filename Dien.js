@@ -350,17 +350,18 @@ function addFn(func) {
     document.head.appendChild(dienScript);
 }
 
-function getSearchParams(){
-	let trimmedSearch = location.search.substring(1);
-
-	return trimmedSearch?JSON.parse(
-		'{"' + trimmedSearch.replace(/&/g, '","').replace(/=/g,'":"') + '"}', 
-		function(key, value) { 
-			return key===""?value:decodeURIComponent(value);
-		}
-	)
-	:
-	{};
+function getSearchParams(url){
+	let searchParams = "", searchParamsObject = {}
+	if (typeof url == "string"){
+		try{url = new URL(url)}
+		catch{searchParams = new URLSearchParams(url)}
+	}
+	if (!searchParams){
+		searchParams = url instanceof URL ? url.searchParams() : searchParams = new URLSearchParams(location.search)
+	}
+	
+	searchParams.forEach((v,k)=>searchParamsObject[k]=v)
+	return searchParams;
 }
 
 function JSON2CSV(JSONdata, title){
