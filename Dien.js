@@ -357,7 +357,7 @@ function getSearchParams(url){
 		catch{searchParams = new URLSearchParams(url)}
 	}
 	if (!searchParams){
-		searchParams = url instanceof URL ? url.searchParams() : searchParams = new URLSearchParams(location.search)
+		searchParams = url instanceof URL ? url.searchParams : searchParams = new URLSearchParams(location.search)
 	}
 	
 	searchParams.forEach((v,k)=>searchParamsObject[k]=v)
