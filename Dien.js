@@ -361,7 +361,7 @@ function getSearchParams(url){
 	}
 	
 	searchParams.forEach((v,k)=>searchParamsObject[k]=v)
-	return searchParams;
+	return searchParamsObject;
 }
 
 function JSON2CSV(JSONdata, title){
