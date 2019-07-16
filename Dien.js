@@ -296,6 +296,12 @@
 			console.log(this);
 		}
     		return this
+	},
+	lt(index){
+		return this.slice(0,index)
+	},
+	gt(index){
+		return this.slice(index+1)
 	}
     });
 }($ || jQuery));
