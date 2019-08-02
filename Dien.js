@@ -111,8 +111,16 @@
                 }
             }
         },
+	src(newSrc){
+		if (typeof newSrc == "string" || typeof newSrc == "function")
+		{
+			return this.attr("id", newSrc)
+		} else {
+			return this.attr("id")
+		}
+	},
 	id(newID){
-		if (typeof newID == "string")
+		if (typeof newID == "string" || typeof newID == "function")
 		{
 			return this.attr("id", newID)
 		} else {
