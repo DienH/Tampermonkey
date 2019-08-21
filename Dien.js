@@ -312,6 +312,13 @@
 		return this.slice(index+1)
 	}
     });
+	$.waitFor = async selector => {
+		let $selection
+	   		while ( ($selection = $(selector)).length === 0) {
+			await new Promise( resolve => requestAnimationFrame(resolve) )
+	 	   }
+	    	return $selection;
+	}
 }($ || jQuery));
 
 function log(...thing){
@@ -335,6 +342,14 @@ function download(data, filename, type) {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
     }, 0);
+}
+
+function async waitForElement(selector) {
+    let $selection
+    while ( ($selection = $(selector)).length === 0) {
+        await new Promise( resolve => requestAnimationFrame(resolve) )
+    }
+    return $selection;
 }
 
 function getPath(win, n){
