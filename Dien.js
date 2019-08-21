@@ -324,6 +324,7 @@
 function log(...thing){
     return console.log(...thing);
 }
+
 function download(data, filename, type) {
     let url,a = document.createElement("a"), file
     try{
@@ -344,7 +345,7 @@ function download(data, filename, type) {
     }, 0);
 }
 
-function async waitForElement(selector) {
+async function waitForElement(selector) {
     let $selection
     while ( ($selection = $(selector)).length === 0) {
         await new Promise( resolve => requestAnimationFrame(resolve) )
