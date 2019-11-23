@@ -361,8 +361,10 @@ function getPath(win, n){
 	href["path"] = path;
     href.splice(0,1);
     if (subpath && href[subpath]) {
+	    href[subpath].params = getSearchParams(win.location.search)
         return href[subpath];
     }else{
+	    href.params = getSearchParams(win.location.search)
         return href;
     }
 }
@@ -383,11 +385,10 @@ function addFn(func) {
 function getSearchParams(url){
 	let searchParams = "", searchParamsObject = {}
 	if (typeof url == "string"){
-		try{url = new URL(url)}
+		try{url = new URL(url);searchParams =  url.searchParams;}
 		catch{searchParams = new URLSearchParams(url)}
-	}
-	if (!searchParams){
-		searchParams = url instanceof URL ? url.searchParams : searchParams = new URLSearchParams(location.search)
+	} else {
+		searchParams = new URLSearchParams(location.search)
 	}
 	
 	searchParams.forEach((v,k)=>searchParamsObject[k]=v)
