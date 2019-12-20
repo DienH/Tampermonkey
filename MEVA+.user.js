@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.1
+// @version      0.2.2
 // @description  Help with MEVA
 // @author       You
 // @match        http*://meva/*
@@ -10,6 +10,8 @@
 // require      https://rawgit.com/DienH/Tampermonkey/master/Dien.js
 // require      https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.2/math.js
 // @grant        unsafeWindow
+// @grant        GM_getValue
+// @grant        GM_setValue
 // ==/UserScript==
 
 
@@ -174,12 +176,15 @@ retourPerm.buttons.save.innerText = "Valider"
 retourPerm.buttons.clear.innerText = "Retour"
 retourPerm.buttons.clear.onclick = ()=>{retourPerm.hide();sortiePerm.show()}
 retourPerm.on('show', ()=>{
- if(retourPerm.days == 2){
+ if(sortiePerm.days == 2){
  let i =7
- while(i< 21){(i > Number(sortiePerm.hours.currentValue)) ? retourPerm.hours[i++].setAttribute('disabled', true) : retourPerm.hours[i++].removeAttribute('disabled')})
+ while(i< 21){(i > Number(sortiePerm.hours.currentValue)) ? retourPerm.hours[i++].setAttribute('disabled', true) : retourPerm.hours[i++].removeAttribute('disabled')}
 }})
 
-sortiePerm.on('save', data=>{retourPerm.show()})
+sortiePerm.on('save', data=>{
+ if(sortiePerm.days == 2){retourPerm.hours[Number(sortiePerm.hours.currentValue)].removeAttribute('disabled')
+ retourPerm.hours[Number(sortiePerm.hours.currentValue)].click()}
+ retourPerm.show()})
 
 datePicker.show()
 document.body.sortiePerm = sortiePerm
@@ -192,16 +197,17 @@ document.body.datePicker = datePicker
 
 
 function clickLogin(ev){
+    let Meva = GM_getValue('Meva',{"user":"", "password":""})
     if (document.querySelector("input[name='password']")){
         document.querySelector("input[name='password']").addEventListener('focus', ev=>{
-            document.querySelector("input[name='password']").value="LDT9jmRum"
+            document.querySelector("input[name='password']").value=Meva.password
         })
         window.removeEventListener('mousemove', clickLogin)
     }
     if (document.querySelector("div.GKJG3BODITB")){
         document.querySelector("div.GKJG3BODITB").addEventListener('click', ev=>{
-            if (document.querySelector("input[name='j_username']")) document.querySelector("input[name='j_username']").value="AHARRY"
-            if (document.querySelector("input[type='password']")) document.querySelector("input[type='password']").value="LDT9jmRum"
+            if (document.querySelector("input[name='j_username']")) document.querySelector("input[name='j_username']").value=Meva.user
+            if (document.querySelector("input[type='password']")) document.querySelector("input[type='password']").value=Meva.password
             if (document.querySelector("button.GKJG3BODOY")) document.querySelector("button.GKJG3BODOY").click()
             if (document.querySelector("button[tabindex='4']")) document.querySelector("button[tabindex='4']").click()
         })
