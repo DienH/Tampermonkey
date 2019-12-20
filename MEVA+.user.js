@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Help with MEVA
 // @author       You
 // @match        http*://meva/*
+// @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
 // @require      https://code.jquery.com/jquery.min.js
 // require      https://rawgit.com/DienH/Tampermonkey/master/Dien.js
 // require      https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.2/math.js
