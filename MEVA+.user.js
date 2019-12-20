@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.2.1
 // @description  Help with MEVA
 // @author       You
 // @match        http*://meva/*
@@ -92,6 +92,7 @@ var datePicker = new Litepicker({
     sortiePerm.hours[9].click()
    }
   }
+  retourPerm.hide()
   sortiePerm.days =  (d2-d1) == 0 ? 0 : ((d2-d1) == 86400000 ? 1 : 2)
   sortiePerm.show()
  }
@@ -140,15 +141,13 @@ retourPerm.minutes[30]=retourPerm.minutes.element.lastChild.children[1]
 var currentHour = (new Date()).getHours() + 1
 sortiePerm.minutes[0].click()
 retourPerm.minutes[0].click()
-//console.log(sortiePerm.hours[currentHour > 23 ? 1 : currentHour].disabled ? sortiePerm.hours[9].click() : sortiePerm.hours[currentHour > 23 ? 9 : currentHour].click())
-//retourPerm.hours[currentHour+4 > 23 ? 1 : currentHour+4].disabled ? retourPerm.hours[18].click() : retourPerm.hours[currentHour+4 > 23 ? 18 : currentHour+4].click()
 
 sortiePerm.hours.lastValue = sortiePerm.hours.currentValue
 sortiePerm.hours.element.onclick = (ev)=> {
  if (ev.target.classList.contains('selected') || (sortiePerm.hours.lastValue != sortiePerm.hours.currentValue))
  {
   sortiePerm.hours.lastValue = sortiePerm.hours.currentValue
-  sortiePerm.buttons.element.querySelector('div.nj-action-button.nj-action-save').click()
+  sortiePerm.buttons.save.click()
  }
 }
 
@@ -164,7 +163,9 @@ retourPerm.hours.element.onclick = (ev)=> {
 var buttonssortiePerm = sortiePerm.container.lastChild, buttonsretourPerm = retourPerm.container.lastChild
 sortiePerm.buttons.save.innerText = "Heure retour"
 sortiePerm.buttons.clear.innerText = "Retour"
-sortiePerm.buttons.clear.onclick = ()=>{sortiePerm.hide();datePicker.show()}
+sortiePerm.buttons.clear.onclick = ()=>{
+ sortiePerm.hide();
+ datePicker.show()}
 
 sortiePerm.buttons.close.innerText = retourPerm.buttons.close.innerText = "Fermer"
 
@@ -172,6 +173,11 @@ retourPerm.buttons.save.innerText = "Valider"
 
 retourPerm.buttons.clear.innerText = "Retour"
 retourPerm.buttons.clear.onclick = ()=>{retourPerm.hide();sortiePerm.show()}
+retourPerm.on('show', ()=>{
+ if(retourPerm.days == 2){
+ let i =7
+ while(i< 21){(i > Number(sortiePerm.hours.currentValue)) ? retourPerm.hours[i++].setAttribute('disabled', true) : retourPerm.hours[i++].removeAttribute('disabled')})
+}})
 
 sortiePerm.on('save', data=>{retourPerm.show()})
 
