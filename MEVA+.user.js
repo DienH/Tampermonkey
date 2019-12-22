@@ -23,8 +23,7 @@
         window.addEventListener('mousemove', clickLogin)
         setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
         console.log($)
-    }
-    if (location.href.search("popupContents.jsp")+1){
+    } else if (location.href.search("popupContents.jsp")+1){
         let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link')
         dateScript.src = "https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"
         hourScript.src = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.js"
@@ -37,6 +36,9 @@
         window.addEventListener('mousemove', permPicker)
         //document.querySelector('input[name="Datebox"]').type="date"
         //document.querySelector('input[name="Datebox0"]').type="date"
+    } else if (location.href.search("/heoclient-application-web/heoPrompt.jsp")+1){
+        if (document.getElementById('preHeaderMarkup').innerText == "Saisissez une date et heure de début"){
+        }
     }
     window.addEventListener('keydown', ev=>{
         if (ev.key=="²"){setTimeout(()=>{
