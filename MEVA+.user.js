@@ -177,9 +177,12 @@ retourPerm.buttons.clear.innerText = "Retour"
 retourPerm.buttons.clear.onclick = ()=>{retourPerm.hide();sortiePerm.show()}
 retourPerm.on('show', ()=>{
  if(sortiePerm.days == 2){
- let i =7
- while(i< 21){(i > Number(sortiePerm.hours.currentValue)) ? retourPerm.hours[i++].setAttribute('disabled', true) : retourPerm.hours[i++].removeAttribute('disabled')}
-}})
+  let i =7
+  while(i< 21){(i > Number(sortiePerm.hours.currentValue)) ? retourPerm.hours[i++].setAttribute('disabled', true) : retourPerm.hours[i++].removeAttribute('disabled')}
+ } else {
+  for (let i = 7 ; i < 21 ; i++){retourPerm.hours[i].removeAttribute('disabled')}
+ }
+})
 
 sortiePerm.on('save', data=>{
  if(sortiePerm.days == 2){retourPerm.hours[Number(sortiePerm.hours.currentValue)].removeAttribute('disabled')
