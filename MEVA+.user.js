@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.2
+// @version      0.2.3
 // @description  Help with MEVA
 // @author       You
 // @match        http*://meva/*
@@ -19,6 +19,7 @@
     var µ = unsafeWindow
     if (!$) {var $ = µ.$}
     if (location.href.search("initSSS")+1){
+        if (!GM_getValue("Meva",{}).length){let Meva = {};Meva.user = prompt("Utilisateur ?","");Meva.password = prompt("Mot de passe ?","");GM_setValue("Meva",Meva)}
         window.addEventListener('mousemove', clickLogin)
         setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
         console.log($)
