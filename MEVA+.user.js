@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.3
+// @version      0.2.4
 // @description  Help with MEVA
 // @author       You
 // @match        http*://meva/*
@@ -17,27 +17,30 @@
 
 (function() {
     var µ = unsafeWindow
-    if (!$) {var $ = µ.$}
+    let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link')
+    dateScript.src = "https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"
+    hourScript.src = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.js"
+    hourCSS.type = "text/css"
+    hourCSS.rel = "stylesheet"
+    hourCSS.href = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.css"
+    if (!$) {var $ = $ || µ.$ || window.parent.$}
     if (location.href.search("initSSS")+1){
-        if (!GM_getValue("Meva",{}).length){let Meva = {};Meva.user = prompt("Utilisateur ?","");Meva.password = prompt("Mot de passe ?","");GM_setValue("Meva",Meva)}
-        window.addEventListener('mousemove', clickLogin)
+        //if (!GM_getValue("Meva",{}).length){let Meva = {};Meva.user = prompt("Utilisateur ?","");Meva.password = prompt("Mot de passe ?","");GM_setValue("Meva",Meva)}
+        if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
         setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
-        console.log($)
     } else if (location.href.search("popupContents.jsp")+1){
-        let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link')
-        dateScript.src = "https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"
-        hourScript.src = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.js"
-        hourCSS.type = "text/css"
-        hourCSS.rel = "stylesheet"
-        hourCSS.href = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.css"
         document.head.append(hourCSS)
         document.head.append(hourScript)
         document.head.append(dateScript)
         window.addEventListener('mousemove', permPicker)
-        //document.querySelector('input[name="Datebox"]').type="date"
-        //document.querySelector('input[name="Datebox0"]').type="date"
     } else if (location.href.search("/heoclient-application-web/heoPrompt.jsp")+1){
-        if (document.getElementById('preHeaderMarkup').innerText == "Saisissez une date et heure de début"){
+        let promptTitle = document.getElementById('preHeaderMarkup').innerText
+        if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle =="Durée de la prescription: (avec une date et heure de fin optionnelle)") || promptTitle ==  "Date/time of BMT:"){
+            document.head.append(hourCSS)
+            document.head.append(hourScript)
+            document.head.append(dateScript)
+            setTimeout(dateHourPres, 500)
+            //window.addEventListener('mousemove', dateHourPres)
         }
     }
     window.addEventListener('keydown', ev=>{
@@ -51,6 +54,103 @@
     })
 })();
 
+function dateHourPres(ev){
+    if (typeof datePresPicker != "undefined"){
+        window.removeEventListener('mousemove', dateHourPres)
+        return
+    }
+
+    let styleEl = document.createElement('style')
+    styleEl.innerHTML = `
+.nj-picker .nj-item {padding:0.2em!important;}
+.nj-picker-container {font-size: small!important;max-width: 300px!important;min-width: 200px!important;right: 100px; position: fixed;}
+.nj-picker .nj-hours-container .nj-hours-wrapper {gap: 0.25em!important;}
+.nj-action-container {grid-template-columns: repeat(2,1fr)!important;}
+.nj-overlay {display:none!important}
+`
+    document.head.append(styleEl)
+
+    if (typeof Litepicker != 'undefined'){
+        let dateHourScriptInit = document.createElement('script')
+        dateHourScriptInit.innerHTML = `
+if (!$) {var $ = $ || window.parent.$}
+var today = new Date(), textHourEl = document.createElement('input'), textDateEl = document.createElement('input'), HEO_input = window.parent.document.getElementById('HEO_INPUT')
+textDateEl.type = textHourEl.type = "text"
+textDateEl.name = textHourEl.name = "dateHourPres"
+textDateEl.style.display = textHourEl.style.display = "none"
+document.body.append(textHourEl)
+document.body.append(textDateEl)
+var datePresPicker = new Litepicker({
+ //element: window.parent.document.getElementById('HEO_INPUT'),
+ element: textDateEl,
+ format: "DD/MM/YYYY",
+ lang:"fr-FR",
+ autoApply: true,
+ minDate: today.setDate(today.getDate()-2),
+ selectForward: true,
+ onHide: ()=>{HEO_input.value = textDateEl.value; hourPresPicker.show();},
+ onShow: ()=>{$(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 15})}
+});
+
+var hourPresPicker = new NJTimePicker({
+    targetEl: textHourEl,
+    //disabledHours: [0, 1, 2, 3, 4, 5, 23],
+    minutes: [0, 15, 30, 45],
+    texts: {
+        header: 'Heure de prescription',
+        hours: 'Heure',
+        minutes: 'Minutes'
+        },
+    format: '24'
+  });
+
+
+hourPresPicker.buttons.save = hourPresPicker.buttons.element.children[0]
+hourPresPicker.buttons.clear = hourPresPicker.buttons.element.children[1]
+hourPresPicker.buttons.close = hourPresPicker.buttons.element.children[2]
+for (var i = 0 ; i < 24 ; i++){hourPresPicker.hours[i] = hourPresPicker.hours.element.lastChild.children[i]}
+hourPresPicker.minutes[0]=hourPresPicker.minutes.element.lastChild.children[0]
+hourPresPicker.minutes[15]=hourPresPicker.minutes.element.lastChild.children[1]
+hourPresPicker.minutes[30]=hourPresPicker.minutes.element.lastChild.children[2]
+hourPresPicker.minutes[45]=hourPresPicker.minutes.element.lastChild.children[3]
+hourPresPicker.minutes[0].click()
+hourPresPicker.hours[8].click()
+
+hourPresPicker.hours.lastValue = hourPresPicker.hours.currentValue
+hourPresPicker.hours.element.onclick = (ev)=> {
+ if (ev.target.classList.contains('selected') || (hourPresPicker.hours.lastValue != hourPresPicker.hours.currentValue))
+ {
+  hourPresPicker.hours.lastValue = hourPresPicker.hours.currentValue
+  HEO_input.value = textDateEl.value + " " + hourPresPicker.getValue('fullResult')
+  //hourPresPicker.buttons.save.click()
+ }
+}
+
+
+hourPresPicker.buttons.save.innerText = "Valider"
+hourPresPicker.buttons.clear.innerText = "Retour"
+hourPresPicker.buttons.clear.onclick = ()=>{
+ hourPresPicker.hide();
+ datePresPicker.show()}
+
+hourPresPicker.buttons.close.style.display = "none"
+
+
+hourPresPicker.on('save', data=>{
+ HEO_input.value = textDateEl.value + " " + hourPresPicker.getValue('fullResult')
+ const ke = new KeyboardEvent("keydown", {
+    bubbles: true, cancelable: true, keyCode: 13
+ });
+ HEO_input.dispatchEvent(ke);
+})
+
+datePresPicker.show()
+$(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 15})
+
+`
+        document.head.append(dateHourScriptInit)
+    }
+}
 
 function permPicker(ev){
     if (typeof datePicker != "undefined"){
@@ -69,7 +169,7 @@ var datePicker = new Litepicker({
  numberOfMonths: 2,
  numberOfColumns: 2,
  singleMode: false,
- autoApply: true,
+ //autoApply: true,
  minDate: today.setDate(today.getDate()-2),
  maxDays: 2,
  selectForward: true,
@@ -204,12 +304,18 @@ document.body.datePicker = datePicker
 
 function clickLogin(ev){
     let Meva = GM_getValue('Meva',{"user":"", "password":""})
+    window.monitorMouseMove = true
     if (document.querySelector("input[name='password']")){
         document.querySelector("input[name='password']").addEventListener('focus', ev=>{
             document.querySelector("input[name='password']").value=Meva.password
         })
-        window.removeEventListener('mousemove', clickLogin)
     }
+            window.addEventListener('click', ev=>{
+            console.log(ev.target.innerText)
+            if (ev.target.innerText && ev.target.innerText == "AHARRY"){
+                let Meva = GM_getValue("Meva",{})
+                if (document.querySelector("input[type='password']")) document.querySelector("input[type='password']").value=Meva.password}
+        })
     if (document.querySelector("div.GKJG3BODITB")){
         document.querySelector("div.GKJG3BODITB").addEventListener('click', ev=>{
             if (document.querySelector("input[name='j_username']")) document.querySelector("input[name='j_username']").value=Meva.user
