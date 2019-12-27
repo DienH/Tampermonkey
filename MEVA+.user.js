@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.4
+// @version      0.2.5
 // @description  Help with MEVA
 // @author       You
 // @match        http*://meva/*
@@ -17,7 +17,7 @@
 
 (function() {
     var µ = unsafeWindow
-    let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link')
+    let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link'), title = ""
     dateScript.src = "https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"
     hourScript.src = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.js"
     hourCSS.type = "text/css"
@@ -26,22 +26,42 @@
 
     if (!$) {var $ = $ || µ.$ || window.parent.$}
 
-    if (location.href.search("initSSS")+1){
+    if (location.pathname == "/m-eva/"){
+        window.mevaWait = setInterval(()=>{
+            let SSSFrame = document.getElementById('SSSFrame')
+            if (SSSFrame){
+                SSSFrame.onload = ()=>{
+                    SSSFrame.contentWindow.removeEventListener('click', monitorClick)
+                    SSSFrame.contentWindow.addEventListener('click', monitorClick)
+                }
+            }
+        },500)
+
+    }else if (location.href.search("initSSS")+1){
         //if (!GM_getValue("Meva",{}).length){let Meva = {};Meva.user = prompt("Utilisateur ?","");Meva.password = prompt("Mot de passe ?","");GM_setValue("Meva",Meva)}
         if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
-        setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
+        //setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
 
         //$('.GOAX34LJRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyGroupLine').remove()
 
-    } else if (location.href.search("popupContents.jsp")+1){
-        document.head.append(hourCSS)
-        document.head.append(hourScript)
-        document.head.append(dateScript)
-        window.addEventListener('mousemove', permPicker)
+    } else if ((location.href.search("popupContents.jsp")+1) && (title = document.head.querySelector('title'))){
+        switch(title.innerText){
+            case "SORTIETEMPO":
+                document.head.append(hourCSS)
+                document.head.append(hourScript)
+                document.head.append(dateScript)
+                setTimeout(permPicker, 250)
+                break;
+            case "Examen Tomodensitométrique":
+                break;
+            default:
+                break;
+        }
+        //window.addEventListener('mousemove', permPicker)
     } else if (location.href.search("/heoclient-application-web/heoPrompt.jsp")+1){
         if (document.getElementById('preHeaderMarkup')){
             let promptTitle = document.getElementById('preHeaderMarkup').innerText
-            if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle =="Durée de la prescription: (avec une date et heure de fin optionnelle)") ||
+            if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle.search("(avec une date et heure de fin optionnelle)")+1) ||
                 promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?"){
                 document.head.append(hourCSS)
                 document.head.append(hourScript)
@@ -51,17 +71,6 @@
             }
         }
     }
-    window.addEventListener('keydown', ev=>{
-        if (ev.key=="²"){setTimeout(()=>{
-            if (document.querySelector('#SSSFrame')){
-                let iframeDoc = document.querySelector('#SSSFrame').contentDocument
-                if (iframeDoc.querySelector("input[name='j_username']")){iframeDoc.querySelector("input[name='j_username']").value="AHARRY"}
-                if (iframeDoc.querySelector("input[type='password']")){iframeDoc.querySelector("input[type='password']").value="LDT9jmRum"}
-                if (iframeDoc.querySelector("button.GKJG3BODOY")){iframeDoc.querySelector("button.GKJG3BODOY").click()}
-                if (iframeDoc.querySelector("button[tabindex='4']")) iframeDoc.querySelector("button[tabindex='4']").click()
-            }
-        },10)}
-    })
 })();
 
 function dateHourPres(ev){
@@ -311,6 +320,28 @@ document.body.datePicker = datePicker
     }
 }
 
+function monitorClick(ev){
+    let Meva = GM_getValue('Meva',{"user":"", "password":""})
+    window.monitorClickEnabled = true
+    console.log(ev)
+    if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
+        ev.target.parentElement.nextElementSibling.click()
+        ev.target.lastValue = ev.target.value
+        ev.target.dateWaiterStart = Date.now()
+        ev.target.dateWaiter = setInterval((el)=>{
+            if ((Date.now() - el.dateWaiterStart) > 15000){
+                clearInterval(el.dateWaiter)
+            }else if (el.lastValue != el.value){
+                clearInterval(el.dateWaiter)
+                ev.view.document.querySelector('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button').click()
+            }
+        },250,ev.target)
+    } else if (ev.target.innerText == "AHARRY"){
+        ev.view.document.querySelector("input[name='mevaLockSessionWindowPwField']").value=Meva.password
+        ev.view.document.querySelector("span.GDKHHE1MCB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
+    }
+        //{target:ev.target, delegateTarget:ev.delegateTarget
+}
 
 function clickLogin(ev){
     let Meva = GM_getValue('Meva',{"user":"", "password":""})
