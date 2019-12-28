@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.2.5
 // @description  Help with MEVA
-// @author       You
+// @author       Me
 // @match        http*://meva/*
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
 // @require      https://code.jquery.com/jquery.min.js
@@ -194,9 +194,9 @@ var datePicker = new Litepicker({
  selectForward: true,
  onSelect: (d1, d2)=> {
   datePicker.hide()
-  if ((d2-d1) == 0){
+  if ((d2.getDate()-d1.getDate()) == 0){
    let today = new Date()
-   if ((today - d1) == 0){
+   if ((today.getDate() - d1.getDate()) == 0){
     sortiePerm.hours[14].click()
    } else {
     sortiePerm.hours[9].click()
@@ -210,7 +210,7 @@ var datePicker = new Litepicker({
    }
    retourPerm.hours[18].click()
   } else {
-   if ((today - d1) == 0){
+   if ((today.getDate() - d1.getDate()) == 0){
     sortiePerm.hours[18].click()
    } else {
     sortiePerm.hours[9].click()
