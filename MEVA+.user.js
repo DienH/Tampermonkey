@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.5
+// @version      0.2.6
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -62,7 +62,8 @@
         if (document.getElementById('preHeaderMarkup')){
             let promptTitle = document.getElementById('preHeaderMarkup').innerText
             if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle.search("(avec une date et heure de fin optionnelle)")+1) ||
-                promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?"){
+                promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?" ||
+                promptTitle == "Quand la prescription doit-elle être reprise ?"){
                 document.head.append(hourCSS)
                 document.head.append(hourScript)
                 document.head.append(dateScript)
