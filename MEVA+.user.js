@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.6
+// @version      0.2.7
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -24,9 +24,18 @@
     hourCSS.rel = "stylesheet"
     hourCSS.href = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.css"
 
-    if (!$) {var $ = $ || µ.$ || window.parent.$}
+    if (!$) {var $ = window.jQuery || µ.jQuery || window.parent.jQuery};
 
     if (location.pathname == "/m-eva/"){
+        $('#SSSFrame').load((ev)=>{
+            ev.target.contentWindow.dispatchEvent(new Event('resize'))
+        })
+        /*
+        window.frameWait = setInterval(()=>{
+            console.log($('iframe', $('#SSSFrame')[0].contentDocument).is("#HCP"))
+
+        }, 500)
+        */
         window.mevaWait = setInterval(()=>{
             let SSSFrame = document.getElementById('SSSFrame')
             if (SSSFrame){
@@ -38,6 +47,7 @@
         },500)
 
     }else if (location.href.search("initSSS")+1){
+        // window.dispatchEvent(new Event('resize'));
         //if (!GM_getValue("Meva",{}).length){let Meva = {};Meva.user = prompt("Utilisateur ?","");Meva.password = prompt("Mot de passe ?","");GM_setValue("Meva",Meva)}
         if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
         //setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
