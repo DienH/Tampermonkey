@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.7
+// @version      0.2.8
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -110,8 +110,11 @@ function dateHourPres(ev){
     let styleEl = document.createElement('style')
     styleEl.innerHTML = `
 .nj-picker .nj-item {padding:0.2em!important;}
-.nj-picker-container {font-size: small!important;max-width: 300px!important;min-width: 200px!important;right: 100px; position: fixed;}
-.nj-picker .nj-hours-container .nj-hours-wrapper {gap: 0.25em!important;}
+.nj-picker-container {font-size: small!important;max-width: 300px!important;min-width: 150px!important;right: 100px; bottom:3px; overflow:hidden; position: fixed;}
+.nj-picker .nj-hours-wrapper, .nj-picker .nj-minutes-wrapper {gap: 0.25em!important;}
+.nj-picker .nj-minutes-wrapper {grid-template-columns: repeat(1,1fr)!important;}
+.nj-picker .nj-minutes-container, .nj-picker .nj-hours-container {padding: .5em;display: table-cell;position: static;}
+.nj-picker .nj-hours-container {width:400px;}
 .nj-action-container {grid-template-columns: repeat(2,1fr)!important;}
 .nj-overlay {display:none!important}
 `
@@ -120,7 +123,7 @@ function dateHourPres(ev){
     if (typeof Litepicker != 'undefined'){
         let dateHourScriptInit = document.createElement('script')
         dateHourScriptInit.innerHTML = `
-if (!$) {var $ = $ || window.parent.$}
+if (!$) {var $ = $ || window.parent.jQuery}
 var today = new Date(), textHourEl = document.createElement('input'), textDateEl = document.createElement('input'), HEO_input = window.parent.document.getElementById('HEO_INPUT')
 textDateEl.type = textHourEl.type = "text"
 textDateEl.name = textHourEl.name = "dateHourPres"
@@ -133,10 +136,11 @@ var datePresPicker = new Litepicker({
  format: "DD/MM/YYYY",
  lang:"fr-FR",
  autoApply: true,
+ startDate:Date.now(),
  minDate: today.setDate(today.getDate()-2),
  selectForward: true,
  onHide: ()=>{HEO_input.value = textDateEl.value; hourPresPicker.show();},
- onShow: ()=>{$(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 15})}
+ onShow: ()=>{$(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 0, overflow:"hidden"})}
 });
 
 var hourPresPicker = new NJTimePicker({
@@ -192,7 +196,7 @@ hourPresPicker.on('save', data=>{
 })
 
 datePresPicker.show()
-$(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 15})
+$(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 0, overflow:"hidden"})
 
 `
         document.head.append(dateHourScriptInit)
@@ -207,7 +211,8 @@ function permPicker(ev){
     if (typeof Litepicker != 'undefined'){
         let dateScriptInit = document.createElement('script')
         dateScriptInit.innerHTML = `
-var today = today_min2 = today_plus2 = new Date(Date.now())
+if (!$) {var $ = $ || window.parent.jQuery}
+var today = new Date(Date.now()), today_min2 = new Date(Date.now()), today_plus2 = new Date(Date.now())
 today_min2.setDate(today.getDate()-2)
 today_plus2.setDate(today.getDate()+2)
 var datePicker = new Litepicker({
@@ -219,12 +224,13 @@ var datePicker = new Litepicker({
  numberOfColumns: 2,
  singleMode: false,
  startDate:today,
- endDate:today_plus2,
+ endDate:today,
  minDate: today_min2,
  scrollToDate:true,
  //autoApply: true,
  maxDays: 2,
  selectForward: true,
+ onShow: ()=>{$(datePicker.picker).css({transform:"scale(1.1)", 'font-size':"1em", top:200})},
  onSelect: (d1, d2)=> {
   datePicker.hide()
   if ((d2.getDate()-d1.getDate()) == 0){
@@ -420,3 +426,17 @@ function clickLogin(ev){
         window.removeEventListener('mousemove', clickLogin)
     }
 }
+
+/*
+$.post("http://meva/heoclient-application-web/commander?HEOCMD=@submit", "Datebox=03%2F01%2F2020&Heurebox=18%3A00&DADEINVERSE=Vendredi&Datebox0=05%2F01%2F2020&Heurebox0=18%3A00&DATEINVERSE=Dimanche&Dur=48&Accompagne=&btPrescrire=Valider",(data)=>{
+    $('#SSSFrame').each((i,el)=>{
+        el.contentWindow.processStatus()
+        el.contentWindow.waitHeoPrompt();
+        el.contentWindow.reloadPrompt();})
+    if (processStatus){
+        processStatus()
+        waitHeoPrompt();
+        reloadPrompt();
+    }
+})
+*/
