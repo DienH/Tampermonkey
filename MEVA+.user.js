@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.8
+// @version      0.2.7
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -68,6 +68,8 @@
         //setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
 
         //$('.GOAX34LJRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyGroupLine').remove()
+
+    } else if ((location.href.search('heoOutput.jsp')+1)){
 
     } else if ((location.href.search("popupContents.jsp")+1) && (title = document.head.querySelector('title'))){
         switch(title.innerText){
