@@ -207,7 +207,9 @@ function permPicker(ev){
     if (typeof Litepicker != 'undefined'){
         let dateScriptInit = document.createElement('script')
         dateScriptInit.innerHTML = `
-var today = new Date()
+var today = today_min2 = today_plus2 = new Date(Date.now())
+today_min2.setDate(today.getDate()-2)
+today_plus2.setDate(today.getDate()+2)
 var datePicker = new Litepicker({
  element: document.querySelector('input[name="Datebox"]'),
  elementEnd: document.querySelector('input[name="Datebox0"]'),
@@ -216,8 +218,11 @@ var datePicker = new Litepicker({
  numberOfMonths: 2,
  numberOfColumns: 2,
  singleMode: false,
+ startDate:today,
+ endDate:today_plus2,
+ minDate: today_min2,
+ scrollToDate:true,
  //autoApply: true,
- minDate: today.setDate(today.getDate()-2),
  maxDays: 2,
  selectForward: true,
  onSelect: (d1, d2)=> {
