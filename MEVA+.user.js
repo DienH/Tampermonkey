@@ -17,6 +17,8 @@
 
 (function() {
     var µ = unsafeWindow
+    if (!$) {var $ = window.jQuery || µ.jQuery || window.parent.jQuery};
+    if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""})}
     let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link'), title = ""
     dateScript.src = "https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"
     hourScript.src = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.js"
@@ -24,7 +26,6 @@
     hourCSS.rel = "stylesheet"
     hourCSS.href = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.css"
 
-    if (!$) {var $ = window.jQuery || µ.jQuery || window.parent.jQuery};
 
     if (location.pathname == "/m-eva/"){
         $('#SSSFrame').load((ev)=>{
