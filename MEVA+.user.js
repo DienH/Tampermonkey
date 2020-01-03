@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.7
+// @version      0.2.8
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -16,17 +16,9 @@
 
 
 (function() {
-    function NZb(a, b, c) {
-    var d,e;
-e=JSON.parse(a.e.j.c[12])
-e.groupsBy=[]
-a.e.j.c[12]=JSON.stringify(e)
-    d = xZb(a.e);
-    S$b() && T$b(U$b(a.d, a.b, 'requestSerialized'));
-    return IZb(a.f, c, a.b, a.d, d, b)
-}
+
     var µ = unsafeWindow
-    if (!$) {var $ = window.jQuery || µ.jQuery || window.parent.jQuery};
+    if (!$ || !$.fn) {var $ = window.jQuery || unsafeWindow.jQuery || window.parent.jQuery};
     if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""})}
     let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link'), title = ""
     dateScript.src = "https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"
@@ -36,16 +28,29 @@ a.e.j.c[12]=JSON.stringify(e)
     hourCSS.href = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.css"
 
 
+
     if (location.pathname == "/m-eva/"){
         $('#SSSFrame').load((ev)=>{
-            ev.target.contentWindow.dispatchEvent(new Event('resize'))
+            let SSSFrame_doc = ev.target.contentDocument, SSSFrame_win = ev.target.contentWindow
+            let SSSFrame_wait = setInterval(()=>{
+                if ($('div.GDKHHE1NSB-fr-mckesson-meva-application-web-gwt-commun-client-ressource-MevaCSS-headerBackground', SSSFrame_doc).length){
+                    SSSFrame_win.dispatchEvent(new Event('resize'))
+                    clearInterval(SSSFrame_wait)
+                    console.log('Resize ma gueule')
+                }
+            }, 500)
         })
-        /*
         window.frameWait = setInterval(()=>{
-            console.log($('iframe', $('#SSSFrame')[0].contentDocument).is("#HCP"))
-
+            let $frames = $('iframe', $('#SSSFrame')[0].contentDocument)
+            if ($frames.is("#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal")){
+                $frames.filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal').each(
+                    (i, el)=>{
+                        console.log(el.contentWindow.NZb)
+                        if (el.contentWindow.NZb) clearInterval(window.frameWait)
+                    }
+                )
+            }
         }, 500)
-        */
         window.mevaWait = setInterval(()=>{
             let SSSFrame = document.getElementById('SSSFrame')
             if (SSSFrame){
@@ -342,9 +347,11 @@ document.body.datePicker = datePicker
 }
 
 function monitorClick(ev){
+    if (!$ || !$.fn) {var $ = window.jQuery || unsafeWindow.jQuery || window.parent.jQuery};
+
     let Meva = GM_getValue('Meva',{"user":"", "password":""})
     window.monitorClickEnabled = true
-    console.log(ev)
+    console.log(ev.target)
     if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
         ev.target.parentElement.nextElementSibling.click()
         ev.target.lastValue = ev.target.value
@@ -360,8 +367,27 @@ function monitorClick(ev){
     } else if (ev.target.innerText == "AHARRY"){
         ev.view.document.querySelector("input[name='mevaLockSessionWindowPwField']").value=Meva.password
         ev.view.document.querySelector("span.GDKHHE1MCB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
+    } else if (ev.target.classList.contains('stackItemMiddleCenterInner') && ev.target.innerText == "Groupé par"){
+        $('label:contains("Plannings"):eq(0)', ev.view.document).parent().after($('<div><button id="CleanGroupsByButton" style="margin-left:50px;background:#528fff;">Effacer</button></div>'))
+    } else if (ev.target.id == "CleanGroupsByButton"){
+        let repaired_NZb = `
+NZb = function (a, b, c) {
+    var d,e;
+    e=JSON.parse(a.e.j.c[12]);e.groupsBy=[];a.e.j.c[12]=JSON.stringify(e);
+    d = xZb(a.e);
+    S$b() && T$b(U$b(a.d, a.b, 'requestSerialized'));
+    return IZb(a.f, c, a.b, a.d, d, b)
+}
+`
+        $('iframe', $('#SSSFrame').contents()).filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal').each(
+            (i,el)=>{
+                let script = el.contentDocument.createElement('script')
+                script.innerHTML = repaired_NZb
+                el.contentDocument.body.append(script)
+            }
+        )
+        $('<div style="position:fixed;width:100%;height:100%;top:0;left:0;background:#000;opacity:0.5;">').appendTo('body').click((ev)=>{$('#SSSFrame').attr('src', (i,src)=>src);$(ev.target).remove()})
     }
-        //{target:ev.target, delegateTarget:ev.delegateTarget
 }
 
 function clickLogin(ev){
@@ -373,7 +399,6 @@ function clickLogin(ev){
         })
     }
             window.addEventListener('click', ev=>{
-            console.log(ev.target.innerText)
             if (ev.target.innerText && ev.target.innerText == "AHARRY"){
                 let Meva = GM_getValue("Meva",{})
                 if (document.querySelector("input[type='password']")) document.querySelector("input[type='password']").value=Meva.password}
