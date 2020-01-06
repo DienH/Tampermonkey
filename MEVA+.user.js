@@ -31,12 +31,13 @@
 
     if (location.pathname == "/m-eva/"){
         $('#SSSFrame').load((ev)=>{
-            let SSSFrame_doc = ev.target.contentDocument, SSSFrame_win = ev.target.contentWindow
+            let SSSFrame_win = ev.target.contentWindow.name == "SSSFrame" ? ev.target.contentWindow : document.getElementById('SSSFrame').contentWindow
             let SSSFrame_wait = setInterval(()=>{
-                if ($('div.GDKHHE1NSB-fr-mckesson-meva-application-web-gwt-commun-client-ressource-MevaCSS-headerBackground', SSSFrame_doc).length){
+                let $CS_Anest = $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document)
+                if ($CS_Anest.length){
                     SSSFrame_win.dispatchEvent(new Event('resize'))
+                    $CS_Anest.remove()
                     clearInterval(SSSFrame_wait)
-                    console.log('Resize ma gueule')
                 }
             }, 500)
         })
