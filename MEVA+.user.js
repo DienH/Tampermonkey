@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.8
+// @version      0.2.9
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -36,10 +36,15 @@
                 let $CS_Anest = $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document)
                 if ($CS_Anest.length){
                     SSSFrame_win.dispatchEvent(new Event('resize'))
-                    $CS_Anest.remove()
                     clearInterval(SSSFrame_wait)
                 }
             }, 500)
+            $(SSSFrame_win).resize((ev)=>{
+                let SSSFrame_win = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
+                setTimeout(()=>{
+                    $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document).remove()
+                }, 500)
+            })
         })
         window.frameWait = setInterval(()=>{
             let $frames = $('iframe', $('#SSSFrame')[0].contentDocument)
@@ -91,7 +96,7 @@
             let promptTitle = document.getElementById('preHeaderMarkup').innerText
             if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle.search("(avec une date et heure de fin optionnelle)")+1) ||
                 promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?" ||
-                promptTitle == "Quand la prescription doit-elle être reprise ?"){
+                promptTitle == "Quand la prescription doit-elle être reprise ?" || promptTitle == "Date de Dernière Prise:"){
                 document.head.append(hourCSS)
                 document.head.append(hourScript)
                 document.head.append(dateScript)
