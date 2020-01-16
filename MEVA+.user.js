@@ -405,7 +405,7 @@ NZb = function (a, b, c) {
                 el.contentDocument.body.append(script)
             }
         )
-        $('<div style="position:fixed;width:100%;height:100%;top:0;left:0;background:#000;opacity:0.5;">').appendTo('body').click((ev)=>{$('#SSSFrame').attr('src', (i,src)=>src);$(ev.target).remove()})
+        //$('<div style="position:fixed;width:100%;height:100%;top:0;left:0;background:#000;opacity:0.5;">').appendTo('body').click((ev)=>{$('#SSSFrame').attr('src', (i,src)=>src);$(ev.target).remove()})
     }
 }
 
