@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.9
+// @version      0.2.10
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -51,7 +51,6 @@
             if ($frames.is("#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal")){
                 $frames.filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal').each(
                     (i, el)=>{
-                        console.log(el.contentWindow.NZb)
                         if (el.contentWindow.NZb) clearInterval(window.frameWait)
                     }
                 )
@@ -68,8 +67,6 @@
         },500)
 
     }else if (location.href.search("initSSS")+1){
-        // window.dispatchEvent(new Event('resize'));
-        //if (!GM_getValue("Meva",{}).length){let Meva = {};Meva.user = prompt("Utilisateur ?","");Meva.password = prompt("Mot de passe ?","");GM_setValue("Meva",Meva)}
         if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
         //setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
 
@@ -101,7 +98,6 @@
                 document.head.append(hourScript)
                 document.head.append(dateScript)
                 setTimeout(dateHourPres, 500)
-                //window.addEventListener('mousemove', dateHourPres)
             }
         }
     }
@@ -214,10 +210,17 @@ function permPicker(ev){
         window.removeEventListener('mousemove', permPicker)
         return
     }
+    let styleEl = document.createElement('style')
+    styleEl.innerHTML = `
+.outOf2DaysRange {background:coral;}
+.nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
+`
+    document.head.append(styleEl)
     if (typeof Litepicker != 'undefined'){
         let dateScriptInit = document.createElement('script')
         dateScriptInit.innerHTML = `
 if (!$) {var $ = $ || window.parent.jQuery}
+
 var today = new Date(Date.now()), today_min2 = new Date(Date.now()), today_plus2 = new Date(Date.now())
 today_min2.setDate(today.getDate()-2)
 today_plus2.setDate(today.getDate()+2)
@@ -234,7 +237,6 @@ var datePicker = new Litepicker({
  minDate: today_min2,
  scrollToDate:true,
  //autoApply: true,
- maxDays: 2,
  selectForward: true,
  onShow: ()=>{$(datePicker.picker).css({transform:"scale(1.1)", 'font-size':"1em", top:200})},
  onSelect: (d1, d2)=> {
@@ -242,34 +244,71 @@ var datePicker = new Litepicker({
   if ((d2.getDate()-d1.getDate()) == 0){
    let today = new Date()
    if ((today.getDate() - d1.getDate()) == 0){
-    sortiePerm.hours[14].click()
+    sortiePerm.setValue({hours:14})
    } else {
-    sortiePerm.hours[9].click()
+    sortiePerm.setValue({hours:9})
    }
    retourPerm.hours[18].click()
   } else if ((d2-d1) == 86400000){
    if ((today - d1) == 0){
-    sortiePerm.hours[14].click()
+    sortiePerm.setValue({hours:14})
    } else {
-    sortiePerm.hours[9].click()
+    sortiePerm.setValue({hours:9})
    }
-   retourPerm.hours[18].click()
   } else {
    if ((today.getDate() - d1.getDate()) == 0){
-    sortiePerm.hours[18].click()
+    sortiePerm.setValue({hours:18})
    } else {
-    sortiePerm.hours[9].click()
+    sortiePerm.setValue({hours:9})
    }
   }
   retourPerm.hide()
-  sortiePerm.days =  (d2-d1) == 0 ? 0 : ((d2-d1) == 86400000 ? 1 : 2)
+  sortiePerm.days =  (d2-d1) / 86400000
   sortiePerm.show()
  }
 });
 
+if (!window.parent.autoExtendPerm){
+ let script = window.parent.document.getElementById('autoPermScript') || document.createElement('script')
+ script.id = "autoPermScript"
+ script.innerHTML = "autoExtendPerm = function(){"+
+  "window.parent.setTimeout(()=>{"+
+   "document.heoPane_output.frameElement.onload=function(ev){setTimeout((ev)=>{"+
+    "ev.path[0].onload=function(ev){"+
+     "ev.path[0].onload=function(ev){ev.path[0].onload='';setTimeout(()=>$('a:last', document.heoPane_output.document.body).click(),500)};"+
+     "setTimeout(()=>{$('a:eq(2)', document.heoPane_output.document.body).click()},500)};"+
+    "$('a:eq(3)', document.heoPane_output.document.body).click();"+
+   "},500,ev)};"+
+   "$('a:last', document.heoPane_output.document.body).click();"+
+  "}, 1000)};"+
+  "quitPermPres = function(){window.parent.setTimeout(()=>$('a:last', document.heoPane_output.document.body).click(),500)}"
+ window.parent.document.body.append(script)
+}
+
+if (window.parent.datePermRestante){
+ let dateRestante = window.parent.datePermRestante
+ if (dateRestante.hours > 48){
+  document.getElementById('Datebox').value = dateRestante.start.toLocaleDateString()
+  document.getElementById('Heurebox').value = dateRestante.start.toLocaleTimeString([], {timeStyle: 'short'})
+  dateRestante.start = new Date(dateRestante.start+172800000)
+  dateRestante.hours = dateRestante.hours-48
+  document.getElementById('Datebox0').value = dateRestante.start.toLocaleDateString()
+  document.getElementById('Heurebox0').value =document.getElementById('Heurebox').value
+  window.parent.datePermRestante = dateRestante
+  document.getElementById('btPrescrire').click()
+ } else {
+  document.getElementById('Datebox').value = dateRestante.start.toLocaleDateString()
+  document.getElementById('Heurebox').value = dateRestante.start.toLocaleTimeString([], {timeStyle: 'short'})
+  document.getElementById('Datebox0').value = dateRestante.end.toLocaleDateString()
+  document.getElementById('Heurebox0').value = dateRestante.end.toLocaleTimeString([], {timeStyle: 'short'})
+  window.parent.datePermRestante = null
+  document.getElementById('btPrescrire').click()
+ }
+} else {
+
 var sortiePerm = new NJTimePicker({
     targetEl: document.querySelector('input[name="Heurebox"]'),
-    disabledHours: [0, 1, 2, 3, 4, 5, 6, 21, 22, 23],
+    disabledHours: [0, 1, 2, 3, 4, 5, 6, 22, 23],
     minutes: [0,30],
     texts: {
         header: 'Heure de départ en permission',
@@ -288,7 +327,7 @@ sortiePerm.minutes[30]=sortiePerm.minutes.element.lastChild.children[1]
 
 var retourPerm = new NJTimePicker({
     targetEl: document.querySelector('input[name="Heurebox0"]'),
-    disabledHours: [0, 1, 2, 3, 4, 5, 6, 21, 22, 23],
+    disabledHours: [0, 1, 2, 3, 4, 5, 6, 22, 23],
     minutes: [0,30],
     texts: {
         header: 'Heure de retour de permission',
@@ -308,8 +347,10 @@ retourPerm.minutes[30]=retourPerm.minutes.element.lastChild.children[1]
 //console.log(sortiePerm)
 
 var currentHour = (new Date()).getHours() + 1
-sortiePerm.minutes[0].click()
-retourPerm.minutes[0].click()
+sortiePerm.setValue({hours:'9',minutes:'0'})
+retourPerm.setValue({hours:'18',minutes:'0'})
+//sortiePerm.minutes[0].click()
+//retourPerm.minutes[0].click()
 
 sortiePerm.hours.lastValue = sortiePerm.hours.currentValue
 sortiePerm.hours.element.onclick = (ev)=> {
@@ -343,23 +384,55 @@ retourPerm.buttons.save.innerText = "Valider"
 retourPerm.buttons.clear.innerText = "Retour"
 retourPerm.buttons.clear.onclick = ()=>{retourPerm.hide();sortiePerm.show()}
 retourPerm.on('show', ()=>{
- if(sortiePerm.days == 2){
-  let i =7
-  while(i< 21){(i > Number(sortiePerm.hours.currentValue)) ? retourPerm.hours[i++].setAttribute('disabled', true) : retourPerm.hours[i++].removeAttribute('disabled')}
+ if(sortiePerm.days >= 2){
+  let i = 7
+  while(i< 22){
+   if ((sortiePerm.days > 2) || (sortiePerm.days == 2 && i > Number(sortiePerm.hours.currentValue))){
+    retourPerm.hours[i].classList.add('outOf2DaysRange')
+    retourPerm.hours[i].title = "Durée supérieure à 48h."
+   } else {
+    retourPerm.hours[i].classList.remove('outOf2DaysRange')
+    retourPerm.hours[i].title = ""
+   }
+  i++
+  }
  } else {
-  for (let i = 7 ; i < 21 ; i++){retourPerm.hours[i].removeAttribute('disabled')}
+  for (let i = 7 ; i < 22 ; i++){
+   retourPerm.hours[i].classList.remove('outOf2DaysRange')
+   retourPerm.hours[i++].title = ""
+  }
  }
 })
 
 sortiePerm.on('save', data=>{
- if(sortiePerm.days == 2){retourPerm.hours[Number(sortiePerm.hours.currentValue)].removeAttribute('disabled')
- retourPerm.hours[Number(sortiePerm.hours.currentValue)].click()}
- retourPerm.show()})
+ if(sortiePerm.days == 2){
+  retourPerm.setValue({hours:sortiePerm.hours.currentValue})
+ }
+ retourPerm.show()
+})
+
+retourPerm.on('save', data=>{
+ let datePerm = {start:datePicker.getStartDate().setHours(sortiePerm.hours.currentValue), end:new Date(datePicker.getEndDate().setHours(retourPerm.hours.currentValue)),
+  hours:sortiePerm.days*24+(Number(retourPerm.hours.currentValue)-Number(sortiePerm.hours.currentValue))}
+ datePicker.datePicked = datePerm
+ if (datePerm.hours > 48){
+  datePerm.start = new Date(datePerm.start+172800000)
+  datePerm.hours = datePerm.hours-48
+  document.getElementById('Datebox0').value = datePerm.start.toLocaleString().split(" ")[0]
+  document.getElementById('Heurebox0').value =document.getElementById('Heurebox').value
+  window.parent.datePermRestante = datePerm
+  window.parent.autoExtendPerm()
+ } else {
+  window.parent.quitPermPres()
+ }
+ document.getElementById('btPrescrire').click()
+})
 
 datePicker.show()
 document.body.sortiePerm = sortiePerm
 document.body.retourPerm = retourPerm
 document.body.datePicker = datePicker
+}
 `
         document.body.append(dateScriptInit)
     }
