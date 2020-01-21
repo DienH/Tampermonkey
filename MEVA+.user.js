@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.9
+// @version      0.2.10
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -386,13 +386,15 @@ function monitorClick(ev){
     } else if (ev.target.innerText == "AHARRY"){
         ev.view.document.querySelector("input[name='mevaLockSessionWindowPwField']").value=Meva.password
         ev.view.document.querySelector("span.GDKHHE1MCB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
-    } else if (ev.target.classList.contains('stackItemMiddleCenterInner') && ev.target.innerText == "Groupé par"){
+    } else if (ev.target.classList.contains('stackItemMiddleCenterInner') && !ev.target.classList.contains('CleanGroupsButton') && ev.target.innerText == "Groupé par"){
+        ev.target.classList.add('CleanGroupsButton')
         $('label:contains("Plannings"):eq(0)', ev.view.document).parent().after($('<div><button id="CleanGroupsByButton" style="margin-left:50px;background:#528fff;">Effacer</button></div>'))
     } else if (ev.target.id == "CleanGroupsByButton"){
         let repaired_NZb = `
 NZb = function (a, b, c) {
     var d,e;
     e=JSON.parse(a.e.j.c[12]);e.groupsBy=[];a.e.j.c[12]=JSON.stringify(e);
+    setTimeout(()=>window.parent.location.reload(), 500)
     d = xZb(a.e);
     S$b() && T$b(U$b(a.d, a.b, 'requestSerialized'));
     return IZb(a.f, c, a.b, a.d, d, b)
@@ -405,7 +407,8 @@ NZb = function (a, b, c) {
                 el.contentDocument.body.append(script)
             }
         )
-        //$('<div style="position:fixed;width:100%;height:100%;top:0;left:0;background:#000;opacity:0.5;">').appendTo('body').click((ev)=>{$('#SSSFrame').attr('src', (i,src)=>src);$(ev.target).remove()})
+        $('<div style="position:absolute;width:100%;height:100%;top:0;left:0;background:#000;opacity:0.5;">')
+            .appendTo($('.GOAX34LHSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridMenuPopup', ev.view.document))
     }
 }
 
