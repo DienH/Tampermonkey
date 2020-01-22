@@ -42,6 +42,14 @@
             $(SSSFrame_win).resize((ev)=>{
                 let SSSFrame_win = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
                 setTimeout(()=>{
+                    if (!SSSFrame_win.document.getElementById('SSSFrame_MevaStyle')){
+                        let cssStyle = document.createElement('style');cssStyle.id = "SSSFrame_MevaStyle"
+                        cssStyle.innerText = `
+#HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:lightgrey;}
+`
+                        SSSFrame_win.document.body.append(cssStyle)
+                    }
+
                     $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document).remove()
                 }, 500)
             })
@@ -214,6 +222,7 @@ function permPicker(ev){
     styleEl.innerHTML = `
 .outOf2DaysRange {background:coral;}
 .nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
+body {background-color:lightgrey;}
 `
     document.head.append(styleEl)
     if (typeof Litepicker != 'undefined'){
@@ -248,7 +257,7 @@ var datePicker = new Litepicker({
    } else {
     sortiePerm.setValue({hours:9})
    }
-   retourPerm.hours[18].click()
+   retourPerm.setValue({hours:18})
   } else if ((d2-d1) == 86400000){
    if ((today - d1) == 0){
     sortiePerm.setValue({hours:14})
