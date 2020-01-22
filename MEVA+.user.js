@@ -45,7 +45,7 @@
                     if (!SSSFrame_win.document.getElementById('SSSFrame_MevaStyle')){
                         let cssStyle = document.createElement('style');cssStyle.id = "SSSFrame_MevaStyle"
                         cssStyle.innerText = `
-#HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:lightgrey;}
+#HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:#F5F5F5;}
 `
                         SSSFrame_win.document.body.append(cssStyle)
                     }
@@ -82,20 +82,35 @@
 
     } else if ((location.href.search('heoOutput.jsp')+1)){
 
-    } else if ((location.href.search("popupContents.jsp")+1) && (title = document.head.querySelector('title'))){
-        switch(title.innerText){
-            case "SORTIETEMPO":
-                document.head.append(hourCSS)
-                document.head.append(hourScript)
-                document.head.append(dateScript)
-                setTimeout(permPicker, 250)
-                break;
-            case "Examen Tomodensitométrique":
-                break;
-            default:
-                break;
+    } else if ((location.href.search("popupContents.jsp")+1)){
+        let styleEl = document.createElement('style')
+        styleEl.innerHTML = `
+.outOf2DaysRange {background:coral;}
+.nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
+body {background-color:#F5F5F5;}
+`
+        document.head.append(styleEl)
+
+        if (title = document.head.querySelector('title')){
+            switch(title.innerText){
+                case "SORTIETEMPO":
+                    document.head.append(hourCSS)
+                    document.head.append(hourScript)
+                    document.head.append(dateScript)
+                    setTimeout(permPicker, 250)
+                    break;
+                case "Examen Tomodensitométrique":
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            if ($('h1').text()=="Information"){
+                if (document.body.innerText.search('date de début est située dans le passé')){
+                    console.log($('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', window.parent.document)[0].click())
+                }
+            }
         }
-        //window.addEventListener('mousemove', permPicker)
     } else if (location.href.search("/heoclient-application-web/heoPrompt.jsp")+1){
         if (document.getElementById('preHeaderMarkup')){
             let promptTitle = document.getElementById('preHeaderMarkup').innerText
@@ -218,13 +233,6 @@ function permPicker(ev){
         window.removeEventListener('mousemove', permPicker)
         return
     }
-    let styleEl = document.createElement('style')
-    styleEl.innerHTML = `
-.outOf2DaysRange {background:coral;}
-.nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
-body {background-color:lightgrey;}
-`
-    document.head.append(styleEl)
     if (typeof Litepicker != 'undefined'){
         let dateScriptInit = document.createElement('script')
         dateScriptInit.innerHTML = `
