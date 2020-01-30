@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.10
+// @version      0.2.11
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -275,19 +275,20 @@ var datePicker = new Litepicker({
  }
 });
 if (!window.parent.autoExtendPerm){
- let script = window.parent.document.getElementById('autoPermScript') || document.createElement('script')
+ let script = window.parent.document.getElementById('autoPermScript')
+ if (!script) {script = document.createElement('script')}else{script.remove()}
  script.id = "autoPermScript"
  script.innerHTML = "autoExtendPerm = function(){"+
   "window.parent.setTimeout(()=>{"+
    "document.heoPane_output.frameElement.onload=function(ev){setTimeout((ev)=>{"+
     "ev.path[0].onload=function(ev){"+
-     "ev.path[0].onload=function(ev){ev.path[0].onload='';setTimeout(()=>$('a:last', document.heoPane_output.document.body).click(),500)};"+
-     "setTimeout(()=>{$('a:eq(2)', document.heoPane_output.document.body).click()},500)};"+
-    "$('a:eq(3)', document.heoPane_output.document.body).click();"+
+     "ev.path[0].onload=function(ev){ev.path[0].onload='';setTimeout(()=>$('a:last', document.heoPane_output.document.body)[0].click(),500)};"+
+     "setTimeout(()=>{$('a:eq(2)', document.heoPane_output.document.body)[0].click()},500)};"+
+    "$('a:eq(3)', document.heoPane_output.document.body)[0].click();"+
    "},500,ev)};"+
-   "$('a:last', document.heoPane_output.document.body).click();"+
+   "$('a:last', document.heoPane_output.document.body)[0].click();"+
   "}, 1000)};"+
-  "quitPermPres = function(){window.parent.setTimeout(()=>$('a:last', document.heoPane_output.document.body).click(),500)}"
+  "quitPermPres = function(){window.parent.setTimeout(()=>console.log($('a:last', document.heoPane_output.document.body)[0].click()),500)}"
  window.parent.document.body.append(script)
 }
 if (window.parent.datePermRestante){
