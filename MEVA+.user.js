@@ -288,7 +288,8 @@ if (!window.parent.autoExtendPerm){
    "},500,ev)};"+
    "$('a:last', document.heoPane_output.document.body)[0].click();"+
   "}, 1000)};"+
-  "quitPermPres = function(){window.parent.setTimeout(()=>console.log($('a:last', document.heoPane_output.document.body)[0].click()),500)}"
+  "quitPermPres = function(){document.heoPane_output.frameElement.onload=function(ev){"+
+    "setTimeout(()=>{$('a:last', document.heoPane_output.document.body)[0].click();document.heoPane_output.frameElement.onload='';},500)}}"
  window.parent.document.body.append(script)
 }
 if (window.parent.datePermRestante){
