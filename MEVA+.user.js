@@ -56,12 +56,19 @@
 output_Selector = function(sel){
  let output = document.heoPane_output || window.parent.document.heoPane_output
  if (!sel){sel = "Retourner"}
- $('a'+(typeof sel == "string" ? ':contains('+sel+')' : '[onclick*='+sel+']'), output.document.body).each((i,el)=>setTimeout((el)=>{console.log(el);el.click()},500, el))
+ if (typeof sel == "string" && sel.search(" ")+1){
+  sel = sel.split(" ")
+  let filterString = ""
+  for (let i = 0; i < sel.length ; i++){
+   filterString += ":contains("+sel[i]+")"
+  }
+ }
+ $('a'+(typeof sel == "string" ? ':contains('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString)), output.document.body).each((i,el)=>setTimeout((el)=>{console.log(el);el.click()},500, el))
 }
 `
                         SSSFrame_win.document.body.append(script)
                     }
-                    $('#HEO_INPUT', SSSFrame_win.document).each((i,el)=>{el.keydown = el.onkeydown ; el.onkeydown = (ev)=>{
+                    $('#HEO_INPUT', SSSFrame_win.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
                         if(ev.keyCode==13){
                             let pres = ev.target.value.split(" ")
                             console.log(pres)
@@ -70,8 +77,16 @@ output_Selector = function(sel){
                                     if (typeof pres[0] == "string" && typeof pres[1] =="string" && typeof pres[2] == "string"){
                                         pres.poso = pres[2].split("-");
                                         if((pres.poso.length >= 3 && pres.poso.length <= 5) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2])){
-                                            ev.target.value=""
-                                            return false;
+                                            ev.target.value=pres[0]+" "+pres[1]
+                                            window.autoEnhancedPres = pres
+                                            document.SSSFrame.document.heoPane_output.frameElement.onload = (ev1)=>{
+                                                ev1.path[0].onload=''
+                                                document.SSSFrame.output_Selector(pres[0]+" "+pres[1])
+                                            }
+                                            //setTimeout((ev)=>
+                                                       ev.target.keydown(ev)
+                                                       //, 250, ev)
+                                            return false
                                         }
                                     }
                                 } else if (pres.length == 4){
@@ -84,7 +99,8 @@ output_Selector = function(sel){
                                     }
                                 }
                             }
-                            ev.target.keydown(ev)}
+                            ev.target.keydown(ev)
+                        }
                     }})
                     $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document).remove()
                 }, 500)
