@@ -145,7 +145,7 @@ function dateHourPres(ev){
 `
     document.head.append(styleEl)
 
-    if (typeof Litepicker != 'undefined'){
+    if (typeof Litepicker != 'undefined' && typeof NJTimePicker != "undefined"){
         let dateHourScriptInit = document.createElement('script')
         dateHourScriptInit.innerHTML = `
 if (!$) {var $ = $ || window.parent.jQuery}
@@ -167,7 +167,6 @@ var datePresPicker = new Litepicker({
  onHide: ()=>{HEO_input.value = textDateEl.value; hourPresPicker.show();},
  onShow: ()=>{$(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 0, overflow:"hidden"})}
 });
-
 var hourPresPicker = new NJTimePicker({
     targetEl: textHourEl,
     //disabledHours: [0, 1, 2, 3, 4, 5, 23],
@@ -179,8 +178,6 @@ var hourPresPicker = new NJTimePicker({
         },
     format: '24'
   });
-
-
 hourPresPicker.buttons.save = hourPresPicker.buttons.element.children[0]
 hourPresPicker.buttons.clear = hourPresPicker.buttons.element.children[1]
 hourPresPicker.buttons.close = hourPresPicker.buttons.element.children[2]
@@ -191,7 +188,6 @@ hourPresPicker.minutes[30]=hourPresPicker.minutes.element.lastChild.children[2]
 hourPresPicker.minutes[45]=hourPresPicker.minutes.element.lastChild.children[3]
 hourPresPicker.minutes[0].click()
 hourPresPicker.hours[8].click()
-
 hourPresPicker.hours.lastValue = hourPresPicker.hours.currentValue
 hourPresPicker.hours.element.onclick = (ev)=> {
  if (ev.target.classList.contains('selected') || (hourPresPicker.hours.lastValue != hourPresPicker.hours.currentValue))
@@ -201,17 +197,12 @@ hourPresPicker.hours.element.onclick = (ev)=> {
   //hourPresPicker.buttons.save.click()
  }
 }
-
-
 hourPresPicker.buttons.save.innerText = "Valider"
 hourPresPicker.buttons.clear.innerText = "Retour"
 hourPresPicker.buttons.clear.onclick = ()=>{
  hourPresPicker.hide();
  datePresPicker.show()}
-
 hourPresPicker.buttons.close.style.display = "none"
-
-
 hourPresPicker.on('save', data=>{
  HEO_input.value = textDateEl.value + " " + hourPresPicker.getValue('fullResult')
  const ke = new KeyboardEvent("keydown", {
@@ -219,12 +210,12 @@ hourPresPicker.on('save', data=>{
  });
  HEO_input.dispatchEvent(ke);
 })
-
 datePresPicker.show()
 $(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 0, overflow:"hidden"})
-
 `
         document.head.append(dateHourScriptInit)
+    } else {
+        setTimeout(dateHourPres, 250)
     }
 }
 
@@ -237,7 +228,6 @@ function permPicker(ev){
         let dateScriptInit = document.createElement('script')
         dateScriptInit.innerHTML = `
 if (!$) {var $ = $ || window.parent.jQuery}
-
 var today = new Date(Date.now()), today_min2 = new Date(Date.now()), today_plus2 = new Date(Date.now())
 today_min2.setDate(today.getDate()-2)
 today_plus2.setDate(today.getDate()+2)
@@ -284,7 +274,6 @@ var datePicker = new Litepicker({
   sortiePerm.show()
  }
 });
-
 if (!window.parent.autoExtendPerm){
  let script = window.parent.document.getElementById('autoPermScript') || document.createElement('script')
  script.id = "autoPermScript"
@@ -301,7 +290,6 @@ if (!window.parent.autoExtendPerm){
   "quitPermPres = function(){window.parent.setTimeout(()=>$('a:last', document.heoPane_output.document.body).click(),500)}"
  window.parent.document.body.append(script)
 }
-
 if (window.parent.datePermRestante){
  let dateRestante = window.parent.datePermRestante
  if (dateRestante.hours > 48){
@@ -322,7 +310,6 @@ if (window.parent.datePermRestante){
   document.getElementById('btPrescrire').click()
  }
 } else {
-
 var sortiePerm = new NJTimePicker({
     targetEl: document.querySelector('input[name="Heurebox"]'),
     disabledHours: [0, 1, 2, 3, 4, 5, 6, 22, 23],
@@ -334,14 +321,12 @@ var sortiePerm = new NJTimePicker({
         },
     format: '24'
   });
-
 sortiePerm.buttons.save = sortiePerm.buttons.element.children[0]
 sortiePerm.buttons.clear = sortiePerm.buttons.element.children[1]
 sortiePerm.buttons.close = sortiePerm.buttons.element.children[2]
 for (var i = 0 ; i < 24 ; i++){sortiePerm.hours[i] = sortiePerm.hours.element.lastChild.children[i]}
 sortiePerm.minutes[0]=sortiePerm.minutes.element.lastChild.children[0]
 sortiePerm.minutes[30]=sortiePerm.minutes.element.lastChild.children[1]
-
 var retourPerm = new NJTimePicker({
     targetEl: document.querySelector('input[name="Heurebox0"]'),
     disabledHours: [0, 1, 2, 3, 4, 5, 6, 22, 23],
@@ -353,22 +338,18 @@ var retourPerm = new NJTimePicker({
         },
     format: '24'
   });
-
 retourPerm.buttons.save = retourPerm.buttons.element.children[0]
 retourPerm.buttons.clear = retourPerm.buttons.element.children[1]
 retourPerm.buttons.close = retourPerm.buttons.element.children[2]
 for (var i = 0 ; i < 24 ; i++){retourPerm.hours[i] = retourPerm.hours.element.lastChild.children[i]}
 retourPerm.minutes[0]=retourPerm.minutes.element.lastChild.children[0]
 retourPerm.minutes[30]=retourPerm.minutes.element.lastChild.children[1]
-
 //console.log(sortiePerm)
-
 var currentHour = (new Date()).getHours() + 1
 sortiePerm.setValue({hours:'9',minutes:'0'})
 retourPerm.setValue({hours:'18',minutes:'0'})
 //sortiePerm.minutes[0].click()
 //retourPerm.minutes[0].click()
-
 sortiePerm.hours.lastValue = sortiePerm.hours.currentValue
 sortiePerm.hours.element.onclick = (ev)=> {
  if (ev.target.classList.contains('selected') || (sortiePerm.hours.lastValue != sortiePerm.hours.currentValue))
@@ -377,7 +358,6 @@ sortiePerm.hours.element.onclick = (ev)=> {
   sortiePerm.buttons.save.click()
  }
 }
-
 retourPerm.hours.lastValue = sortiePerm.hours.currentValue
 retourPerm.hours.element.onclick = (ev)=> {
  if (ev.target.classList.contains('selected') || (retourPerm.hours.lastValue != retourPerm.hours.currentValue))
@@ -386,18 +366,14 @@ retourPerm.hours.element.onclick = (ev)=> {
   retourPerm.buttons.save.click()
  }
 }
-
 var buttonssortiePerm = sortiePerm.container.lastChild, buttonsretourPerm = retourPerm.container.lastChild
 sortiePerm.buttons.save.innerText = "Heure retour"
 sortiePerm.buttons.clear.innerText = "Retour"
 sortiePerm.buttons.clear.onclick = ()=>{
  sortiePerm.hide();
  datePicker.show()}
-
 sortiePerm.buttons.close.innerText = retourPerm.buttons.close.innerText = "Fermer"
-
 retourPerm.buttons.save.innerText = "Valider"
-
 retourPerm.buttons.clear.innerText = "Retour"
 retourPerm.buttons.clear.onclick = ()=>{retourPerm.hide();sortiePerm.show()}
 retourPerm.on('show', ()=>{
@@ -420,14 +396,12 @@ retourPerm.on('show', ()=>{
   }
  }
 })
-
 sortiePerm.on('save', data=>{
  if(sortiePerm.days == 2){
   retourPerm.setValue({hours:sortiePerm.hours.currentValue})
  }
  retourPerm.show()
 })
-
 retourPerm.on('save', data=>{
  let datePerm = {start:datePicker.getStartDate().setHours(sortiePerm.hours.currentValue), end:new Date(datePicker.getEndDate().setHours(retourPerm.hours.currentValue)),
   hours:sortiePerm.days*24+(Number(retourPerm.hours.currentValue)-Number(sortiePerm.hours.currentValue))}
@@ -444,7 +418,6 @@ retourPerm.on('save', data=>{
  }
  document.getElementById('btPrescrire').click()
 })
-
 datePicker.show()
 document.body.sortiePerm = sortiePerm
 document.body.retourPerm = retourPerm
@@ -525,17 +498,3 @@ function clickLogin(ev){
         window.removeEventListener('mousemove', clickLogin)
     }
 }
-
-/*
-$.post("http://meva/heoclient-application-web/commander?HEOCMD=@submit", "Datebox=03%2F01%2F2020&Heurebox=18%3A00&DADEINVERSE=Vendredi&Datebox0=05%2F01%2F2020&Heurebox0=18%3A00&DATEINVERSE=Dimanche&Dur=48&Accompagne=&btPrescrire=Valider",(data)=>{
-    $('#SSSFrame').each((i,el)=>{
-        el.contentWindow.processStatus()
-        el.contentWindow.waitHeoPrompt();
-        el.contentWindow.reloadPrompt();})
-    if (processStatus){
-        processStatus()
-        waitHeoPrompt();
-        reloadPrompt();
-    }
-})
-*/
