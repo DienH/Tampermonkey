@@ -49,7 +49,43 @@
 `
                         SSSFrame_win.document.body.append(cssStyle)
                     }
-
+                    if (!SSSFrame_win.document.getElementById('SSSFrame_Script')){
+                        let script = document.createElement('script')
+                        script.id = "SSSFrame_Script"
+                        script.innerHTML = `
+output_Selector = function(sel){
+ let output = document.heoPane_output || window.parent.document.heoPane_output
+ if (!sel){sel = "Retourner"}
+ $('a'+(typeof sel == "string" ? ':contains('+sel+')' : '[onclick*='+sel+']'), output.document.body).each((i,el)=>setTimeout((el)=>{console.log(el);el.click()},500, el))
+}
+`
+                        SSSFrame_win.document.body.append(script)
+                    }
+                    $('#HEO_INPUT', SSSFrame_win.document).each((i,el)=>{el.keydown = el.onkeydown ; el.onkeydown = (ev)=>{
+                        if(ev.keyCode==13){
+                            let pres = ev.target.value.split(" ")
+                            console.log(pres)
+                            if (typeof pres == "object"){
+                                if(pres.length == 3){
+                                    if (typeof pres[0] == "string" && typeof pres[1] =="string" && typeof pres[2] == "string"){
+                                        pres.poso = pres[2].split("-");
+                                        if((pres.poso.length >= 3 && pres.poso.length <= 5) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2])){
+                                            ev.target.value=""
+                                            return false;
+                                        }
+                                    }
+                                } else if (pres.length == 4){
+                                    if (typeof pres[0] == "string" && typeof pres[3] == "string" && ((!isNaN(pres[2]) && typeof pres[1] == "string") ||(!isNaN(pres[1]) && typeof pres[2] == "string"))){
+                                        pres.poso = pres[3].split("-");
+                                        if((pres.poso.length >= 3 && pres.poso.length <= 5) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2])){
+                                            ev.target.value=""
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                            ev.target.keydown(ev)}
+                    }})
                     $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document).remove()
                 }, 500)
             })
@@ -81,7 +117,11 @@
         //$('.GOAX34LJRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyGroupLine').remove()
 
     } else if ((location.href.search('heoOutput.jsp')+1)){
-
+        switch($('div.outlineTitle').text().trim()){
+            case "Prescriptions Usuelles de Psychiatrie Adulte" :
+                $('a:contains("Consignes")').contextmenu(ev=>{ev.preventDefault();})
+                break;
+        }
     } else if ((location.href.search("popupContents.jsp")+1)){
         let styleEl = document.createElement('style')
         styleEl.innerHTML = `
@@ -107,7 +147,7 @@ body {background-color:#F5F5F5;}
         } else {
             if ($('h1').text()=="Information"){
                 if (document.body.innerText.search('date de début est située dans le passé')){
-                    console.log($('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', window.parent.document)[0].click())
+                    $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', window.parent.document)[0].click()
                 }
             }
         }
@@ -273,25 +313,25 @@ var datePicker = new Litepicker({
   sortiePerm.days =  (d2-d1) / 86400000
   sortiePerm.show()
  }
-});
+})
+
 if (!window.parent.autoExtendPerm){
  let script = window.parent.document.getElementById('autoPermScript')
- if (!script) {script = document.createElement('script')}else{script.remove()}
+ if (script) {script.remove()}
+ script = document.createElement('script')
  script.id = "autoPermScript"
  script.innerHTML = "autoExtendPerm = function(){"+
-  "window.parent.setTimeout(()=>{"+
-   "document.heoPane_output.frameElement.onload=function(ev){setTimeout((ev)=>{"+
+   "document.heoPane_output.frameElement.onload=function(ev){"+
     "ev.path[0].onload=function(ev){"+
-     "ev.path[0].onload=function(ev){ev.path[0].onload='';setTimeout(()=>$('a:last', document.heoPane_output.document.body)[0].click(),500)};"+
-     "setTimeout(()=>{$('a:eq(2)', document.heoPane_output.document.body)[0].click()},500)};"+
-    "$('a:eq(3)', document.heoPane_output.document.body)[0].click();"+
-   "},500,ev)};"+
-   "$('a:last', document.heoPane_output.document.body)[0].click();"+
-  "}, 1000)};"+
+     "ev.path[0].onload=function(ev){ev.path[0].onload='';output_Selector()};"+
+     "output_Selector(1)};"+
+    "output_Selector(2)};"+
+   "output_Selector()};"+
   "quitPermPres = function(){document.heoPane_output.frameElement.onload=function(ev){"+
-    "setTimeout(()=>{$('a:last', document.heoPane_output.document.body)[0].click();document.heoPane_output.frameElement.onload='';},500)}}"
+    "output_Selector();ev.path[0].onload=''}}"
  window.parent.document.body.append(script)
 }
+
 if (window.parent.datePermRestante){
  let dateRestante = window.parent.datePermRestante
  if (dateRestante.hours > 48){
@@ -414,7 +454,7 @@ retourPerm.on('save', data=>{
   document.getElementById('Datebox0').value = datePerm.start.toLocaleString().split(" ")[0]
   document.getElementById('Heurebox0').value =document.getElementById('Heurebox').value
   window.parent.datePermRestante = datePerm
-  window.parent.autoExtendPerm()
+  document.body.onunload = window.parent.autoExtendPerm
  } else {
   window.parent.quitPermPres()
  }
