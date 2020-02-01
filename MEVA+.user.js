@@ -53,9 +53,9 @@
                         let script = document.createElement('script')
                         script.id = "SSSFrame_Script"
                         script.innerHTML = `
-$.expr[":"].containsI = function (a, i, m) {
-            return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
-output_Selector = function(sel){
+$.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
+
+output_Selector = function(sel, checkExists = false){
  let output = document.heoPane_output || window.parent.document.heoPane_output
  if (!sel){sel = "Retourner"}
  let filterString = ""
@@ -65,7 +65,12 @@ output_Selector = function(sel){
    filterString += ":containsI("+sel[i]+")"
   }
  }
- $('a'+(typeof sel == "string" ? ':contains('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString)), output.document.body).each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},500, el)}})
+ sel = 'a'+(typeof sel == "string" ? ':contains('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))
+ if (checkExists){
+  return ($(sel, output.document.body).length > 0 ? true : false)
+ }else{
+  setTimeout((selector, out)=>$(selector, out.document).each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},500, el)}}), 500, sel, output)
+ }
 }
 `
                         SSSFrame_win.document.body.append(script)
@@ -164,11 +169,12 @@ function addAutoPrescriptor(ev){
                             if (!isNaN(pres[1])){pres.poso=pres.poso.map(t=>t*Number(pres[1]));pres[1]="cp";}
                             ev.target.value=pres[0]+" "+pres[1]
                             SSSFrame_win.autoEnhancedPres = pres
-                            console.log(pres)
-                            document.SSSFrame.document.heoPane_output.frameElement.onload = (ev1)=>{
-                                ev1.path[0].onload=''
-                                document.SSSFrame.output_Selector(pres[0]+" "+pres[1])
-                            }
+                            SSSFrame_win.autoEnhancedPresWaiter = setInterval((presc)=>{
+                                if (SSSFrame_win.output_Selector(presc[0] + " "+presc[1], true)){
+                                    SSSFrame_win.output_Selector(presc[0] + " "+presc[1])
+                                    clearInterval(SSSFrame_win.autoEnhancedPresWaiter)
+                                }
+                            },500, pres)
                             //setTimeout((ev)=>
                             ev.target.keydown(ev)
                             //, 250, ev)
