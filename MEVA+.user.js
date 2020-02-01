@@ -53,55 +53,23 @@
                         let script = document.createElement('script')
                         script.id = "SSSFrame_Script"
                         script.innerHTML = `
+$.expr[":"].containsI = function (a, i, m) {
+            return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
 output_Selector = function(sel){
  let output = document.heoPane_output || window.parent.document.heoPane_output
  if (!sel){sel = "Retourner"}
+ let filterString = ""
  if (typeof sel == "string" && sel.search(" ")+1){
   sel = sel.split(" ")
-  let filterString = ""
   for (let i = 0; i < sel.length ; i++){
-   filterString += ":contains("+sel[i]+")"
+   filterString += ":containsI("+sel[i]+")"
   }
  }
- $('a'+(typeof sel == "string" ? ':contains('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString)), output.document.body).each((i,el)=>setTimeout((el)=>{console.log(el);el.click()},500, el))
+ $('a'+(typeof sel == "string" ? ':contains('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString)), output.document.body).each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},500, el)}})
 }
 `
                         SSSFrame_win.document.body.append(script)
                     }
-                    $('#HEO_INPUT', SSSFrame_win.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
-                        if(ev.keyCode==13){
-                            let pres = ev.target.value.split(" ")
-                            console.log(pres)
-                            if (typeof pres == "object"){
-                                if(pres.length == 3){
-                                    if (typeof pres[0] == "string" && typeof pres[1] =="string" && typeof pres[2] == "string"){
-                                        pres.poso = pres[2].split("-");
-                                        if((pres.poso.length >= 3 && pres.poso.length <= 5) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2])){
-                                            ev.target.value=pres[0]+" "+pres[1]
-                                            window.autoEnhancedPres = pres
-                                            document.SSSFrame.document.heoPane_output.frameElement.onload = (ev1)=>{
-                                                ev1.path[0].onload=''
-                                                document.SSSFrame.output_Selector(pres[0]+" "+pres[1])
-                                            }
-                                            //setTimeout((ev)=>
-                                                       ev.target.keydown(ev)
-                                                       //, 250, ev)
-                                            return false
-                                        }
-                                    }
-                                } else if (pres.length == 4){
-                                    if (typeof pres[0] == "string" && typeof pres[3] == "string" && ((!isNaN(pres[2]) && typeof pres[1] == "string") ||(!isNaN(pres[1]) && typeof pres[2] == "string"))){
-                                        pres.poso = pres[3].split("-");
-                                        if((pres.poso.length >= 3 && pres.poso.length <= 5) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2])){
-                                            ev.target.value=""
-                                            return false;
-                                        }
-                                    }
-                                }
-                            }
-                            ev.target.keydown(ev)
-                        }
-                    }})
                     $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document).remove()
                 }, 500)
             })
@@ -181,6 +149,46 @@ body {background-color:#F5F5F5;}
         }
     }
 })();
+
+function addAutoPrescriptor(ev){
+    let SSSFrame_win = ev.view.document.name == "SSSFrame" ? ev.view.document : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame_win.$
+    if($('#HEO_INPUT', SSSFrame_win.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
+        if(ev.keyCode==13){
+            let pres = ev.target.value.split(" ")
+            console.log(pres)
+            if (typeof pres == "object"){
+                if(pres.length == 3){
+                    if (typeof pres[0] == "string" && typeof pres[1] =="string" && typeof pres[2] == "string"){
+                        pres.poso = pres[2].split("-").map(t=>Number(t));
+                        if((pres.poso.length >= 3 && pres.poso.length <= 5) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2])){
+                            if (!isNaN(pres[1])){pres.poso=pres.poso.map(t=>t*Number(pres[1]));pres[1]="cp";}
+                            ev.target.value=pres[0]+" "+pres[1]
+                            SSSFrame_win.autoEnhancedPres = pres
+                            console.log(pres)
+                            document.SSSFrame.document.heoPane_output.frameElement.onload = (ev1)=>{
+                                ev1.path[0].onload=''
+                                document.SSSFrame.output_Selector(pres[0]+" "+pres[1])
+                            }
+                            //setTimeout((ev)=>
+                            ev.target.keydown(ev)
+                            //, 250, ev)
+                            return false
+                        }
+                    }
+                } else if (pres.length == 4){
+                    if (typeof pres[0] == "string" && typeof pres[3] == "string" && ((!isNaN(pres[2]) && typeof pres[1] == "string") ||(!isNaN(pres[1]) && typeof pres[2] == "string"))){
+                        pres.poso = pres[3].split("-");
+                        if((pres.poso.length >= 3 && pres.poso.length <= 5) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2])){
+                            ev.target.value=""
+                            return false;
+                        }
+                    }
+                }
+            }
+            ev.target.keydown(ev)
+        }
+    }}).length == 0){setTimeout(addAutoPrescriptor, 500, ev)}
+}
 
 function dateHourPres(ev){
     if (typeof datePresPicker != "undefined"){
@@ -504,6 +512,8 @@ function monitorClick(ev){
                 ev.view.document.querySelector('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button').click()
             }
         },250,ev.target)
+    } else if (ev.target.title == "HEO - Prescrire"){
+        addAutoPrescriptor(ev)
     } else if (ev.target.innerText == "AHARRY"){
         ev.view.document.querySelector("input[name='mevaLockSessionWindowPwField']").value=Meva.password
         ev.view.document.querySelector("span.GDKHHE1MCB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
