@@ -69,7 +69,7 @@ output_Selector = function(sel, checkExists = false){
  if (checkExists){
   return ($(sel, output.document.body).length > 0 ? true : false)
  }else{
-  setTimeout((selector, out)=>$(selector, out.document).each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},500, el)}}), 500, sel, output)
+  setTimeout((selector, out)=>$(selector, out.document).each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},250, el)}}), 250, sel, output)
  }
 }
 `
@@ -174,7 +174,7 @@ function addAutoPrescriptor(ev){
                                     SSSFrame_win.output_Selector(presc[0] + " "+presc[1])
                                     clearInterval(SSSFrame_win.autoEnhancedPresWaiter)
                                 }
-                            },500, pres)
+                            },250, pres)
                             //setTimeout((ev)=>
                             ev.target.keydown(ev)
                             //, 250, ev)
