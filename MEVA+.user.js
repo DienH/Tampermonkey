@@ -138,9 +138,12 @@ body {background-color:#F5F5F5;}
                     break;
                 default:
                     if ((pres = window.parent.autoEnhancedPres) && $("p.Titre:containsI("+pres[0]+"):containsI("+pres[1]+")", document).length){
-                        if (pres.poso.every(el=>el == pres.poso[0])){
-                            log('bouh')
-                        }
+                        $("#frequence>option[value='"+pres.posos[0].freqName.toUpperCase()+"']", document).each((i,el)=>{el.selected=true})
+                        $("#PosoSimple", document)[0].click()
+                        $("#DoseSimple", document).val(pres.posos[0].dose)
+                        pres.posos.shift()
+                        if (!pres.posos){window.parent.autoEnhancedPres = ""}
+                        $('#btPrescrire')[0].click()
                     }
                     break;
             }
@@ -187,7 +190,7 @@ function addAutoPrescriptor(ev){
                     console.log(pres)
                 if((pres.poso.length >= 3 && pres.poso.length <= 4) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2]) && (!pres.poso[3] || pres.poso[3] && !isNaN(pres.poso[3]))){
                     if (pres.dose){
-                        pres.poso=pres.poso.map(t=>t*Number(pres[1]))
+                        pres.poso=pres.poso.map(t=>t*pres.dose)
                     }
                     let i = 0
                     pres.posos=[]
