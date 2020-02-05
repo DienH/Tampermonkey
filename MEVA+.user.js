@@ -168,11 +168,15 @@ body {background-color:#F5F5F5;}
 
 function addAutoPrescriptor(ev){
     let SSSFrame_win = ev.view.document.name == "SSSFrame" ? ev.view.document : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame_win.$
-    let DCI = {valium:"diazepam"}, formes = ["cp", "buv", "inj", "gel"]
+    let DCI = {valium:"diazepam",loxapac:"loxapine",abilify:"aripiprazole", risperdal:"risperidone", seresta:"oxazepam", tranxene:"clorazepate",tercian:"cyamemazine", theralene:"alimemazine",
+               nozinan:"levomepromazine", leponex:"clozapine", lysanxia:"prazepam", temesta:"lorazepam", xanax:"alprazolam", atarax:"hydroxyzine", imovane:"zopiclone", revia:"naltrexone"
+              },
+        formes = ["cp", "buv", "inj", "gel"]
     if($('#HEO_INPUT', SSSFrame_win.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
         if(ev.keyCode==13){
             let pres = ev.target.value.split(" ")
             if (typeof pres == "object" && pres.length > 1){
+                if (pres[0] == "mod") {pres.modif = pres.shift()}
                 pres.nom = DCI[pres[0]] || pres[0]
                 pres.dose = Number(pres[2]) || Number(pres[1]) || ""
                 pres.poso = pres.find(el=>el.search(/\-.+\-/s)+1).split("-").map(t=>Number(t));
