@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.11
+// @version      0.2.12
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -19,6 +19,8 @@
 
     var µ = unsafeWindow
     if (!$ || !$.fn) {var $ = window.jQuery || unsafeWindow.jQuery || window.parent.jQuery};
+    var log = console.log
+    $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
     if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""})}
     let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link'), title = ""
     dateScript.src = "https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"
@@ -58,14 +60,18 @@ $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText
 output_Selector = function(sel, checkExists = false){
  let output = document.heoPane_output || window.parent.document.heoPane_output
  if (!sel){sel = "Retourner"}
- let filterString = ""
+ let filterString = "", modif = false
  if (typeof sel == "string" && sel.search(" ")+1){
   sel = sel.split(" ")
   for (let i = 0; i < sel.length ; i++){
-   filterString += ":containsI("+sel[i]+")"
+   if (sel[i] == "mod"){
+    modif = true
+   } else {
+    filterString += ":containsI("+sel[i]+")"
+   }
   }
  }
- sel = 'a'+(typeof sel == "string" ? ':contains('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))
+ sel = 'a'+(modif ? "" : ":not(:contains(MODIFICATION))")+(typeof sel == "string" ? ':contains('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))
  if (checkExists){
   return ($(sel, output.document.body).length > 0 ? true : false)
  }else{
@@ -112,7 +118,7 @@ output_Selector = function(sel, checkExists = false){
                 break;
         }
     } else if ((location.href.search("popupContents.jsp")+1)){
-        let styleEl = document.createElement('style')
+        let styleEl = document.createElement('style'), title, pres
         styleEl.innerHTML = `
 .outOf2DaysRange {background:coral;}
 .nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
@@ -131,6 +137,11 @@ body {background-color:#F5F5F5;}
                 case "Examen Tomodensitométrique":
                     break;
                 default:
+                    if ((pres = window.parent.autoEnhancedPres) && $("p.Titre:containsI("+pres[0]+"):containsI("+pres[1]+")", document).length){
+                        if (pres.poso.every(el=>el == pres.poso[0])){
+                            log('bouh')
+                        }
+                    }
                     break;
             }
         } else {
@@ -157,38 +168,117 @@ body {background-color:#F5F5F5;}
 
 function addAutoPrescriptor(ev){
     let SSSFrame_win = ev.view.document.name == "SSSFrame" ? ev.view.document : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame_win.$
+    let DCI = {valium:"diazepam"}, formes = ["cp", "buv", "inj", "gel"]
     if($('#HEO_INPUT', SSSFrame_win.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
         if(ev.keyCode==13){
             let pres = ev.target.value.split(" ")
-            console.log(pres)
-            if (typeof pres == "object"){
-                if(pres.length == 3){
-                    if (typeof pres[0] == "string" && typeof pres[1] =="string" && typeof pres[2] == "string"){
-                        pres.poso = pres[2].split("-").map(t=>Number(t));
-                        if((pres.poso.length >= 3 && pres.poso.length <= 5) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2])){
-                            if (!isNaN(pres[1])){pres.poso=pres.poso.map(t=>t*Number(pres[1]));pres[1]="cp";}
-                            ev.target.value=pres[0]+" "+pres[1]
-                            SSSFrame_win.autoEnhancedPres = pres
-                            SSSFrame_win.autoEnhancedPresWaiter = setInterval((presc)=>{
-                                if (SSSFrame_win.output_Selector(presc[0] + " "+presc[1], true)){
-                                    SSSFrame_win.output_Selector(presc[0] + " "+presc[1])
-                                    clearInterval(SSSFrame_win.autoEnhancedPresWaiter)
+            if (typeof pres == "object" && pres.length > 1){
+                pres.nom = DCI[pres[0]] || pres[0]
+                pres.dose = Number(pres[2]) || Number(pres[1]) || ""
+                pres.poso = pres.find(el=>el.search(/\-.+\-/s)+1).split("-").map(t=>Number(t));
+                pres.posoIndex = pres.findIndex(el=>el.search(/\-.+\-/s)+1)
+                pres.forme = formes.find(el=>pres.find(elm=>elm==el)) || "cp"
+                pres[0]=pres.nom
+                pres[1]=pres.forme
+                    console.log(pres)
+                if((pres.poso.length >= 3 && pres.poso.length <= 4) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2]) && (!pres.poso[3] || pres.poso[3] && !isNaN(pres.poso[3]))){
+                    if (pres.dose){
+                        pres.poso=pres.poso.map(t=>t*Number(pres[1]))
+                    }
+                    let i = 0
+                    pres.posos=[]
+                    while (!isNaN(pres.poso[i])){
+                        let j = 0, addPoso = true
+                        for (let j=0;j<pres.poso.length;j++){
+                            if (!pres.poso[i] || (pres.posos[j] && pres.posos[j].freq[i])){
+                                addPoso = false
+                                break;
+                            }
+                        }
+                        if (addPoso){
+                            let currPoso = {dose:pres.poso[i],freq:pres.poso.map(el=>((el == pres.poso[i] ? 1 : 0)))}
+                            if (pres.poso.length == 3){
+                                switch (currPoso.freq.join('-')){
+                                    case "1-0-0":
+                                        currPoso.freqName = "Matin"
+                                        break
+                                    case "0-1-0":
+                                        currPoso.freqName = "Midi"
+                                        break
+                                    case "0-0-1":
+                                        currPoso.freqName = "Soir"
+                                        break
+                                    case "1-1-0":
+                                        currPoso.freqName = "Matin Midi"
+                                        break
+                                    case "1-0-1":
+                                        currPoso.freqName = "Matin Soir"
+                                        break
+                                    case "0-1-1":
+                                        currPoso.freqName = "Midi Soir"
+                                        break
+                                    case "1-1-1":
+                                        currPoso.freqName = "Matin Midi Soir"
+                                        break;
+                                    default:
+                                        break
                                 }
-                            },250, pres)
-                            //setTimeout((ev)=>
-                            ev.target.keydown(ev)
-                            //, 250, ev)
-                            return false
-                        }
+                            } else if (pres.poso.length == 4){
+                                switch (currPoso.freq.join('-')){
+                                    case "1-1-1-1":
+                                        currPoso.freqName = "MMS Coucher"
+                                        break
+                                    case "0-0-0-1":
+                                        currPoso.freqName = "Coucher"
+                                        break
+                                    case "1-1-1-0":
+                                        currPoso.freqName = "Matin Midi Soir"
+                                        break;
+                                    case "1-0-0-0":
+                                        currPoso.freqName = "Matin"
+                                        break
+                                    case "0-1-0-0":
+                                        currPoso.freqName = "Midi"
+                                        break
+                                    case "0-0-1-0":
+                                        currPoso.freqName = "Soir"
+                                        break
+                                    case "1-1-0-0":
+                                        currPoso.freqName = "Matin Midi"
+                                        break
+                                    case "1-0-1-0":
+                                        currPoso.freqName = "Matin Soir"
+                                        break
+                                    case "0-1-1-0":
+                                        currPoso.freqName = "Midi Soir"
+                                        break
+                                    case "1-0-0-1":
+                                        currPoso.freqName = "Matin Coucher"
+                                        break
+                                    case "0-0-1-1":
+                                        currPoso.freqName = "Matin Coucher"
+                                        break
+                                    default:
+                                        break
+                                }
+                            }
+                            pres.posos.push(currPoso)
+                        } else { addPoso = true}
+                        i++
                     }
-                } else if (pres.length == 4){
-                    if (typeof pres[0] == "string" && typeof pres[3] == "string" && ((!isNaN(pres[2]) && typeof pres[1] == "string") ||(!isNaN(pres[1]) && typeof pres[2] == "string"))){
-                        pres.poso = pres[3].split("-");
-                        if((pres.poso.length >= 3 && pres.poso.length <= 5) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2])){
-                            ev.target.value=""
-                            return false;
+                    ev.target.value=pres[0]+" "+pres[1]
+                    SSSFrame_win.autoEnhancedPres = pres
+                    console.log(pres)
+                    SSSFrame_win.autoEnhancedPresWaiter = setInterval((presc)=>{
+                        if (SSSFrame_win.output_Selector(presc[0] + " "+presc[1], true)){
+                            SSSFrame_win.output_Selector(presc[0] + " "+presc[1])
+                            clearInterval(SSSFrame_win.autoEnhancedPresWaiter)
                         }
-                    }
+                    },250, pres)
+                    //setTimeout((ev)=>
+                    ev.target.keydown(ev)
+                    //, 250, ev)
+                    return false
                 }
             }
             ev.target.keydown(ev)
