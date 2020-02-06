@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.12
+// @version      0.2.13
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -178,16 +178,21 @@ function addAutoPrescriptor(ev){
     let DCI = {valium:"diazepam",loxapac:"loxapine",abilify:"aripiprazole", risperdal:"risperidone", seresta:"oxazepam", tranxene:"clorazepate",tercian:"cyamemazine", theralene:"alimemazine",
                nozinan:"levomepromazine", leponex:"clozapine", lysanxia:"prazepam", temesta:"lorazepam", xanax:"alprazolam", atarax:"hydroxyzine", imovane:"zopiclone", revia:"naltrexone"
               },
-        formes = ["cp", "buv", "inj", "gel"]
+        formes = ["cp", "buv", "inj", "gel"],
+        frequence = {"coucher":[0,0,0,1], "matin":[1,0,0], "midi":[0,1,0], "soir": [0,0,1]}
     if($('#HEO_INPUT', SSSFrame_win.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
         if(ev.keyCode==13){
             let pres = ev.target.value.split(" ")
-            if (typeof pres == "object" && pres.length > 1){
+            if ($("#preHeaderMarkup", SSSFrame_win.document.heoPane_prompt.document).is(':contains(Sélectionnez un item)') && typeof pres == "object" && pres.length > 1){
                 if (pres[0] == "mod") {pres.modif = pres.shift()}
                 pres.nom = DCI[pres[0]] || pres[0]
                 pres.dose = Number(pres[2]) || Number(pres[1]) || ""
-                pres.poso = pres.find(el=>el.search(/\-.+\-/s)+1).split("-").map(t=>Number(t));
-                pres.posoIndex = pres.findIndex(el=>el.search(/\-.+\-/s)+1)
+                try{
+                    pres.poso = pres.find(el=>el.search(/[\-\.].+[\-\.]/s)+1).split('.').join('-').split("-").map(t=>Number(t))
+                    pres.posoIndex = pres.findIndex(el=>el.search(/[\-\.].+[\-\.]/s)+1)
+                }catch (e){
+                    pres.poso = frequence[Object.keys(frequence).find(elm=>pres.find(el=>elm.toUpperCase()==el.toUpperCase()))]
+                }
                 pres.forme = formes.find(el=>pres.find(elm=>elm==el)) || "cp"
                 pres[0]=pres.nom
                 pres[1]=pres.forme
