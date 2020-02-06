@@ -152,6 +152,7 @@ body {background-color:#F5F5F5;}
                 if (document.body.innerText.search('date de début est située dans le passé')){
                     $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', window.parent.document)[0].click()
                 }
+            } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).each((i,el)=>{console.log(el);el.click()})){
             }
         }
     } else if (location.href.search("/heoclient-application-web/heoPrompt.jsp")+1){
