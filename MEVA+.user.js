@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.13
+// @version      0.2.14
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
 // @require      https://code.jquery.com/jquery.min.js
-// require      https://rawgit.com/DienH/Tampermonkey/master/Dien.js
+// @require      https://rawgit.com/DienH/Tampermonkey/master/Dien.js
 // require      https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.2/math.js
 // @grant        unsafeWindow
 // @grant        GM_getValue
@@ -58,20 +58,21 @@
 $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
 
 output_Selector = function(sel, checkExists = false){
- let output = document.heoPane_output || window.parent.document.heoPane_output
+ let output = document.heoPane_output || window.parent.document.heoPane_output,
+  MedocPasHorsLivret = ["diazepam", "olanzapine"]
  if (!sel){sel = "Retourner"}
- let filterString = "", modif = false
+ let filterString = "", pasHorsLivret = false
  if (typeof sel == "string" && sel.search(" ")+1){
   sel = sel.split(" ")
   for (let i = 0; i < sel.length ; i++){
-   if (sel[i] == "mod"){
-    modif = true
+   if (MedocPasHorsLivret.includes(sel[i])){
+    pasHorsLivret = true
    } else {
     filterString += ":containsI("+sel[i]+")"
    }
   }
  }
- sel = 'a'+(modif ? "" : ":not(:contains(MODIFICATION))")+(typeof sel == "string" ? ':contains('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))
+ sel = 'a'+(typeof sel == "string" ? ':containsI('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))+(pasHorsLivret ? ":not(:has(.HorsLivret))":"")
  if (checkExists){
   return ($(sel, output.document.body).length > 0 ? true : false)
  }else{
@@ -158,10 +159,17 @@ body {background-color:#F5F5F5;}
                 }
             }
         }
-    } else if (location.href.search("/heoclient-application-web/heoPrompt.jsp")+1){
+    } else if (location.href.search("heoPrompt.jsp")+1){
         if (document.getElementById('preHeaderMarkup')){
-            let promptTitle = document.getElementById('preHeaderMarkup').innerText
-            if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle.search("(avec une date et heure de fin optionnelle)")+1) ||
+            let promptTitle = document.getElementById('preHeaderMarkup').innerText, pres
+            if ((pres = window.parent.autoEnhancedPres) && $('.orderName:containsI("'+pres.nom+'"):containsI("'+pres.forme+'")', window.parent.document.heoPane_output.document).length){
+                switch (promptTitle){
+                    case "Dose par prise:":
+                        $('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")').fakeClick()
+                            //.each((i,el)=>el.click())
+                        break;
+                }
+            } else if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle.search("(avec une date et heure de fin optionnelle)")+1) ||
                 promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?" ||
                 promptTitle == "Quand la prescription doit-elle être reprise ?" || promptTitle == "Date de Dernière Prise:"){
                 document.head.append(hourCSS)
@@ -205,6 +213,9 @@ function addAutoPrescriptor(ev){
                     pres.posoIndex = pres.findIndex(el=>el.search(/[\-\.].+[\-\.]/s)+1)
                 }catch (e){
                     pres.poso = frequence[Object.keys(frequence).find(elm=>pres.find(el=>elm.toUpperCase()==el.toUpperCase()))]
+                    if (pres.poso == undefined){
+                        pres.poso = defaultsPres.posos[pres.nom]
+                    }
                 }
                 pres.forme = formes.find(el=>pres.find(elm=>elm==el)) || defaultsPres.formes[pres.nom] || "cp"
                 pres[0]=pres.nom
@@ -213,7 +224,7 @@ function addAutoPrescriptor(ev){
                 if((pres.poso.length >= 3 && pres.poso.length <= 4) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2]) && (!pres.poso[3] || pres.poso[3] && !isNaN(pres.poso[3]))){
                     if (pres.dose){
                         pres.poso=pres.poso.map(t=>t*pres.dose)
-                        pres.posoSb=pres.posoSb.map(t=>t*pres.dose)
+                        if(pres.posoSb) pres.posoSb=pres.posoSb.map(t=>t*pres.dose)
                     }
                     let i = 0
                     pres.posos=[]
