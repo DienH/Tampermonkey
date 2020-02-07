@@ -175,9 +175,18 @@ body {background-color:#F5F5F5;}
 
 function addAutoPrescriptor(ev){
     let SSSFrame_win = ev.view.document.name == "SSSFrame" ? ev.view.document : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame_win.$
-    let DCI = {valium:"diazepam",loxapac:"loxapine",abilify:"aripiprazole", risperdal:"risperidone", seresta:"oxazepam", tranxene:"clorazepate",tercian:"cyamemazine", theralene:"alimemazine",
-               nozinan:"levomepromazine", leponex:"clozapine", lysanxia:"prazepam", temesta:"lorazepam", xanax:"alprazolam", atarax:"hydroxyzine", imovane:"zopiclone", revia:"naltrexone"
+    let DCI = {loxapac:"loxapine", nozinan:"levomepromazine", tercian:"cyamemazine", theralene:"alimemazine", abilify:"aripiprazole", risperdal:"risperidone",zyprexa:"olanzapine",
+               nozinan:"levomepromazine", leponex:"clozapine", valium:"diazepam", seresta:"oxazepam", tranxene:"clorazepate", lysanxia:"prazepam", temesta:"lorazepam", xanax:"alprazolam",
+               atarax:"hydroxyzine", imovane:"zopiclone", revia:"naltrexone", selincro:"nalmefene"
               },
+        defaultsPres = {
+            posos:{
+                diazepam:[1,1,1,1], aripiprazole:[1,0,0], loxapine:[1,1,1,1], risperidone:[0,0,0,1], olanzapine:[0,0,0,1], cyamemazine:[1,1,1,1]
+            },
+            formes:{
+                loxapine:"buv", olanzapine:"dispers", cyamemazine:"buv"
+            }
+        },
         formes = ["cp", "buv", "inj", "gel"],
         frequence = {"coucher":[0,0,0,1], "matin":[1,0,0], "midi":[0,1,0], "soir": [0,0,1]}
     if($('#HEO_INPUT', SSSFrame_win.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
@@ -187,19 +196,24 @@ function addAutoPrescriptor(ev){
                 if (pres[0] == "mod") {pres.modif = pres.shift()}
                 pres.nom = DCI[pres[0]] || pres[0]
                 pres.dose = Number(pres[2]) || Number(pres[1]) || ""
+                let poso, posoSyste
                 try{
-                    pres.poso = pres.find(el=>el.search(/[\-\.].+[\-\.]/s)+1).split('.').join('-').split("-").map(t=>Number(t))
+                    poso = pres.find(el=>el.search(/[\-\.].+[\-\.]/s)+1)
+                    posoSyste = poso.split('+')[0]
+                    try{pres.posoSb = poso.split('+')[1]}catch(e){}
+                    pres.poso = posoSyste.split('.').join('-').split("-").map(t=>Number(t))
                     pres.posoIndex = pres.findIndex(el=>el.search(/[\-\.].+[\-\.]/s)+1)
                 }catch (e){
                     pres.poso = frequence[Object.keys(frequence).find(elm=>pres.find(el=>elm.toUpperCase()==el.toUpperCase()))]
                 }
-                pres.forme = formes.find(el=>pres.find(elm=>elm==el)) || "cp"
+                pres.forme = formes.find(el=>pres.find(elm=>elm==el)) || defaultsPres.formes[pres.nom] || "cp"
                 pres[0]=pres.nom
                 pres[1]=pres.forme
                     console.log(pres)
                 if((pres.poso.length >= 3 && pres.poso.length <= 4) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2]) && (!pres.poso[3] || pres.poso[3] && !isNaN(pres.poso[3]))){
                     if (pres.dose){
                         pres.poso=pres.poso.map(t=>t*pres.dose)
+                        pres.posoSb=pres.posoSb.map(t=>t*pres.dose)
                     }
                     let i = 0
                     pres.posos=[]
