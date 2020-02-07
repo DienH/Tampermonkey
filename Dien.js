@@ -1,4 +1,7 @@
 (function($) {
+	$.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "")
+		.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase()
+		.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
     $.fn.extend({
         //select all text nodes within selected elements, or text nodes containing filter text
         textNodes(...args) {
@@ -254,6 +257,9 @@
 				}
 			})
 		},
+	click2(){
+		return this.each((i,el)=>el.click())
+	},
         fakeClick(){
             return this.each(function(){
                 var middle = $(this).middle();
