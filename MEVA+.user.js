@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.14
+// @version      0.2.15
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -71,14 +71,18 @@ output_Selector = function(sel, checkExists = false){
     filterString += ":containsI("+sel[i]+")"
    }
   }
+ } else if (typeof sel == "object"){
  }
+
+}
  sel = 'a'+(typeof sel == "string" ? ':containsI('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))
  if (checkExists){
   return ($(sel, output.document.body).length > 0 ? true : false)
  }else{
   setTimeout((selector, out)=>{
    let $selection = $(selector, out.document)
-   if ($selection.length > 1){$selection = $selection.filter(pasHorsLivret ? ":not(:has(.HorsLivret))":"")}
+   log($selection)
+   if ($selection.length > 1){$selection = $selection.filter(pasHorsLivret ? ":not(:has(.HorsLivret))":"*")}
    $selection.each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},250, el)}})
   }, 250, sel, output)
  }
@@ -169,11 +173,52 @@ body {background-color:#F5F5F5;}
             if ((pres = window.parent.autoEnhancedPres) && $('.orderName:containsI("'+pres.nom+'"):containsI("'+pres.forme+'")', window.parent.document.heoPane_output.document).length){
                 switch (promptTitle){
                     case "Dose par prise:":
-                        $('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")').click2()
-                            //.each((i,el)=>el.click())
+                        $('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")').click2() //.each((i,el)=>el.click())
                         break;
                 }
-            } else if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle.search("(avec une date et heure de fin optionnelle)")+1) ||
+            } else if ($('.orderName:contains("INFORMATION SUR LE PATIENT")', window.parent.document.heoPane_output.document).length){
+                $('#HEO_INPUT', window.parent.document).each((i,el)=>setTimeout(elm=>{let a = new Date();elm.value=a.toLocaleDateString()+" "+a.toLocaleTimeString([], {timeStyle: 'short'})}, 250, el))
+            } else if ($('.orderName:contains("Isolement : Indication")', window.parent.document.heoPane_output.document).length){
+                switch (promptTitle){
+                    case "Interventions alternatives tentées:":
+                        $('a[onclick]:contains("(_)"):not(:contains("5")), a[onclick]:contains("ENTREE")').click2()
+                        break
+                    case "Indication Isolement:":
+                        $('a[onclick]:contains("(_)"):contains("Prévention")').click2()
+                        break
+                    case "Absence de contre-indication à l'isolement:":
+                        $('a[onclick]:contains("(x)"):contains("Absence de CI")').each(()=>$('a[onclick]:contains("ENTREE")').click2())
+                        break
+                    case "Présence Soignants Renfort / Soins:":
+                    case "Examen somatique réalisé :":
+                    case "Présence Soignants Repas:":
+                    case "Présence Soignants Soins Hygiène:":
+                    case "Oreiller Standard:":
+                        $('a[onclick]:contains("OUI")').click2()
+                        break
+                    case "Matelas:":
+                        $('a[onclick]:contains("STANDARD")').click2()
+                        break
+                    case "Objets Autorisés:":
+                    case "Vêtements Autorisés:":
+                    case "Mobilier Autorisé:":
+                        $('#HEO_INPUT', window.parent.document).each((i,el)=>setTimeout(elm=>{elm.value="AUCUN"}, 250, el))
+                        break
+                    case "Visites:":
+                        $('a[onclick]:contains("RESTREINT")').click2()
+                        break
+                }
+            } else if ($('.orderName:contains("Mise en Isolement")', window.parent.document.heoPane_output.document).length){
+                 switch (promptTitle){
+                     case "Mode d'Hospitalisation:":
+                         $('a[onclick]:contains("(x)")').each(()=>$('a[onclick]:contains("ENTREE")').click2())
+                         break
+                     case "Information Mise en Isolement:":
+                        $('a[onclick]:contains("Patient"):contains("(_)")').click2()
+                         break
+                 }
+            }
+            if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle.search("(avec une date et heure de fin optionnelle)")+1) ||
                 promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?" ||
                 promptTitle == "Quand la prescription doit-elle être reprise ?" || promptTitle == "Date de Dernière Prise:"){
                 document.head.append(hourCSS)
