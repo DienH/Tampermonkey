@@ -72,11 +72,15 @@ output_Selector = function(sel, checkExists = false){
    }
   }
  }
- sel = 'a'+(typeof sel == "string" ? ':containsI('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))+(pasHorsLivret ? ":not(:has(.HorsLivret))":"")
+ sel = 'a'+(typeof sel == "string" ? ':containsI('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))
  if (checkExists){
   return ($(sel, output.document.body).length > 0 ? true : false)
  }else{
-  setTimeout((selector, out)=>$(selector, out.document).each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},250, el)}}), 250, sel, output)
+  setTimeout((selector, out)=>{
+   let $selection = $(selector, out.document)
+   if ($selection.length > 1){$selection = $selection.filter(pasHorsLivret ? ":not(:has(.HorsLivret))":"")}
+   $selection.each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},250, el)}})
+  }, 250, sel, output)
  }
 }
 `
@@ -165,7 +169,7 @@ body {background-color:#F5F5F5;}
             if ((pres = window.parent.autoEnhancedPres) && $('.orderName:containsI("'+pres.nom+'"):containsI("'+pres.forme+'")', window.parent.document.heoPane_output.document).length){
                 switch (promptTitle){
                     case "Dose par prise:":
-                        $('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")').fakeClick()
+                        $('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")').click2()
                             //.each((i,el)=>el.click())
                         break;
                 }
@@ -185,14 +189,17 @@ function addAutoPrescriptor(ev){
     let SSSFrame_win = ev.view.document.name == "SSSFrame" ? ev.view.document : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame_win.$
     let DCI = {loxapac:"loxapine", nozinan:"levomepromazine", tercian:"cyamemazine", theralene:"alimemazine", abilify:"aripiprazole", risperdal:"risperidone",zyprexa:"olanzapine",
                nozinan:"levomepromazine", leponex:"clozapine", valium:"diazepam", seresta:"oxazepam", tranxene:"clorazepate", lysanxia:"prazepam", temesta:"lorazepam", xanax:"alprazolam",
-               atarax:"hydroxyzine", imovane:"zopiclone", revia:"naltrexone", selincro:"nalmefene"
+               atarax:"hydroxyzine", imovane:"zopiclone", revia:"naltrexone", selincro:"nalmefene", noctamide:"lormetazepam"
               },
         defaultsPres = {
             posos:{
-                diazepam:[1,1,1,1], aripiprazole:[1,0,0], loxapine:[1,1,1,1], risperidone:[0,0,0,1], olanzapine:[0,0,0,1], cyamemazine:[1,1,1,1]
+                diazepam:[1,1,1,1], aripiprazole:[1,0,0], loxapine:[1,1,1,1], risperidone:[0,0,0,1], olanzapine:[0,0,0,1], cyamemazine:[1,1,1,1],alimemazine:[0,0,0,1], lormetazepam:[0,0,0,1], hydroxyzine:[0,0,0,1]
             },
             formes:{
                 loxapine:"buv", olanzapine:"dispers", cyamemazine:"buv"
+            },
+            dose:{
+                olanzapine:20,aripiprazole:10,loxapine:25,cyamemazine:25,risperidone:2,alimemazine:10,diazepam:10,lorazepam:1,lormetazepam:1, hydroxyzine:25
             }
         },
         formes = ["cp", "buv", "inj", "gel"],
