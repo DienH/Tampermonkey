@@ -221,7 +221,7 @@ function addAutoPrescriptor(ev){
                 pres[0]=pres.nom
                 pres[1]=pres.forme
                     console.log(pres)
-                if((pres.poso.length >= 3 && pres.poso.length <= 4) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2]) && (!pres.poso[3] || pres.poso[3] && !isNaN(pres.poso[3]))){
+                if(pres.poso && (pres.poso.length >= 3 && pres.poso.length <= 4) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2]) && (!pres.poso[3] || pres.poso[3] && !isNaN(pres.poso[3]))){
                     if (pres.dose){
                         pres.poso=pres.poso.map(t=>t*pres.dose)
                         if(pres.posoSb) pres.posoSb=pres.posoSb.map(t=>t*pres.dose)
