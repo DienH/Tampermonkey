@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.15
+// @version      0.2.16
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -220,7 +220,8 @@ body {background-color:#F5F5F5;}
             }
             if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle.search("(avec une date et heure de fin optionnelle)")+1) ||
                 promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?" ||
-                promptTitle == "Quand la prescription doit-elle être reprise ?" || promptTitle == "Date de Dernière Prise:"){
+                promptTitle == "Quand la prescription doit-elle être reprise ?" || promptTitle == "Date de Dernière Prise:" ||
+               promptTitle == "Quand la prescription doit-elle être suspendue ?"){
                 document.head.append(hourCSS)
                 document.head.append(hourScript)
                 document.head.append(dateScript)
