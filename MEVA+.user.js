@@ -96,6 +96,7 @@ $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText
 .presPsy-rapide {position: absolute;right: 0;color: green!important;}
 .presPsy-rapide:hover {text-decoration:underline;}
 `).appendTo('body')
+        $('<script>').text(presConsignesRapides.toString()).appendTo('body')
 
         switch($('div.outlineTitle').text().trim()){
             case "Prescriptions Usuelles de Psychiatrie Adulte" :
@@ -241,7 +242,7 @@ function output_Selector(sel, checkExists = false){
 
 function presConsignesRapides(){
     if (!$){var $ = window.$ || window.parent.$}
-    let SSSFrame = unsafeWindow
+    let SSSFrame = window
     while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
         SSSFrame = SSSFrame.parent
     }
