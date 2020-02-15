@@ -51,6 +51,9 @@
 #DIEN-POPUP table, #DIEN-POPUP tr, #DIEN-POPUP td, #DIEN-POPUP th {border: 1px solid black;border-collapse: collapse;}
 #DIEN-POPUP table {width:100%;}
 #DIEN-POPUP table td+td {text-align:center;}
+#DIEN-POPUP [contenteditable][placeholder]:empty:before {content: attr(placeholder);color: #aaa;font-style:italic;}
+#DIEN-POPUP [contenteditable][placeholder]:empty:focus:before {content: "";}
+
 div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,
 iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY
 //8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb
@@ -265,7 +268,8 @@ function presConsignesRapides(){
             minHeight:300,
             minWidth:680,
             width:800,
-            height:300,
+            height:"auto",
+            resize:"auto",
             buttons: [
                 {
                     text: "Valider",
@@ -300,7 +304,7 @@ function presConsignesRapides(){
  <tbody>
   <tr>
    <td>Appels</td>
-   <td><input type="radio" name="appels"></td>
+   <td><input type="radio" name="appels" checked=true></td>
    <td><input type="radio" name="appels"></td>
    <td><input type="radio" name="appels"></td>
    <td><input type="radio" name="appels"></td>
@@ -308,7 +312,7 @@ function presConsignesRapides(){
   </tr>
   <tr>
    <td>Déplacements</td>
-   <td><input type="radio" name="deplacements"></td>
+   <td><input type="radio" name="deplacements" checked=true></td>
    <td><input type="radio" name="deplacements"></td>
    <td><input type="radio" name="deplacements"></td>
    <td><input type="radio" name="deplacements"></td>
@@ -316,7 +320,7 @@ function presConsignesRapides(){
   </tr>
   <tr>
    <td>Visites</td>
-   <td><input type="radio" name="visites"></td>
+   <td><input type="radio" name="visites" checked=true></td>
    <td><input type="radio" name="visites"></td>
    <td><input type="radio" name="visites"></td>
    <td><input type="radio" name="visites"></td>
@@ -324,7 +328,7 @@ function presConsignesRapides(){
   </tr>
   <tr>
    <td>Vêtements</td>
-   <td><input type="radio" name="vetements"></td>
+   <td><input type="radio" name="vetements" checked=true></td>
    <td><input type="radio" name="vetements"></td>
    <td><input type="radio" name="vetements"></td>
    <td><input type="radio" name="vetements"></td>
@@ -332,7 +336,7 @@ function presConsignesRapides(){
   </tr>
   <tr>
    <td>Affaires persos</td>
-   <td><input type="radio" name="affaires"></td>
+   <td><input type="radio" name="affaires" checked=true></td>
    <td><input type="radio" name="affaires"></td>
    <td><input type="radio" name="affaires"></td>
    <td><input type="radio" name="affaires"></td>
@@ -340,7 +344,7 @@ function presConsignesRapides(){
   </tr>
   <tr>
    <td>Cigarettes</td>
-   <td><input type="radio" name="cigarettes"></td>
+   <td><input type="radio" name="cigarettes" checked=true></td>
    <td><input type="radio" name="cigarettes"></td>
    <td><input type="radio" name="cigarettes"></td>
    <td><input type="radio" name="cigarettes"></td>
