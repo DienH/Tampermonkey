@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.18
+// @version      0.2.19
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -53,6 +53,7 @@
 #DIEN-POPUP table td+td {text-align:center;}
 #DIEN-POPUP [contenteditable][placeholder]:empty:before {content: attr(placeholder);color: #aaa;font-style:italic;}
 #DIEN-POPUP [contenteditable][placeholder]:empty:focus:before {content: "";}
+#DIEN-POPUP .pres-consignes-restreint [contenteditable][placeholder]:empty:before {color: #a22;font-style:initial;}
 
 div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,
 iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY
@@ -265,11 +266,12 @@ function presConsignesRapides(){
         $('<div id="DIEN-POPUP"></div>', SSSFrame.document).dialog({
             modal:true,
             title:"Consignes d'hospitalisation",
-            minHeight:300,
+            minHeight:250,
             minWidth:680,
             width:800,
             height:"auto",
             resize:"auto",
+            autoResize:true,
             buttons: [
                 {
                     text: "Valider",
@@ -277,9 +279,6 @@ function presConsignesRapides(){
                     click: function() {
                         $( this ).dialog( "close" );
                     }
-                    // Uncommenting the following line would hide the text,
-                    // resulting in the label being used as a tooltip
-                    //showText: false
                 },
                 {
                     text: "Annuler",
@@ -307,7 +306,7 @@ function presConsignesRapides(){
    <td><input type="radio" name="appels" checked=true></td>
    <td><input type="radio" name="appels"></td>
    <td><input type="radio" name="appels"></td>
-   <td><input type="radio" name="appels"></td>
+   <td><input type="radio" name="appels" class="pres-consignes-restreint"></td>
    <td><div contenteditable name="appels-com" placeholder="Nombres d'appels ? Destinataires ?"/></td>
   </tr>
   <tr>
@@ -315,7 +314,7 @@ function presConsignesRapides(){
    <td><input type="radio" name="deplacements" checked=true></td>
    <td><input type="radio" name="deplacements"></td>
    <td><input type="radio" name="deplacements"></td>
-   <td><input type="radio" name="deplacements"></td>
+   <td><input type="radio" name="deplacements" class="pres-consignes-restreint"></td>
    <td><div contenteditable name="deplacements-com" placeholder="Descente sur temps court ?"/></td>
   </tr>
   <tr>
@@ -323,15 +322,15 @@ function presConsignesRapides(){
    <td><input type="radio" name="visites" checked=true></td>
    <td><input type="radio" name="visites"></td>
    <td><input type="radio" name="visites"></td>
-   <td><input type="radio" name="visites"></td>
-   <td><div contenteditable name="visites-com" placeholder="Veste ? Pantalon ?"/></td>
+   <td><input type="radio" name="visites" class="pres-consignes-restreint"></td>
+   <td><div contenteditable name="visites-com" placeholder="Famille ? Temps court ?"/></td>
   </tr>
   <tr>
    <td>Vêtements</td>
    <td><input type="radio" name="vetements" checked=true></td>
    <td><input type="radio" name="vetements"></td>
    <td><input type="radio" name="vetements"></td>
-   <td><input type="radio" name="vetements"></td>
+   <td><input type="radio" name="vetements" class="pres-consignes-restreint"></td>
    <td><div contenteditable name="vetements-com" placeholder="Veste ? Pantalon ?"/></td>
   </tr>
   <tr>
@@ -339,7 +338,7 @@ function presConsignesRapides(){
    <td><input type="radio" name="affaires" checked=true></td>
    <td><input type="radio" name="affaires"></td>
    <td><input type="radio" name="affaires"></td>
-   <td><input type="radio" name="affaires"></td>
+   <td><input type="radio" name="affaires" class="pres-consignes-restreint"></td>
    <td><div contenteditable name="affaires-com" placeholder="Téléphone ? Ordinateur ? Autre ?"/></td>
   </tr>
   <tr>
@@ -347,7 +346,7 @@ function presConsignesRapides(){
    <td><input type="radio" name="cigarettes" checked=true></td>
    <td><input type="radio" name="cigarettes"></td>
    <td><input type="radio" name="cigarettes"></td>
-   <td><input type="radio" name="cigarettes"></td>
+   <td><input type="radio" name="cigarettes" class="pres-consignes-restreint"></td>
    <td><div contenteditable name="cigarettes-com" placeholder="Nombre de cigarettes"/></td>
   </tr>
 </tbody></table>`)
@@ -853,6 +852,12 @@ NZb = function (a, b, c) {
         )
         $('<div style="position:absolute;width:100%;height:100%;top:0;left:0;background:#000;opacity:0.5;">')
             .appendTo($('.GOAX34LHSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridMenuPopup', ev.view.document))
+    } else if ($(ev.target).filter('input[type=radio]').parents('#DIEN-POPUP').length){
+        if ($(ev.target).hasClass('pres-consignes-restreint')){
+            $(ev.target).parents('tr').addClass('pres-consignes-restreint')
+        } else {
+            $(ev.target).parents('tr').removeClass('pres-consignes-restreint')
+        }
     }
 }
 
