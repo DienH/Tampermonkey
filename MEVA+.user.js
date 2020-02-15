@@ -304,7 +304,7 @@ function presConsignesRapides(){
    <td><input type="radio" name="appels"></td>
    <td><input type="radio" name="appels"></td>
    <td><input type="radio" name="appels"></td>
-   <td><textarea name="appels-com" placeholder="Nombres d'appels ? Destinataires ?"/></td>
+   <td><div contenteditable name="appels-com" placeholder="Nombres d'appels ? Destinataires ?"/></td>
   </tr>
   <tr>
    <td>Déplacements</td>
@@ -312,7 +312,7 @@ function presConsignesRapides(){
    <td><input type="radio" name="deplacements"></td>
    <td><input type="radio" name="deplacements"></td>
    <td><input type="radio" name="deplacements"></td>
-   <td><textarea name="deplacements-com" placeholder="Descente sur temps court ?"/></td>
+   <td><div contenteditable name="deplacements-com" placeholder="Descente sur temps court ?"/></td>
   </tr>
   <tr>
    <td>Visites</td>
@@ -320,7 +320,7 @@ function presConsignesRapides(){
    <td><input type="radio" name="visites"></td>
    <td><input type="radio" name="visites"></td>
    <td><input type="radio" name="visites"></td>
-   <td><textarea name="visites-com" placeholder="Veste ? Pantalon ?"/></td>
+   <td><div contenteditable name="visites-com" placeholder="Veste ? Pantalon ?"/></td>
   </tr>
   <tr>
    <td>Vêtements</td>
@@ -328,7 +328,7 @@ function presConsignesRapides(){
    <td><input type="radio" name="vetements"></td>
    <td><input type="radio" name="vetements"></td>
    <td><input type="radio" name="vetements"></td>
-   <td><textarea name="vetements-com" placeholder="Veste ? Pantalon ?"/></td>
+   <td><div contenteditable name="vetements-com" placeholder="Veste ? Pantalon ?"/></td>
   </tr>
   <tr>
    <td>Affaires persos</td>
@@ -336,7 +336,7 @@ function presConsignesRapides(){
    <td><input type="radio" name="affaires"></td>
    <td><input type="radio" name="affaires"></td>
    <td><input type="radio" name="affaires"></td>
-   <td><textarea name="affaires-com" placeholder="Téléphone ? Ordinateur ? Autre ?"/></td>
+   <td><div contenteditable name="affaires-com" placeholder="Téléphone ? Ordinateur ? Autre ?"/></td>
   </tr>
   <tr>
    <td>Cigarettes</td>
@@ -344,7 +344,7 @@ function presConsignesRapides(){
    <td><input type="radio" name="cigarettes"></td>
    <td><input type="radio" name="cigarettes"></td>
    <td><input type="radio" name="cigarettes"></td>
-   <td><textarea name="cigarettes-com" placeholder="Nombre de cigarettes"/></td>
+   <td><div contenteditable name="cigarettes-com" placeholder="Nombre de cigarettes"/></td>
   </tr>
 </tbody></table>`)
    // }
