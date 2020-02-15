@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.16
+// @version      0.2.17
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -57,37 +57,8 @@
                         script.innerHTML = `
 $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
 
-output_Selector = function(sel, checkExists = false){
- let output = document.heoPane_output || window.parent.document.heoPane_output,
-  MedocPasHorsLivret = ["diazepam", "olanzapine"]
- if (!sel){sel = "Retourner"}
- let filterString = "", pasHorsLivret = false
- if (typeof sel == "string" && sel.search(" ")+1){
-  sel = sel.split(" ")
-  for (let i = 0; i < sel.length ; i++){
-   if (MedocPasHorsLivret.includes(sel[i])){
-    pasHorsLivret = true
-   } else {
-    filterString += ":containsI("+sel[i]+")"
-   }
-  }
- } else if (typeof sel == "object"){
- }
+` + output_Selector.toString()
 
-}
- sel = 'a'+(typeof sel == "string" ? ':containsI('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))
- if (checkExists){
-  return ($(sel, output.document.body).length > 0 ? true : false)
- }else{
-  setTimeout((selector, out)=>{
-   let $selection = $(selector, out.document)
-   log($selection)
-   if ($selection.length > 1){$selection = $selection.filter(pasHorsLivret ? ":not(:has(.HorsLivret))":"*")}
-   $selection.each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},250, el)}})
-  }, 250, sel, output)
- }
-}
-`
                         SSSFrame_win.document.body.append(script)
                     }
                     $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document).remove()
@@ -121,9 +92,14 @@ output_Selector = function(sel, checkExists = false){
         //$('.GOAX34LJRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyGroupLine').remove()
 
     } else if ((location.href.search('heoOutput.jsp')+1)){
+        $('<style>').text(`
+.presPsy-rapide {position: absolute;right: 0;color: green!important;}
+.presPsy-rapide:hover {text-decoration:underline;}
+`).appendTo('body')
+
         switch($('div.outlineTitle').text().trim()){
             case "Prescriptions Usuelles de Psychiatrie Adulte" :
-                $('a:contains("Consignes")').contextmenu(ev=>{ev.preventDefault();})
+                $('a:contains("Consignes")').contextmenu(ev=>{ev.preventDefault();}).before('<a class="presPsy-rapide" onclick="presConsignesRapides()">Consignes rapides</a>')
                 break;
         }
     } else if ((location.href.search("popupContents.jsp")+1)){
@@ -150,6 +126,7 @@ body {background-color:#F5F5F5;}
                     }
                     break
                 default:
+                    // prescription rapide de médoc
                     if ((pres = window.parent.autoEnhancedPres) && $("p.Titre:containsI("+pres[0]+"):containsI("+pres[1]+")", document).length){
                         $("#frequence>option[value='"+pres.posos[0].freqName.toUpperCase()+"']", document).each((i,el)=>{el.selected=true})
                         $("#PosoSimple", document)[0].click()
@@ -230,6 +207,46 @@ body {background-color:#F5F5F5;}
         }
     }
 })();
+
+function output_Selector(sel, checkExists = false){
+    if (!$){var $ = window.parent.$}
+    let output = document.heoPane_output || window.parent.document.heoPane_output,
+        MedocPasHorsLivret = ["diazepam", "olanzapine"]
+    if (!sel){sel = "Retourner"}
+    let filterString = "", pasHorsLivret = false
+    if (typeof sel == "string" && sel.search(" ")+1){
+        sel = sel.split(" ")
+        for (let i = 0; i < sel.length ; i++){
+            if (MedocPasHorsLivret.includes(sel[i])){
+                pasHorsLivret = true
+            } else {
+                filterString += ":containsI("+sel[i]+")"
+            }
+        }
+    } else if (typeof sel == "object"){
+    }
+
+    sel = 'a'+(typeof sel == "string" ? ':containsI('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))
+    if (checkExists){
+        return ($(sel, output.document.body).length > 0 ? true : false)
+    }else{
+        setTimeout((selector, out)=>{
+            let $selection = $(selector, out.document)
+            console.log($selection)
+            if ($selection.length > 1){$selection = $selection.filter(pasHorsLivret ? ":not(:has(.HorsLivret))":"*")}
+            $selection.each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},250, el)}})
+        }, 250, sel, output)
+    }
+}
+
+function presConsignesRapides(){
+    if (!$){var $ = window.$ || window.parent.$}
+    let SSSFrame = unsafeWindow
+    while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
+        SSSFrame = SSSFrame.parent
+    }
+    $('<div id="DIEN-POPUP">Bouh</div>', SSSFrame.document).dialog({})
+}
 
 function addAutoPrescriptor(ev){
     let SSSFrame_win = ev.view.document.name == "SSSFrame" ? ev.view.document : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame_win.$
