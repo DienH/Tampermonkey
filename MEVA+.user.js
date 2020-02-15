@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.17
+// @version      0.2.18
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -48,6 +48,17 @@
                         let cssStyle = document.createElement('style');cssStyle.id = "SSSFrame_MevaStyle"
                         cssStyle.innerText = `
 #HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:#F5F5F5;}
+#DIEN-POPUP table, #DIEN-POPUP tr, #DIEN-POPUP td, #DIEN-POPUP th {border: 1px solid black;border-collapse: collapse;}
+#DIEN-POPUP table {width:100%;}
+#DIEN-POPUP table td+td {text-align:center;}
+div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,
+iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY
+//8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb
+/5ef24osbIzDq79BnaYoSuvk8GYITafQKJaBWh1WrHl8JinLp9wBF4fqiZPZ33wAfP8GUa+i93oK18gCOp2BsFQHW1xMp/Fh4QjEzc3lYQlLhaL5ITakKvP8AWq6gk85CjyVhbBYAeW9Qq
+/Ne2nC7ufEmJpNcN5OjvcI2k/MW2KszsAZUZejRONTHHnv43yFaOGZCZnIicSAYAaQK1LkF80zYinYoQfRIDLCuEQgBr1aB7R2m24vm7Cw5Aw4RLRyFkV0HdiQGloEik8MM1FdW0XrI48DpJPZwKAIjk2P
+/QIIWDKMlzNHvD1zmyVM/sL6B02d+HN29j4PpaTIKM61Geo29KkJjq7fcjwaGWXl45x49nvcA6QxOvD4c3nLiy7Wpv0Pay8vCaSAII5WBthJEkxeG3G443NxXcpP+5AVoviV8c97G
+/tVJYWgL1bMoHC89R9PFj3W74XBw+9en6Fj4TxzxvPC/Uw2G2MEXjV//kEpgRFM89AAAAABJRU5ErkJggg==");
+background-position:initial;}
 `
                         SSSFrame_win.document.body.append(cssStyle)
                     }
@@ -100,7 +111,7 @@ $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText
 
         switch($('div.outlineTitle').text().trim()){
             case "Prescriptions Usuelles de Psychiatrie Adulte" :
-                $('a:contains("Consignes")').contextmenu(ev=>{ev.preventDefault();}).before('<a class="presPsy-rapide" onclick="presConsignesRapides()">Consignes rapides</a>')
+                $('a:contains("Consignes")').contextmenu(ev=>{ev.preventDefault();presConsignesRapides();}).before('<a class="presPsy-rapide" onclick="presConsignesRapides()">Consignes rapides</a>')
                 break;
         }
     } else if ((location.href.search("popupContents.jsp")+1)){
@@ -241,12 +252,102 @@ function output_Selector(sel, checkExists = false){
 }
 
 function presConsignesRapides(){
-    if (!$){var $ = window.$ || window.parent.$}
+    if (!$ || !$.fn){var $ = (typeof unsafeWindow != "undefined" ? unsafeWindow.$ || unsafeWindow.parent.$ : window.$ || window.parent.$)}
     let SSSFrame = window
     while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
         SSSFrame = SSSFrame.parent
     }
-    $('<div id="DIEN-POPUP">Bouh</div>', SSSFrame.document).dialog({})
+    //if(!$('#DIEN-POPUP', SSSFrame.document).dialog('open').length){
+    $('#DIEN-POPUP', SSSFrame.document).dialog('destroy').remove()
+        $('<div id="DIEN-POPUP"></div>', SSSFrame.document).dialog({
+            modal:true,
+            title:"Consignes d'hospitalisation",
+            minHeight:300,
+            minWidth:680,
+            width:800,
+            height:300,
+            buttons: [
+                {
+                    text: "Valider",
+                    icon: "ui-icon-heart",
+                    click: function() {
+                        $( this ).dialog( "close" );
+                    }
+                    // Uncommenting the following line would hide the text,
+                    // resulting in the label being used as a tooltip
+                    //showText: false
+                },
+                {
+                    text: "Annuler",
+                    icon: "ui-icon-heart",
+                    click: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            ]
+        }).append(`
+<table>
+ <thead>
+  <tr>
+   <th style="width:150px">Consigne</th>
+   <th style="width:80px">Actuel</th>
+   <th style="width:80px">Autorisé</th>
+   <th style="width:80px">Interdit</th>
+   <th style="width:80px">Restreint</th>
+   <th>Commentaire</th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr>
+   <td>Appels</td>
+   <td><input type="radio" name="appels"></td>
+   <td><input type="radio" name="appels"></td>
+   <td><input type="radio" name="appels"></td>
+   <td><input type="radio" name="appels"></td>
+   <td><textarea name="appels-com" placeholder="Nombres d'appels ? Destinataires ?"/></td>
+  </tr>
+  <tr>
+   <td>Déplacements</td>
+   <td><input type="radio" name="deplacements"></td>
+   <td><input type="radio" name="deplacements"></td>
+   <td><input type="radio" name="deplacements"></td>
+   <td><input type="radio" name="deplacements"></td>
+   <td><textarea name="deplacements-com" placeholder="Descente sur temps court ?"/></td>
+  </tr>
+  <tr>
+   <td>Visites</td>
+   <td><input type="radio" name="visites"></td>
+   <td><input type="radio" name="visites"></td>
+   <td><input type="radio" name="visites"></td>
+   <td><input type="radio" name="visites"></td>
+   <td><textarea name="visites-com" placeholder="Veste ? Pantalon ?"/></td>
+  </tr>
+  <tr>
+   <td>Vêtements</td>
+   <td><input type="radio" name="vetements"></td>
+   <td><input type="radio" name="vetements"></td>
+   <td><input type="radio" name="vetements"></td>
+   <td><input type="radio" name="vetements"></td>
+   <td><textarea name="vetements-com" placeholder="Veste ? Pantalon ?"/></td>
+  </tr>
+  <tr>
+   <td>Affaires persos</td>
+   <td><input type="radio" name="affaires"></td>
+   <td><input type="radio" name="affaires"></td>
+   <td><input type="radio" name="affaires"></td>
+   <td><input type="radio" name="affaires"></td>
+   <td><textarea name="affaires-com" placeholder="Téléphone ? Ordinateur ? Autre ?"/></td>
+  </tr>
+  <tr>
+   <td>Cigarettes</td>
+   <td><input type="radio" name="cigarettes"></td>
+   <td><input type="radio" name="cigarettes"></td>
+   <td><input type="radio" name="cigarettes"></td>
+   <td><input type="radio" name="cigarettes"></td>
+   <td><textarea name="cigarettes-com" placeholder="Nombre de cigarettes"/></td>
+  </tr>
+</tbody></table>`)
+   // }
 }
 
 function addAutoPrescriptor(ev){
