@@ -127,17 +127,42 @@ $.expr[":"].containsI = function (a, i, m) {
         //$('.GOAX34LJRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyGroupLine').remove()
 
     } else if ((location.href.search('heoOutput.jsp')+1)){
+        let SSSFrame = window.parent
         $('<style>').text(`
 .presPsy-rapide {position: absolute;right: 0;color: green!important;}
 .presPsy-rapide:hover {text-decoration:underline;}
 `).appendTo('body')
         $('<script>').text(presOutputConsignesRapides.toString()).appendTo('body')
-
         switch($('div.outlineTitle').text().trim()){
-            case "Prescriptions Usuelles de Psychiatrie Adulte" :
+            case "Prescriptions Usuelles de Psychiatrie Adulte":
                 $('a:contains("Retourner à la liste")').remove()
                 $('a:contains("Consignes")').contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides();}).before('<a class="presPsy-rapide" onclick="presOutputConsignesRapides()">Consignes rapides</a>')
-                break;
+                if (SSSFrame.listeConsignes){
+                    if (SSSFrame.listeConsignes.done){
+                        SSSFrame.listeConsignes = ""
+                    } else {
+                        if (SSSFrame.listeConsignes.phase = 1){
+                            SSSFrame.output_Selector(1)
+                        }
+                    }
+                }
+                break
+            case "Consignes d'Hébergement":
+                SSSFrame.listeConsignes.done=true
+                Object.keys(SSSFrame.listeConsignes).forEach(el=>{
+                    console.log(SSSFrame.listeConsignes.current)
+                    if (typeof SSSFrame.listeConsignes[el] == "object" && !SSSFrame.listeConsignes[el].done){
+                        if (SSSFrame.listeConsignes[el].consigne != "autorise"){
+                            SSSFrame.listeConsignes.done=false
+                            SSSFrame.listeConsignes.current=el
+                            SSSFrame.output_Selector([el, SSSFrame.listeConsignes[el].consigne])
+                            return false
+                        } else {
+                            SSSFrame.listeConsignes[el].done=true
+                        }
+                    }
+                })
+                break
         }
     } else if ((location.href.search("popupContents.jsp")+1)){
         let styleEl = document.createElement('style'), title, pres, SSSFrame = window.parent
@@ -214,6 +239,7 @@ body {background-color:#F5F5F5;}
         }
     } else if (location.href.search("heoPrompt.jsp")+1){
         let SSSFrame = window.parent, heoOutputFrame = SSSFrame.document.heoPane_output
+        const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
         if (document.getElementById('preHeaderMarkup')){
             let promptTitle = document.getElementById('preHeaderMarkup').innerText, pres
             if ((pres = window.parent.autoEnhancedPres) && $('.orderName:containsI("'+pres.nom+'"):containsI("'+pres.forme+'")', heoOutputFrame.document).length){
@@ -263,19 +289,37 @@ body {background-color:#F5F5F5;}
                         $('a[onclick]:contains("Patient"):contains("(_)")').click2()
                          break
                  }
-            } else if (SSSFrame.listeConsignes && promptTitle == "Sélectionnez un item dans la liste"){
-                switch ($('.outlineTitle', heoOutputFrame.document).text()){
-                    case "Prescriptions Usuelles de Psychiatrie Adulte":
-                        SSSFrame.output_Selector(1)
-                        break
-                    case "Consignes d'Hébergement":
-                        break
-                }
-                switch (promptTitle){
+            } else if (SSSFrame.listeConsignes && $('div.orderName:contains(Gestion)', heoOutputFrame.document).length){
+                let currConsigne, currConsigneA
+                switch(promptTitle){
                     case "Sélectionnez un item dans la liste":
-                        if (SSSFrame.listeConsignes.phase == 1){
-                            SSSFrame.output_Selector(1)
+                        break
+                    case "Circulation du Patient:":
+                        switch (SSSFrame.listeConsignes.appels.restriction){
+                            case "soignant":
+                                $('a[onclick]:contains("(_)"):contains("1 soignant")').click2()
+                                $('a[onclick]:contains("ENTREE")').click2()
+                                break
+                            case "proche":
+                                $('a[onclick]:contains("(_)"):contains("famille ou ami")').click2()
+                                $('a[onclick]:contains("ENTREE")').click2()
+                                break
+                            case "seul":
+                                $('a[onclick]:contains("(_)"):contains("seul")').click2()
+                                $('a[onclick]:contains("ENTREE")').click2()
+                                break
                         }
+                        break
+                    case "Saisissez une date et heure de début":
+                    case "Durée: (avec une date et heure de fin optionnelle)":
+                    case "Fréquence:":
+                        $('a[onclick]:contains("ENTREE")').click2()
+                        break
+                    case "Commentaires :":
+                        currConsigneA = $('div.outlineTitle', heoOutputFrame.document).text().trim().split(" : ")
+                        currConsigne = currConsigneA[0].split(" ")[2].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                        SSSFrame.listeConsignes[currConsigne].done=true
+                        $('#HEO_INPUT', SSSFrame.document).val(SSSFrame.listeConsignes[SSSFrame.listeConsignes.current].comment)[0].dispatchEvent(ke);
                         break
                 }
             }
@@ -307,7 +351,14 @@ function output_Selector(sel, checkExists = false){
                 filterString += ":containsI("+sel[i]+")"
             }
         }
-    } else if (typeof sel == "object"){
+    } else if (Array.isArray(sel)){
+        for (let i = 0; i < sel.length ; i++){
+            if (MedocPasHorsLivret.includes(sel[i])){
+                pasHorsLivret = true
+            } else {
+                filterString += ":containsI("+sel[i]+")"
+            }
+        }
     }
 
     sel = 'a'+(typeof sel == "string" ? ':containsI('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))
@@ -326,12 +377,12 @@ function output_Selector(sel, checkExists = false){
 function autoPresConsignesRapides(consignes){
     if (!$ || !$.fn){var $ = (typeof unsafeWindow != "undefined" ? unsafeWindow.$ || unsafeWindow.parent.$ : window.$ || window.parent.$)}
     let currentConsignes = {
-        affaires:{consigne:"autorise"},
-        appels:{consigne:"autorise"},
-        deplacements:{consigne:"autorise"},
-        tabagisme:{consigne:"autorise"},
-        vetements:{consigne:"autorise"},
-        visites:{consigne:"autorise"}
+        affaires:{consigne:"autorise", comment: ""},
+        appels:{consigne:"autorise", comment: ""},
+        deplacements:{consigne:"autorise", comment: ""},
+        tabagisme:{consigne:"autorise", comment: ""},
+        vetements:{consigne:"autorise", comment: ""},
+        visites:{consigne:"autorise", comment: ""}
     }
     $('div.gwt-HTML:contains("Gestion")','#workbody').each((i,el)=>{
         let currConsigne = $(el).find('b').text(),
@@ -346,10 +397,10 @@ function autoPresConsignesRapides(consignes){
             comment:commentConsigne}
     })
     if (consignes){
-        if(!consignes.phase){
+       if(!consignes.phase){
             consignes.phase = 1
-        } else {
-            consignes.phase += 1
+       } else {
+            consignes.phase = 1
         }
     } else {
         return currentConsignes
@@ -438,11 +489,11 @@ function presOutputConsignesRapides(){
             autoResize:true,
             open:function(ev, ui){
                 let currConsignes = autoPresConsignesRapides()
+                SSSFrame.currentListeConsignes = currConsignes
                 Object.keys(currConsignes).forEach(el=>{
                     $('#DIEN-POPUP input[name='+el+'][consigne='+currConsignes[el].consigne+']', SSSFrame.document).click2()
                     $('#DIEN-POPUP div[contenteditable][name='+el+'-com]').text(currConsignes[el].comment)
                 })
-                //currConsignes.forEach()
             },
             buttons: [
                 {
@@ -464,6 +515,12 @@ function presOutputConsignesRapides(){
                         })
                         if (consignesValides){
                             $( this ).dialog( "close" );
+                            Object.keys(listeConsignes).forEach(el=>{
+                                console.log(el)
+                                if (SSSFrame.currentListeConsignes[el].consigne == listeConsignes[el].consigne && SSSFrame.currentListeConsignes[el].comment == listeConsignes[el].comment){
+                                    listeConsignes[el].done=true
+                                }
+                            })
                             SSSFrame.listeConsignes = listeConsignes
                             $('table[name=HEOFRAME] button:contains(Arrêt)').click2()
                         } else {
