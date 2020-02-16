@@ -1,17 +1,19 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.20
+// @version      0.2.19
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
 // @require      https://code.jquery.com/jquery.min.js
-// @require      https://rawgit.com/DienH/Tampermonkey/master/Dien.js
+// @require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js
 // require      https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.2/math.js
+// @resource     DienJS https://raw.githubusercontent.com/DienH/Tampermonkey/master/Dien.js
 // @grant        unsafeWindow
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_getResourceText
 // ==/UserScript==
 
 
@@ -21,7 +23,8 @@
     if (!$ || !$.fn) {var $ = window.jQuery || unsafeWindow.jQuery || window.parent.jQuery};
     var log = console.log
     $('<script>').html('if (!$ || !$.fn) {var $ = window.jQuery || window.parent.$ || window.parent.jQuery}').appendTo('body')
-    $('<script id="DienSriptPlus" src="https://rawgit.com/DienH/Tampermonkey/master/Dien.js">').appendTo('body')
+    $('<script id="DienSriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js">').appendTo('body')
+    //$('<script id="DienSriptPlus">').html(GM_getResourceText('DienJS'))
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
     if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""})}
     let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link'), title = ""
@@ -69,13 +72,7 @@
 #DIEN-POPUP .pres-consignes-deplacements-restriction td[colspan] input:first-child {margin-left:141px;}
 #DIEN-POPUP tr.pres-consignes-deplacements-restriction input+label {margin-right:25px;}
 
-div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,
-iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY
-//8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb
-/5ef24osbIzDq79BnaYoSuvk8GYITafQKJaBWh1WrHl8JinLp9wBF4fqiZPZ33wAfP8GUa+i93oK18gCOp2BsFQHW1xMp/Fh4QjEzc3lYQlLhaL5ITakKvP8AWq6gk85CjyVhbBYAeW9Qq
-/Ne2nC7ufEmJpNcN5OjvcI2k/MW2KszsAZUZejRONTHHnv43yFaOGZCZnIicSAYAaQK1LkF80zYinYoQfRIDLCuEQgBr1aB7R2m24vm7Cw5Aw4RLRyFkV0HdiQGloEik8MM1FdW0XrI48DpJPZwKAIjk2P
-/QIIWDKMlzNHvD1zmyVM/sL6B02d+HN29j4PpaTIKM61Geo29KkJjq7fcjwaGWXl45x49nvcA6QxOvD4c3nLiy7Wpv0Pay8vCaSAII5WBthJEkxeG3G443NxXcpP+5AVoviV8c97G
-/tVJYWgL1bMoHC89R9PFj3W74XBw+9en6Fj4TxzxvPC/Uw2G2MEXjV//kEpgRFM89AAAAABJRU5ErkJggg==");
+div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY//8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb/5ef24osbIzDq79BnaYoSuvk8GYITafQKJaBWh1WrHl8JinLp9wBF4fqiZPZ33wAfP8GUa+i93oK18gCOp2BsFQHW1xMp/Fh4QjEzc3lYQlLhaL5ITakKvP8AWq6gk85CjyVhbBYAeW9Qq/Ne2nC7ufEmJpNcN5OjvcI2k/MW2KszsAZUZejRONTHHnv43yFaOGZCZnIicSAYAaQK1LkF80zYinYoQfRIDLCuEQgBr1aB7R2m24vm7Cw5Aw4RLRyFkV0HdiQGloEik8MM1FdW0XrI48DpJPZwKAIjk2P/QIIWDKMlzNHvD1zmyVM/sL6B02d+HN29j4PpaTIKM61Geo29KkJjq7fcjwaGWXl45x49nvcA6QxOvD4c3nLiy7Wpv0Pay8vCaSAII5WBthJEkxeG3G443NxXcpP+5AVoviV8c97G/tVJYWgL1bMoHC89R9PFj3W74XBw+9en6Fj4TxzxvPC/Uw2G2MEXjV//kEpgRFM89AAAAABJRU5ErkJggg==");
 background-position:initial;}
 `
                         SSSFrame_win.document.body.append(cssStyle)
@@ -135,7 +132,7 @@ $.expr[":"].containsI = function (a, i, m) {
                 break;
         }
     } else if ((location.href.search("popupContents.jsp")+1)){
-        let styleEl = document.createElement('style'), title, pres
+        let styleEl = document.createElement('style'), title, pres, SSSFrame = window.parent
         styleEl.innerHTML = `
 .outOf2DaysRange {background:coral;}
 .nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
@@ -170,10 +167,18 @@ body {background-color:#F5F5F5;}
                     break;
             }
         } else {
-            if ($('h1').text()=="Information"){
-                if (document.body.innerText.search('date de début est située dans le passé')){
-                    $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', window.parent.document)[0].click()
-                }
+            switch ($('h1',document).log().text()){
+                case "Information":
+                    if (document.body.innerText.search('date de début est située dans le passé')){
+                        $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', window.parent.document)[0].click()
+                    }
+                    break
+                case "Arrêter/Suspendre/Reprendre":
+                    console.log('bouh')
+                    if (SSSFrame.listeConsignes){
+                        $('button:contains("Arrêter ces prescriptions")').click2()
+                    }
+                    break
             }
         }
     } else if (location.href.search("heoPrompt.jsp")+1){
@@ -295,7 +300,6 @@ function autoPresConsignesRapides(consignes){
     } else {
         return currentConsignes
     }
-    console.log(currentConsignes)
 }
 function presOutputConsignesRapides(){
     if (!$ || !$.fn){var $ = (typeof unsafeWindow != "undefined" ? unsafeWindow.$ || unsafeWindow.parent.$ : window.$ || window.parent.$)}
@@ -305,7 +309,71 @@ function presOutputConsignesRapides(){
     }
     //if(!$('#DIEN-POPUP', SSSFrame.document).dialog('open').length){
     $('#DIEN-POPUP', SSSFrame.document).dialog('destroy').remove()
-        $('<div id="DIEN-POPUP"></div>', SSSFrame.document).dialog({
+        $('<div id="DIEN-POPUP"></div>', SSSFrame.document).append(`
+<table>
+ <thead>
+  <tr>
+   <th style="width:150px">Consigne</th>
+   <th style="width:80px">Autorisé</th>
+   <th style="width:80px">Interdit</th>
+   <th style="width:80px">Restreint</th>
+   <th>Commentaire</th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr>
+   <td>Appels</td>
+   <td><input type="radio" name="appels" consigne="autorise"></td>
+   <td><input type="radio" name="appels" consigne="interdit"></td>
+   <td class="pres-consignes-restreint"><input type="radio" name="appels" class="pres-consignes-restreint" consigne="restreint"></td>
+   <td><div contenteditable name="appels-com" placeholder="Nombres d'appels ? Destinataires ?"/></td>
+  </tr>
+  <tr class="pres-consignes-deplacements">
+   <td>Déplacements</td>
+   <td><input type="radio" name="deplacements" consigne="autorise"></td>
+   <td><input type="radio" name="deplacements" consigne="interdit"></td>
+   <td class="pres-consignes-restreint"><input type="radio" name="deplacements" class="pres-consignes-restreint" consigne="restreint"></td>
+   <td><div contenteditable name="deplacements-com" placeholder="Descente sur temps court ?"/></td>
+  </tr>
+  <tr class="pres-consignes-deplacements-restriction">
+   <td colspan="4">
+    <input type="radio" name="deplacements-restriction" id="deplacements-restriction-soignants" checked=true descente="soignant">
+    <label for="deplacements-restriction-soignants">avec soignant</label>
+    <input type="radio" name="deplacements-restriction" id="deplacements-restriction-proche" descente="proche">
+    <label for="deplacements-restriction-proche">avec proche</label>
+    <input type="radio" name="deplacements-restriction" id="deplacements-restriction-seul" descente="seul">
+    <label for="deplacements-restriction-seul">seul</label>
+   </td>
+  </tr>
+  <tr>
+   <td>Visites</td>
+   <td><input type="radio" name="visites" consigne="autorise"></td>
+   <td><input type="radio" name="visites" consigne="interdit"></td>
+   <td class="pres-consignes-restreint"><input type="radio" name="visites" class="pres-consignes-restreint" consigne="restreint"></td>
+   <td><div contenteditable name="visites-com" placeholder="Famille ? Temps court ?"/></td>
+  </tr>
+  <tr>
+   <td>Vêtements</td>
+   <td><input type="radio" name="vetements" consigne="autorise"></td>
+   <td><input type="radio" name="vetements" consigne="interdit"></td>
+   <td class="pres-consignes-restreint"><input type="radio" name="vetements" class="pres-consignes-restreint" consigne="restreint"></td>
+   <td><div contenteditable name="vetements-com" placeholder="Veste ? Pantalon ?"/></td>
+  </tr>
+  <tr>
+   <td>Affaires persos</td>
+   <td><input type="radio" name="affaires" consigne="autorise"></td>
+   <td><input type="radio" name="affaires" consigne="interdit"></td>
+   <td class="pres-consignes-restreint"><input type="radio" name="affaires" class="pres-consignes-restreint" consigne="restreint"></td>
+   <td><div contenteditable name="affaires-com" placeholder="Téléphone ? Ordinateur ? Autre ?"/></td>
+  </tr>
+  <tr>
+   <td>Cigarettes</td>
+   <td><input type="radio" name="tabagisme" consigne="autorise"></td>
+   <td><input type="radio" name="tabagisme" consigne="interdit"></td>
+   <td class="pres-consignes-restreint"><input type="radio" name="tabagisme" class="pres-consignes-restreint" consigne="restreint"></td>
+   <td><div contenteditable name="tabagisme-com" placeholder="Nombre de cigarettes ?">7 cigarettes par jour</div></td>
+  </tr>
+</tbody></table>`).dialog({
             modal:true,
             title:"Consignes d'hospitalisation",
             minHeight:250,
@@ -316,7 +384,11 @@ function presOutputConsignesRapides(){
             autoResize:true,
             open:function(ev, ui){
                 let currConsignes = autoPresConsignesRapides()
-                console.log(currConsignes)
+                Object.keys(currConsignes).forEach(el=>{
+                    $('#DIEN-POPUP input[name='+el+'][consigne='+currConsignes[el].consigne+']', SSSFrame.document).click2()
+                    $('#DIEN-POPUP div[contenteditable][name='+el+'-com]').text(currConsignes[el].comment)
+                })
+                //currConsignes.forEach()
             },
             buttons: [
                 {
@@ -339,6 +411,7 @@ function presOutputConsignesRapides(){
                         if (consignesValides){
                             $( this ).dialog( "close" );
                             SSSFrame.autoPresConsignesRapides(listeConsignes)
+                            SSSFrame.listeConsignes = listeConsignes
                         } else {
                             alert('Préciser les restrictions !')
                         }
@@ -351,78 +424,7 @@ function presOutputConsignesRapides(){
                     }
                 }
             ]
-        }).append(`
-<table>
- <thead>
-  <tr>
-   <th style="width:150px">Consigne</th>
-   <th style="width:80px">Actuel</th>
-   <th style="width:80px">Autorisé</th>
-   <th style="width:80px">Interdit</th>
-   <th style="width:80px">Restreint</th>
-   <th>Commentaire</th>
-  </tr>
- </thead>
- <tbody>
-  <tr>
-   <td>Appels</td>
-   <td><input type="radio" name="appels" checked=true consigne="actuel"></td>
-   <td><input type="radio" name="appels" consigne="autorise"></td>
-   <td><input type="radio" name="appels" consigne="interdit"></td>
-   <td class="pres-consignes-restreint"><input type="radio" name="appels" class="pres-consignes-restreint" consigne="restreint"></td>
-   <td><div contenteditable name="appels-com" placeholder="Nombres d'appels ? Destinataires ?"/></td>
-  </tr>
-  <tr class="pres-consignes-deplacements">
-   <td>Déplacements</td>
-   <td><input type="radio" name="deplacements" checked=true consigne="actuel"></td>
-   <td><input type="radio" name="deplacements" consigne="autorise"></td>
-   <td><input type="radio" name="deplacements" consigne="interdit"></td>
-   <td class="pres-consignes-restreint"><input type="radio" name="deplacements" class="pres-consignes-restreint" consigne="restreint"></td>
-   <td><div contenteditable name="deplacements-com" placeholder="Descente sur temps court ?"/></td>
-  </tr>
-  <tr class="pres-consignes-deplacements-restriction">
-   <td colspan="5">
-    <input type="radio" name="deplacements-restriction" id="deplacements-restriction-soignants" checked=true descente="soignant">
-    <label for="deplacements-restriction-soignants">avec soignant</label>
-    <input type="radio" name="deplacements-restriction" id="deplacements-restriction-proche" descente="proche">
-    <label for="deplacements-restriction-proche">avec proche</label>
-    <input type="radio" name="deplacements-restriction" id="deplacements-restriction-seul" descente="seul">
-    <label for="deplacements-restriction-seul">seul</label>
-   </td>
-  </tr>
-  <tr>
-   <td>Visites</td>
-   <td><input type="radio" name="visites" checked=true consigne="actuel"></td>
-   <td><input type="radio" name="visites" consigne="autorise"></td>
-   <td><input type="radio" name="visites" consigne="interdit"></td>
-   <td class="pres-consignes-restreint"><input type="radio" name="visites" class="pres-consignes-restreint" consigne="restreint"></td>
-   <td><div contenteditable name="visites-com" placeholder="Famille ? Temps court ?"/></td>
-  </tr>
-  <tr>
-   <td>Vêtements</td>
-   <td><input type="radio" name="vetements" checked=true consigne="actuel"></td>
-   <td><input type="radio" name="vetements" consigne="autorise"></td>
-   <td><input type="radio" name="vetements" consigne="interdit"></td>
-   <td class="pres-consignes-restreint"><input type="radio" name="vetements" class="pres-consignes-restreint" consigne="restreint"></td>
-   <td><div contenteditable name="vetements-com" placeholder="Veste ? Pantalon ?"/></td>
-  </tr>
-  <tr>
-   <td>Affaires persos</td>
-   <td><input type="radio" name="affaires" checked=true consigne="actuel"></td>
-   <td><input type="radio" name="affaires" consigne="autorise"></td>
-   <td><input type="radio" name="affaires" consigne="interdit"></td>
-   <td class="pres-consignes-restreint"><input type="radio" name="affaires" class="pres-consignes-restreint" consigne="restreint"></td>
-   <td><div contenteditable name="affaires-com" placeholder="Téléphone ? Ordinateur ? Autre ?"/></td>
-  </tr>
-  <tr>
-   <td>Cigarettes</td>
-<td><input type="radio" name="tabagisme" checked=true consigne="actuel"></td>
-   <td><input type="radio" name="tabagisme" consigne="autorise"></td>
-   <td><input type="radio" name="tabagisme" consigne="interdit"></td>
-   <td class="pres-consignes-restreint"><input type="radio" name="tabagisme" class="pres-consignes-restreint" consigne="restreint"></td>
-   <td><div contenteditable name="tabagisme-com" placeholder="Nombre de cigarettes ?">7 cigarettes par jour</div></td>
-  </tr>
-</tbody></table>`)
+        })
    // }
 }
 
