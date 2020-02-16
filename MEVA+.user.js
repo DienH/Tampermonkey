@@ -22,7 +22,12 @@
     var µ = unsafeWindow
     if (!$ || !$.fn) {var $ = window.jQuery || unsafeWindow.jQuery || window.parent.jQuery};
     var log = console.log
-    $('<script>').html('if (!$ || !$.fn) {var $ = window.jQuery || window.parent.$ || window.parent.jQuery}').appendTo('body')
+    $('<script>').html(`if (!$ || !$.fn) {var $ = window.jQuery || window.parent.$ || window.parent.jQuery}
+String.prototype.searchI = function(searchString) {
+if (typeof "searchString" == "string"){
+	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+} else {return undefined}
+}`).appendTo('body')
     $('<script id="DienSriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js">').appendTo('body')
     //$('<script id="DienSriptPlus">').html(GM_getResourceText('DienJS'))
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
@@ -81,6 +86,9 @@ background-position:initial;}
                         let script = document.createElement('script')
                         script.id = "SSSFrame_Script"
                         script.innerHTML = `
+String.prototype.searchI = function(searchString) {
+	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+}
 $.expr[":"].containsI = function (a, i, m) {
   return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
 
@@ -151,7 +159,26 @@ body {background-color:#F5F5F5;}
                 case "Examen Tomodensitométrique":
                     break;
                 case "":
-                    if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).each((i,el)=>{el.click()})){
+                    // Fenetre Arrêt / Suspension de prescription
+                    if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2()){
+                    }
+                    if (SSSFrame.listeConsignes){
+                        Object.keys(SSSFrame.listeConsignes).forEach(el=>{
+                            SSSFrame.listeConsignes
+                            $('tr[id="Nursing"][name^="Gestion"]', document)
+                                .filter((i,elm)=>($(elm).a('name').searchI(el)+1) && !($(elm).a('name').split(" : ")[1].searchI(SSSFrame.listeConsignes[el].consigne)+1))
+                                .find('input').click2()
+                        })
+                        SSSFrame.consignesWaiter = SSSFrame.setInterval(()=>{
+                            if (!$('#HEO_POPUP').is(':visible')){
+                                SSSFrame.autoPresConsignesRapides(SSSFrame.listeConsignes)
+                            }
+                        },250)
+                        if ($('input:checked').length){
+                            $('#playbackOrders', document).click2()
+                        } else {
+                            $('#HEO_POPUP a.GD42JS-DKWB', window.parent.document).click2()
+                        }
                     }
                     break
                 default:
@@ -166,33 +193,38 @@ body {background-color:#F5F5F5;}
                     }
                     break;
             }
-        } else {
-            switch ($('h1',document).log().text()){
-                case "Information":
-                    if (document.body.innerText.search('date de début est située dans le passé')){
-                        $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', window.parent.document)[0].click()
-                    }
-                    break
-                case "Arrêter/Suspendre/Reprendre":
-                    console.log('bouh')
-                    if (SSSFrame.listeConsignes){
-                        $('button:contains("Arrêter ces prescriptions")').click2()
-                    }
-                    break
-            }
+        }
+        switch ($('h1',document).text()){
+            case "Information":
+                if (document.body.innerText.search('date de début est située dans le passé')+1){
+                    $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', window.parent.document).click2()
+                } else if (document.body.innerText.search('Les prescriptions en mémoire')+1){
+                    $('input[name=OK]', document).click2()
+                }
+                break
+        }
+    } else if (location.href.search("docs/dc.htm")+1){
+        let SSSFrame = window.parent
+        switch ($('h1',document).text()){
+            case "Arrêter/Suspendre/Reprendre":
+                if (SSSFrame.listeConsignes){
+                    $('button:contains("Arrêter ces prescriptions")').click2()
+                }
+                break
         }
     } else if (location.href.search("heoPrompt.jsp")+1){
+        let SSSFrame = window.parent, heoOutputFrame = SSSFrame.document.heoPane_output
         if (document.getElementById('preHeaderMarkup')){
             let promptTitle = document.getElementById('preHeaderMarkup').innerText, pres
-            if ((pres = window.parent.autoEnhancedPres) && $('.orderName:containsI("'+pres.nom+'"):containsI("'+pres.forme+'")', window.parent.document.heoPane_output.document).length){
+            if ((pres = window.parent.autoEnhancedPres) && $('.orderName:containsI("'+pres.nom+'"):containsI("'+pres.forme+'")', heoOutputFrame.document).length){
                 switch (promptTitle){
                     case "Dose par prise:":
                         $('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")').click2() //.each((i,el)=>el.click())
                         break;
                 }
-            } else if ($('.orderName:contains("INFORMATION SUR LE PATIENT")', window.parent.document.heoPane_output.document).length){
+            } else if ($('.orderName:contains("INFORMATION SUR LE PATIENT")', heoOutputFrame.document).length){
                 $('#HEO_INPUT', window.parent.document).each((i,el)=>setTimeout(elm=>{let a = new Date();elm.value=a.toLocaleDateString()+" "+a.toLocaleTimeString([], {timeStyle: 'short'})}, 250, el))
-            } else if ($('.orderName:contains("Isolement : Indication")', window.parent.document.heoPane_output.document).length){
+            } else if ($('.orderName:contains("Isolement : Indication")', heoOutputFrame.document).length){
                 switch (promptTitle){
                     case "Interventions alternatives tentées:":
                         $('a[onclick]:contains("(_)"):not(:contains("5")), a[onclick]:contains("ENTREE")').click2()
@@ -222,7 +254,7 @@ body {background-color:#F5F5F5;}
                         $('a[onclick]:contains("RESTREINT")').click2()
                         break
                 }
-            } else if ($('.orderName:contains("Mise en Isolement")', window.parent.document.heoPane_output.document).length){
+            } else if ($('.orderName:contains("Mise en Isolement")', heoOutputFrame.document).length){
                  switch (promptTitle){
                      case "Mode d'Hospitalisation:":
                          $('a[onclick]:contains("(x)")').each(()=>$('a[onclick]:contains("ENTREE")').click2())
@@ -231,6 +263,21 @@ body {background-color:#F5F5F5;}
                         $('a[onclick]:contains("Patient"):contains("(_)")').click2()
                          break
                  }
+            } else if (SSSFrame.listeConsignes && promptTitle == "Sélectionnez un item dans la liste"){
+                switch ($('.outlineTitle', heoOutputFrame.document).text()){
+                    case "Prescriptions Usuelles de Psychiatrie Adulte":
+                        SSSFrame.output_Selector(1)
+                        break
+                    case "Consignes d'Hébergement":
+                        break
+                }
+                switch (promptTitle){
+                    case "Sélectionnez un item dans la liste":
+                        if (SSSFrame.listeConsignes.phase == 1){
+                            SSSFrame.output_Selector(1)
+                        }
+                        break
+                }
             }
             if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle.search("(avec une date et heure de fin optionnelle)")+1) ||
                 promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?" ||
@@ -246,7 +293,7 @@ body {background-color:#F5F5F5;}
 })();
 
 function output_Selector(sel, checkExists = false){
-    if (!$){var $ = window.parent.$}
+    if (typeof $ == "undefined" || typeof $.fn == "undefined"){var $ = window.$ || window.parent.$}
     let output = document.heoPane_output || window.parent.document.heoPane_output,
         MedocPasHorsLivret = ["diazepam", "olanzapine"]
     if (!sel){sel = "Retourner"}
@@ -294,9 +341,16 @@ function autoPresConsignesRapides(consignes){
         if(commentConsigne){
             commentConsigne = commentConsigne.split("  »")[0]
         }
-        currentConsignes[currConsigne] = {consigne:(currConsigneA[1].search("Restreint")+1 ? "restreint":(currConsigneA[1].search("Interdit")+1 ? "interdit":"autorise")), comment:commentConsigne}
+        currentConsignes[currConsigne] = {
+            consigne:(currConsigneA[1].search("Restreint")+1 ? "restreint":(currConsigneA[1].search("Interdit")+1 ? "interdit":currConsigneA[1].search("Accompagné")+1 ? "accompagne":"autorise")),
+            comment:commentConsigne}
     })
     if (consignes){
+        if(!consignes.phase){
+            consignes.phase = 1
+        } else {
+            consignes.phase += 1
+        }
     } else {
         return currentConsignes
     }
@@ -370,7 +424,7 @@ function presOutputConsignesRapides(){
    <td>Cigarettes</td>
    <td><input type="radio" name="tabagisme" consigne="autorise"></td>
    <td><input type="radio" name="tabagisme" consigne="interdit"></td>
-   <td class="pres-consignes-restreint"><input type="radio" name="tabagisme" class="pres-consignes-restreint" consigne="restreint"></td>
+   <td class="pres-consignes-restreint"><input type="radio" name="tabagisme" class="pres-consignes-restreint" consigne="accompagne"></td>
    <td><div contenteditable name="tabagisme-com" placeholder="Nombre de cigarettes ?">7 cigarettes par jour</div></td>
   </tr>
 </tbody></table>`).dialog({
@@ -410,8 +464,8 @@ function presOutputConsignesRapides(){
                         })
                         if (consignesValides){
                             $( this ).dialog( "close" );
-                            SSSFrame.autoPresConsignesRapides(listeConsignes)
                             SSSFrame.listeConsignes = listeConsignes
+                            $('table[name=HEOFRAME] button:contains(Arrêt)').click2()
                         } else {
                             alert('Préciser les restrictions !')
                         }
