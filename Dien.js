@@ -417,8 +417,8 @@ function JSON2CSV(JSONdata, title){
 String.prototype.capitalize = function() {
   return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase()
 }
-String.prototype.log(){
-	console.log(this)
+String.prototype.log = function(){
+	console.log(this.toString())
 	return this
 }
 String.prototype.searchI = function(searchString) {
