@@ -58,7 +58,7 @@ if (typeof "searchString" == "string"){
                         let cssStyle = document.createElement('style');cssStyle.id = "SSSFrame_MevaStyle"
                         cssStyle.innerHTML = `
 #HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:#F5F5F5;}
-#DIEN-POPUP table, #DIEN-POPUP td, #DIEN-POPUP th {border: 1px solid black;border-collapse: collapse;}
+#DIEN-POPUP table, #DIEN-POPUP td, #DIEN-POPUP th {border: 1px solid black;border-collapse: collapse;font-size:14px;}
 #DIEN-POPUP tr:not(.pres-consignes-deplacements-restriction) {border: 2px solid black;border-collapse: collapse;}
 #DIEN-POPUP tr.pres-consignes-deplacements.pres-consignes-restreint {border-bottom: 0px solid white;}
 #DIEN-POPUP tr.pres-consignes-deplacements-restriction.deplacements-restreints {border-top: 0px solid white;}
@@ -76,6 +76,7 @@ if (typeof "searchString" == "string"){
 #DIEN-POPUP .pres-consignes-deplacements-restriction td[colspan] {border-top:1px solid white;}
 #DIEN-POPUP .pres-consignes-deplacements-restriction td[colspan] input:first-child {margin-left:141px;}
 #DIEN-POPUP tr.pres-consignes-deplacements-restriction input+label {margin-right:25px;}
+.ui-widget-content .ui-state-default.ui-button-validate {background:#090;color:#fee;}
 
 div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY//8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb/5ef24osbIzDq79BnaYoSuvk8GYITafQKJaBWh1WrHl8JinLp9wBF4fqiZPZ33wAfP8GUa+i93oK18gCOp2BsFQHW1xMp/Fh4QjEzc3lYQlLhaL5ITakKvP8AWq6gk85CjyVhbBYAeW9Qq/Ne2nC7ufEmJpNcN5OjvcI2k/MW2KszsAZUZejRONTHHnv43yFaOGZCZnIicSAYAaQK1LkF80zYinYoQfRIDLCuEQgBr1aB7R2m24vm7Cw5Aw4RLRyFkV0HdiQGloEik8MM1FdW0XrI48DpJPZwKAIjk2P/QIIWDKMlzNHvD1zmyVM/sL6B02d+HN29j4PpaTIKM61Geo29KkJjq7fcjwaGWXl45x49nvcA6QxOvD4c3nLiy7Wpv0Pay8vCaSAII5WBthJEkxeG3G443NxXcpP+5AVoviV8c97G/tVJYWgL1bMoHC89R9PFj3W74XBw+9en6Fj4TxzxvPC/Uw2G2MEXjV//kEpgRFM89AAAAABJRU5ErkJggg==");
 background-position:initial;}
@@ -150,11 +151,9 @@ $.expr[":"].containsI = function (a, i, m) {
             case "Consignes d'Hébergement":
                 SSSFrame.listeConsignes.done=true
                 Object.keys(SSSFrame.listeConsignes).forEach(el=>{
-                    console.log(SSSFrame.listeConsignes.current)
                     if (typeof SSSFrame.listeConsignes[el] == "object" && !SSSFrame.listeConsignes[el].done){
                         if (SSSFrame.listeConsignes[el].consigne != "autorise"){
                             SSSFrame.listeConsignes.done=false
-                            SSSFrame.listeConsignes.current=el
                             SSSFrame.output_Selector([el, SSSFrame.listeConsignes[el].consigne])
                             return false
                         } else {
@@ -162,6 +161,7 @@ $.expr[":"].containsI = function (a, i, m) {
                         }
                     }
                 })
+                console.log(SSSFrame.listeConsignes.done)
                 break
         }
     } else if ((location.href.search("popupContents.jsp")+1)){
@@ -295,7 +295,7 @@ body {background-color:#F5F5F5;}
                     case "Sélectionnez un item dans la liste":
                         break
                     case "Circulation du Patient:":
-                        switch (SSSFrame.listeConsignes.appels.restriction){
+                        switch (SSSFrame.listeConsignes.deplacements.restriction){
                             case "soignant":
                                 $('a[onclick]:contains("(_)"):contains("1 soignant")').click2()
                                 $('a[onclick]:contains("ENTREE")').click2()
@@ -315,11 +315,12 @@ body {background-color:#F5F5F5;}
                     case "Fréquence:":
                         $('a[onclick]:contains("ENTREE")').click2()
                         break
+                    case "Nombre de cigarettes autorisées par jour :":
                     case "Commentaires :":
-                        currConsigneA = $('div.outlineTitle', heoOutputFrame.document).text().trim().split(" : ")
+                        currConsigneA = $('div.orderName', heoOutputFrame.document).text().trim().split(" : ")
                         currConsigne = currConsigneA[0].split(" ")[2].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
                         SSSFrame.listeConsignes[currConsigne].done=true
-                        $('#HEO_INPUT', SSSFrame.document).val(SSSFrame.listeConsignes[SSSFrame.listeConsignes.current].comment)[0].dispatchEvent(ke);
+                        $('#HEO_INPUT', SSSFrame.document).val(SSSFrame.listeConsignes[currConsigne].comment)[0].dispatchEvent(ke);
                         break
                 }
             }
@@ -367,7 +368,6 @@ function output_Selector(sel, checkExists = false){
     }else{
         setTimeout((selector, out)=>{
             let $selection = $(selector, out.document)
-            console.log($selection)
             if ($selection.length > 1){$selection = $selection.filter(pasHorsLivret ? ":not(:has(.HorsLivret))":"*")}
             $selection.each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},250, el)}})
         }, 250, sel, output)
@@ -412,7 +412,7 @@ function presOutputConsignesRapides(){
     while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
         SSSFrame = SSSFrame.parent
     }
-    //if(!$('#DIEN-POPUP', SSSFrame.document).dialog('open').length){
+    if(!$('#DIEN-POPUP', SSSFrame.document).dialog('open').length){
     $('#DIEN-POPUP', SSSFrame.document).dialog('destroy').remove()
         $('<div id="DIEN-POPUP"></div>', SSSFrame.document).append(`
 <table>
@@ -438,7 +438,7 @@ function presOutputConsignesRapides(){
    <td><input type="radio" name="deplacements" consigne="autorise"></td>
    <td><input type="radio" name="deplacements" consigne="interdit"></td>
    <td class="pres-consignes-restreint"><input type="radio" name="deplacements" class="pres-consignes-restreint" consigne="restreint"></td>
-   <td><div contenteditable name="deplacements-com" placeholder="Descente sur temps court ?"/></td>
+   <td><div contenteditable name="deplacements-com" placeholder="Descente sur temps court ?">Descente sur temps courts</div></td>
   </tr>
   <tr class="pres-consignes-deplacements-restriction">
    <td colspan="4">
@@ -474,8 +474,8 @@ function presOutputConsignesRapides(){
   <tr>
    <td>Cigarettes</td>
    <td><input type="radio" name="tabagisme" consigne="autorise"></td>
-   <td><input type="radio" name="tabagisme" consigne="interdit"></td>
    <td class="pres-consignes-restreint"><input type="radio" name="tabagisme" class="pres-consignes-restreint" consigne="accompagne"></td>
+   <td class="pres-consignes-restreint"><input type="radio" name="tabagisme" class="pres-consignes-restreint" consigne="restreint"></td>
    <td><div contenteditable name="tabagisme-com" placeholder="Nombre de cigarettes ?">7 cigarettes par jour</div></td>
   </tr>
 </tbody></table>`).dialog({
@@ -498,6 +498,7 @@ function presOutputConsignesRapides(){
             buttons: [
                 {
                     text: "Valider",
+                    class: "ui-button ui-button-validate",
                     click: function() {
                         let listeConsignes={}, consignesValides=true
                         $('#DIEN-POPUP tbody tr').each((i,el)=>{
@@ -516,7 +517,6 @@ function presOutputConsignesRapides(){
                         if (consignesValides){
                             $( this ).dialog( "close" );
                             Object.keys(listeConsignes).forEach(el=>{
-                                console.log(el)
                                 if (SSSFrame.currentListeConsignes[el].consigne == listeConsignes[el].consigne && SSSFrame.currentListeConsignes[el].comment == listeConsignes[el].comment){
                                     listeConsignes[el].done=true
                                 }
@@ -536,7 +536,7 @@ function presOutputConsignesRapides(){
                 }
             ]
         })
-   // }
+    }
 }
 
 function addAutoPrescriptor(ev){
@@ -581,7 +581,6 @@ function addAutoPrescriptor(ev){
                 pres.forme = formes.find(el=>pres.find(elm=>elm==el)) || defaultsPres.formes[pres.nom] || "cp"
                 pres[0]=pres.nom
                 pres[1]=pres.forme
-                    console.log(pres)
                 if(pres.poso && (pres.poso.length >= 3 && pres.poso.length <= 4) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2]) && (!pres.poso[3] || pres.poso[3] && !isNaN(pres.poso[3]))){
                     if (pres.dose){
                         pres.poso=pres.poso.map(t=>t*pres.dose)
@@ -670,7 +669,6 @@ function addAutoPrescriptor(ev){
                     }
                     ev.target.value=pres[0]+" "+pres[1]
                     SSSFrame_win.autoEnhancedPres = pres
-                    console.log(pres)
                     SSSFrame_win.autoEnhancedPresWaiter = setInterval((presc)=>{
                         if (SSSFrame_win.output_Selector(presc[0] + " "+presc[1], true)){
                             SSSFrame_win.output_Selector(presc[0] + " "+presc[1])
