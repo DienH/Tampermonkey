@@ -7,7 +7,7 @@
 // @match        http*://meva/*
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
 // @require      https://code.jquery.com/jquery.min.js
-// @require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js
+// @require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey/Dien.js
 // require      https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.2/math.js
 // @resource     DienJS https://raw.githubusercontent.com/DienH/Tampermonkey/master/Dien.js
 // @grant        unsafeWindow
