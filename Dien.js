@@ -1,4 +1,5 @@
 (function($) {
+	if (!$ || !$.fn){return false}
 	$.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "")
 		.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase()
 		.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
