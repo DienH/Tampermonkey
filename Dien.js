@@ -377,7 +377,7 @@ function getPath(win, n){
 }
 
 function addFn(func) {
-    var dienScript = document.getElementById("DienScript") ? document.getElementById("DienScript") : document.createElement("script");
+    var dienScript = document.getElementById("DienScript") || document.createElement("script");
     dienScript.id = "DienScript";
     if(typeof func === "function"){
         dienScript.innerHTML = func.toString();
