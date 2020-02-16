@@ -417,7 +417,10 @@ function JSON2CSV(JSONdata, title){
 String.prototype.capitalize = function() {
   return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase()
 }
-
+String.prototype.log(){
+	console.log(this)
+	return this
+}
 String.prototype.searchI = function(searchString) {
 	if(typeof searchString == "string"){
 	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase()
