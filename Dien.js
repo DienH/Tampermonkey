@@ -421,13 +421,12 @@ String.prototype.log = function(){
 	console.log(this.toString())
 	return this
 }
+String.prototype.toStringI = function() {
+	return this.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+}
 String.prototype.searchI = function(searchString) {
-	if(typeof searchString == "string"){
 	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase()
 		.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
-	} else {
-		return undefined
-	}
 }
 
 addFn([getPath, getSearchParams,download,log,addFn, JSON2CSV, waitForElement]);
