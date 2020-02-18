@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.21
+// @version      0.2.22
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -42,6 +42,7 @@ if (typeof "searchString" == "string"){
 
 
     if (location.pathname == "/m-eva/"){
+        /*
         $('#SSSFrame').load((ev)=>{
             let SSSFrame_win = ev.target.contentWindow.name == "SSSFrame" ? ev.target.contentWindow : document.getElementById('SSSFrame').contentWindow
 
@@ -52,6 +53,7 @@ if (typeof "searchString" == "string"){
                 }, 500)
             })
         })
+        */
         window.frameWait = setInterval(()=>{
             let $frames = $('iframe', $('#SSSFrame')[0].contentDocument)
             if ($frames.is("#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal")){
@@ -71,21 +73,23 @@ if (typeof "searchString" == "string"){
                 }
             }
         },500)
-    }else if (location.href.search("Hospitalisation.fwks")+1){
+    }else if (location.href.search("quitteSession")+1){
+        $('div.gwt-Label:contains(Cliquez ici)', document).click2()
+    }else if (location.href.search("Hospitalisation.fwks")+1 || location.href.search("m-eva.fwks")+1){
         let SSSFrame_win = window, SSSFrame_wait = setInterval(()=>{
-            let state = 0, $CS_Anest = $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`)
-            if ($CS_Anest.length){
-                $CS_Anest.remove()
+            let state = 0, tries = 0, CS_AnestTitle = (`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`)
+            if ($(CS_AnestTitle).length){
+                $(CS_AnestTitle).remove()
                 SSSFrame_win.dispatchEvent(new Event('resize'))
                 state = 1
-            } else if(state == 1 && !$CS_Anest.length){
+            } else if(tries > 10 || (state == 1 && !$(CS_AnestTitle).length)){
                 clearInterval(SSSFrame_wait)
             }
-            log($CS_Anest)
+            tries += 1
         }, 1000)
 
         if (!document.getElementById('SSSFrame_MevaStyle')){
-            $('<style id="SSSFrame_MevaStyle">').html(`
+            $('<style id="SSSFrame_MevaStyle">', document).html(`
 #HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:#F5F5F5;}
 #DIEN-POPUP table, #DIEN-POPUP td, #DIEN-POPUP th {border: 1px solid black;border-collapse: collapse;font-size:14px;}
 #DIEN-POPUP tr:not(.pres-consignes-deplacements-restriction) {border: 2px solid black;border-collapse: collapse;}
@@ -115,14 +119,15 @@ background-position:initial;}
             script.id = "SSSFrame_Script"
             script.innerHTML = `
 String.prototype.searchI = function(searchString) {
-return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
 }
 $.expr[":"].containsI = function (a, i, m) {
-return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
+ return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;
+};
 ` + output_Selector.toString() + autoPresConsignesRapides.toString()
-
             SSSFrame_win.document.body.append(script)
         }
+
     }else if (location.href.search("initSSS")+1){
         if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
         //setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
@@ -131,15 +136,27 @@ return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").repla
 
     } else if ((location.href.search('heoOutput.jsp')+1)){
         let SSSFrame = window.parent
-        $('<style>').text(`
+        $('body', document).append($('<style>', document).text(`
 .presPsy-rapide {position: absolute;right: 0;color: green!important;}
 .presPsy-rapide:hover {text-decoration:underline;}
-`).appendTo('body')
-        $('<script>').text(presOutputConsignesRapides.toString()).appendTo('body')
-        switch($('div.outlineTitle').text().trim()){
+`)).append($('<script>', document).text(presOutputConsignesRapides.toString()))
+        switch($('div.outlineTitle', document).text().trim()){
             case "Prescriptions Usuelles de Psychiatrie Adulte":
-                $('a:contains("Retourner à la liste")').remove()
-                $('a:contains("Consignes")').contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides();}).before('<a class="presPsy-rapide" onclick="presOutputConsignesRapides()">Consignes rapides</a>')
+                $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', true)
+                /*
+                $('button.GD42JS-DO5 span.GD42JS-DP5:contains(Oups)', SSSFrame.document).log().each((i,el)=>{
+                    el.onmousedown = function(ev){
+                        log(ev.target, ev.target.parentElement.parentElement)
+                        if ($('div.outlineTitle',ev.view.document.heoPane_output.document).text().log().trim() == "Prescriptions Usuelles de Psychiatrie Adulte"){
+                            ev.target.parentElement.parentElement.disabled = true
+                        } else {
+                            ev.target.parentElement.parentElement.disabled = false
+                        }
+                    }
+                })*/
+                $('a:contains("Retourner à la liste")', document).remove()
+                $('a:contains("Consignes")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Consignes rapides</a>').click(presOutputConsignesRapides))
+                $('a:contains("Sorties Temp")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Permission rapide</a>').click(presOutputConsignesRapides))
                 if (SSSFrame.listeConsignes){
                     if (SSSFrame.listeConsignes.done){
                         SSSFrame.listeConsignes = ""
@@ -151,19 +168,31 @@ return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").repla
                 }
                 break
             case "Consignes d'Hébergement":
-                SSSFrame.listeConsignes.done=true
-                Object.keys(SSSFrame.listeConsignes).forEach(el=>{
-                    if (typeof SSSFrame.listeConsignes[el] == "object" && !SSSFrame.listeConsignes[el].done){
-                        if (SSSFrame.listeConsignes[el].consigne != "autorise"){
-                            SSSFrame.listeConsignes.done=false
-                            SSSFrame.output_Selector([el, SSSFrame.listeConsignes[el].consigne])
-                            return false
-                        } else {
-                            SSSFrame.listeConsignes[el].done=true
+                $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', false)
+                if ( SSSFrame.listeConsignes){
+                    SSSFrame.listeConsignes.done=true
+                    Object.keys(SSSFrame.listeConsignes).forEach(el=>{
+                        if (typeof SSSFrame.listeConsignes[el] == "object" && !SSSFrame.listeConsignes[el].done){
+                            if (SSSFrame.listeConsignes[el].consigne != "autorise"){
+                                SSSFrame.listeConsignes.done=false
+                                SSSFrame.output_Selector([el, SSSFrame.listeConsignes[el].consigne])
+                                return false
+                            } else {
+                                SSSFrame.listeConsignes[el].done=true
+                            }
                         }
-                    }
-                })
-                console.log(SSSFrame.listeConsignes.done)
+                    })
+                }
+                break
+            case "Sorties Temporaires (permissions de sortie)":
+                $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', false)
+                if (SSSFrame.autoPresPerm){
+                    SSSFrame.autoPresPerm = false
+                    $("a[onclick*=1]:first", document).click2()
+                }
+                break
+            default:
+                $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', false)
                 break
         }
     } else if ((location.href.search("popupContents.jsp")+1)){
@@ -364,14 +393,14 @@ function output_Selector(sel, checkExists = false){
         }
     }
 
-    sel = 'a'+(typeof sel == "string" ? ':containsI('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']' : filterString))
+    sel = 'a'+(typeof sel == "string" ? ':containsI('+sel+')' : (typeof sel == "number" ? '[onclick*='+sel+']:first' : filterString))
     if (checkExists){
         return ($(sel, output.document.body).length > 0 ? true : false)
     }else{
         setTimeout((selector, out)=>{
             let $selection = $(selector, out.document)
             if ($selection.length > 1){$selection = $selection.filter(pasHorsLivret ? ":not(:has(.HorsLivret))":"*")}
-            $selection.each((i,el)=>{if (!i){setTimeout((el)=>{console.log(el);el.click()},250, el)}})
+            $selection.each((i,el)=>{if (!i){setTimeout((el)=>{el.click()},250, el)}})
         }, 250, sel, output)
     }
 }
@@ -408,15 +437,23 @@ function autoPresConsignesRapides(consignes){
         return currentConsignes
     }
 }
-function presOutputConsignesRapides(){
+function presOutputConsignesRapides(ev){
     if (!$ || !$.fn){var $ = (typeof unsafeWindow != "undefined" ? unsafeWindow.$ || unsafeWindow.parent.$ : window.$ || window.parent.$)}
     let SSSFrame = window
     while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
         SSSFrame = SSSFrame.parent
     }
-    if(!$('#DIEN-POPUP', SSSFrame.document).dialog('open').length){
-    $('#DIEN-POPUP', SSSFrame.document).dialog('destroy').remove()
-        $('<div id="DIEN-POPUP"></div>', SSSFrame.document).append(`
+    if ($(ev.target).text().search('Sorties Temp')+1 || $(ev.target).text().search('Permission rapide')+1){
+        SSSFrame.autoPresPerm = true
+        if ($(ev.target).text().search('Sorties Temp')+1){
+            ev.target.click()
+        } else {
+            $("a[onclick*=2]:first", document).click2()
+        }
+    } else if ($(ev.target).text().search('Consignes')+1){
+        if(!$('#DIEN-POPUP', SSSFrame.document).dialog('open').length){
+            $('#DIEN-POPUP', SSSFrame.document).dialog('destroy').remove()
+            $('<div id="DIEN-POPUP"></div>', SSSFrame.document).append(`
 <table>
  <thead>
   <tr>
@@ -481,63 +518,64 @@ function presOutputConsignesRapides(){
    <td><div contenteditable name="tabagisme-com" placeholder="Nombre de cigarettes ?">7 cigarettes par jour</div></td>
   </tr>
 </tbody></table>`).dialog({
-            modal:true,
-            title:"Consignes d'hospitalisation",
-            minHeight:250,
-            minWidth:680,
-            width:800,
-            height:"auto",
-            resize:"auto",
-            autoResize:true,
-            open:function(ev, ui){
-                let currConsignes = autoPresConsignesRapides()
-                SSSFrame.currentListeConsignes = currConsignes
-                Object.keys(currConsignes).forEach(el=>{
-                    $('#DIEN-POPUP input[name='+el+'][consigne='+currConsignes[el].consigne+']', SSSFrame.document).click2()
-                    $('#DIEN-POPUP div[contenteditable][name='+el+'-com]').text(currConsignes[el].comment)
-                })
-            },
-            buttons: [
-                {
-                    text: "Valider",
-                    class: "ui-button ui-button-validate",
-                    click: function() {
-                        let listeConsignes={}, consignesValides=true
-                        $('#DIEN-POPUP tbody tr').each((i,el)=>{
-                            if ($(el).hasClass('pres-consignes-deplacements-restriction')){
-                                listeConsignes.deplacements.restriction = $('input:checked', el).attr('descente')
-                            } else {
-                                let currentConsigne = {"consigne": $('input:checked', el).attr('consigne'), "comment":$('div[contenteditable]', el).text()}
-                                if (currentConsigne.consigne == "restreint" && currentConsigne.comment == "")
-                                {
-                                    consignesValides = false
-                                    return false
-                                }
-                                listeConsignes[$('input:first', el).attr('name')] = currentConsigne
-                            }
-                        })
-                        if (consignesValides){
-                            $( this ).dialog( "close" );
-                            Object.keys(listeConsignes).forEach(el=>{
-                                if (SSSFrame.currentListeConsignes[el].consigne == listeConsignes[el].consigne && SSSFrame.currentListeConsignes[el].comment == listeConsignes[el].comment){
-                                    listeConsignes[el].done=true
+                modal:true,
+                title:"Consignes d'hospitalisation",
+                minHeight:250,
+                minWidth:680,
+                width:800,
+                height:"auto",
+                resize:"auto",
+                autoResize:true,
+                open:function(ev, ui){
+                    let currConsignes = autoPresConsignesRapides()
+                    SSSFrame.currentListeConsignes = currConsignes
+                    Object.keys(currConsignes).forEach(el=>{
+                        $('#DIEN-POPUP input[name='+el+'][consigne='+currConsignes[el].consigne+']', SSSFrame.document).click2()
+                        $('#DIEN-POPUP div[contenteditable][name='+el+'-com]').text(currConsignes[el].comment)
+                    })
+                },
+                buttons: [
+                    {
+                        text: "Valider",
+                        class: "ui-button ui-button-validate",
+                        click: function() {
+                            let listeConsignes={}, consignesValides=true
+                            $('#DIEN-POPUP tbody tr').each((i,el)=>{
+                                if ($(el).hasClass('pres-consignes-deplacements-restriction')){
+                                    listeConsignes.deplacements.restriction = $('input:checked', el).attr('descente')
+                                } else {
+                                    let currentConsigne = {"consigne": $('input:checked', el).attr('consigne'), "comment":$('div[contenteditable]', el).text()}
+                                    if (currentConsigne.consigne == "restreint" && currentConsigne.comment == "")
+                                    {
+                                        consignesValides = false
+                                        return false
+                                    }
+                                    listeConsignes[$('input:first', el).attr('name')] = currentConsigne
                                 }
                             })
-                            SSSFrame.listeConsignes = listeConsignes
-                            $('table[name=HEOFRAME] button:contains(Arrêt)').click2()
-                        } else {
-                            alert('Préciser les restrictions !')
+                            if (consignesValides){
+                                $( this ).dialog( "close" );
+                                Object.keys(listeConsignes).forEach(el=>{
+                                    if (SSSFrame.currentListeConsignes[el].consigne == listeConsignes[el].consigne && SSSFrame.currentListeConsignes[el].comment == listeConsignes[el].comment){
+                                        listeConsignes[el].done=true
+                                    }
+                                })
+                                SSSFrame.listeConsignes = listeConsignes
+                                $('table[name=HEOFRAME] button:contains(Arrêt)').click2()
+                            } else {
+                                alert('Préciser les restrictions !')
+                            }
+                        }
+                    },
+                    {
+                        text: "Annuler",
+                        click: function() {
+                            $( this ).dialog( "close" );
                         }
                     }
-                },
-                {
-                    text: "Annuler",
-                    click: function() {
-                        $( this ).dialog( "close" );
-                    }
-                }
-            ]
-        })
+                ]
+            })
+        }
     }
 }
 
@@ -1050,7 +1088,14 @@ NZb = function (a, b, c) {
                 $(el).parents('tr').next().add($(el).parents('tr').find('td.pres-consignes-restreint')).removeClass('deplacements-restreints')
             })
         }
-    }
+    }/* else if ($(ev.target).filter('span.GD42JS-DP5:contains(Oups)')){
+        console.log(ev.target, ev.target.parentElement.parentElement)
+        if ($('div.outlineTitle',ev.view.document.heoPane_output.document).text().log().trim() == "Prescriptions Usuelles de Psychiatrie Adulte"){
+            $(ev.target).parents('button').attr("disabled", true)
+        } else {
+            $(ev.target).parents('button').attr("disabled", false)
+        }
+    }*/
 }
 
 function clickLogin(ev){
