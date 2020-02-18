@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.20
+// @version      0.2.21
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -20,7 +20,7 @@
 (function() {
 
     var µ = unsafeWindow
-    if (!$ || !$.fn) {var $ = window.jQuery || unsafeWindow.jQuery || window.parent.jQuery};
+    if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.jQuery};
     var log = console.log
     $('<script>').html(`if (!$ || !$.fn) {var $ = window.jQuery || window.parent.$ || window.parent.jQuery}
 String.prototype.searchI = function(searchString) {
@@ -28,7 +28,7 @@ if (typeof "searchString" == "string"){
 	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
 } else {return undefined}
 }`).appendTo('body')
-    $('<script id="DienSriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js">').appendTo('body')
+    $('<script id="DienSriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey/Dien.js">').appendTo('body')
     //$('<script id="DienSriptPlus">').html(GM_getResourceText('DienJS'))
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
     if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""})}
@@ -44,59 +44,10 @@ if (typeof "searchString" == "string"){
     if (location.pathname == "/m-eva/"){
         $('#SSSFrame').load((ev)=>{
             let SSSFrame_win = ev.target.contentWindow.name == "SSSFrame" ? ev.target.contentWindow : document.getElementById('SSSFrame').contentWindow
-            let SSSFrame_wait = setInterval(()=>{
-                let $CS_Anest = $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document)
-                if ($CS_Anest.length){
-                    SSSFrame_win.dispatchEvent(new Event('resize'))
-                    clearInterval(SSSFrame_wait)
-                }
-            }, 500)
+
             $(SSSFrame_win).resize((ev)=>{
                 let SSSFrame_win = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
                 setTimeout(()=>{
-                    if (!SSSFrame_win.document.getElementById('SSSFrame_MevaStyle')){
-                        let cssStyle = document.createElement('style');cssStyle.id = "SSSFrame_MevaStyle"
-                        cssStyle.innerHTML = `
-#HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:#F5F5F5;}
-#DIEN-POPUP table, #DIEN-POPUP td, #DIEN-POPUP th {border: 1px solid black;border-collapse: collapse;font-size:14px;}
-#DIEN-POPUP tr:not(.pres-consignes-deplacements-restriction) {border: 2px solid black;border-collapse: collapse;}
-#DIEN-POPUP tr.pres-consignes-deplacements.pres-consignes-restreint {border-bottom: 0px solid white;}
-#DIEN-POPUP tr.pres-consignes-deplacements-restriction.deplacements-restreints {border-top: 0px solid white;}
-#DIEN-POPUP table {width:100%;}
-#DIEN-POPUP table td+td {text-align:center;}
-#DIEN-POPUP [contenteditable][placeholder]:empty:before {content: attr(placeholder);color: #aaa;font-style:italic;}
-#DIEN-POPUP [contenteditable][placeholder]:empty:focus:before {content: "";}
-#DIEN-POPUP .pres-consignes-restreint [contenteditable][placeholder]:empty:before {color: #a22;font-style:initial;}
-#DIEN-POPUP .pres-consignes-restreint [contenteditable][placeholder] {color: #a22;font-style:initial;}
-#DIEN-POPUP .pres-consignes-restreint [contenteditable][placeholder] {color: #111;font-style:initial;}
-#DIEN-POPUP [contenteditable][placeholder] {color: #aaa;font-style:italic;}
-#DIEN-POPUP tr.pres-consignes-deplacements-restriction {display:none}
-#DIEN-POPUP tr.pres-consignes-deplacements-restriction.deplacements-restreints {display:table-row;}
-#DIEN-POPUP td.pres-consignes-restreint.deplacements-restreints {border-bottom:1px solid white;}
-#DIEN-POPUP .pres-consignes-deplacements-restriction td[colspan] {border-top:1px solid white;}
-#DIEN-POPUP .pres-consignes-deplacements-restriction td[colspan] input:first-child {margin-left:141px;}
-#DIEN-POPUP tr.pres-consignes-deplacements-restriction input+label {margin-right:25px;}
-.ui-widget-content .ui-state-default.ui-button-validate {background:#090;color:#fee;}
-
-div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY//8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb/5ef24osbIzDq79BnaYoSuvk8GYITafQKJaBWh1WrHl8JinLp9wBF4fqiZPZ33wAfP8GUa+i93oK18gCOp2BsFQHW1xMp/Fh4QjEzc3lYQlLhaL5ITakKvP8AWq6gk85CjyVhbBYAeW9Qq/Ne2nC7ufEmJpNcN5OjvcI2k/MW2KszsAZUZejRONTHHnv43yFaOGZCZnIicSAYAaQK1LkF80zYinYoQfRIDLCuEQgBr1aB7R2m24vm7Cw5Aw4RLRyFkV0HdiQGloEik8MM1FdW0XrI48DpJPZwKAIjk2P/QIIWDKMlzNHvD1zmyVM/sL6B02d+HN29j4PpaTIKM61Geo29KkJjq7fcjwaGWXl45x49nvcA6QxOvD4c3nLiy7Wpv0Pay8vCaSAII5WBthJEkxeG3G443NxXcpP+5AVoviV8c97G/tVJYWgL1bMoHC89R9PFj3W74XBw+9en6Fj4TxzxvPC/Uw2G2MEXjV//kEpgRFM89AAAAABJRU5ErkJggg==");
-background-position:initial;}
-`
-                        SSSFrame_win.document.body.append(cssStyle)
-                    }
-                    if (!SSSFrame_win.document.getElementById('SSSFrame_Script')){
-                        let script = document.createElement('script')
-                        script.id = "SSSFrame_Script"
-                        script.innerHTML = `
-String.prototype.searchI = function(searchString) {
-	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
-}
-$.expr[":"].containsI = function (a, i, m) {
-  return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
-
-` + output_Selector.toString() + autoPresConsignesRapides.toString()
-
-                        SSSFrame_win.document.body.append(script)
-                    }
                     $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document).remove()
                 }, 500)
             })
@@ -120,7 +71,58 @@ $.expr[":"].containsI = function (a, i, m) {
                 }
             }
         },500)
+    }else if (location.href.search("Hospitalisation.fwks")+1){
+        let SSSFrame_win = window, SSSFrame_wait = setInterval(()=>{
+            let state = 0, $CS_Anest = $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`)
+            if ($CS_Anest.length){
+                $CS_Anest.remove()
+                SSSFrame_win.dispatchEvent(new Event('resize'))
+                state = 1
+            } else if(state == 1 && !$CS_Anest.length){
+                clearInterval(SSSFrame_wait)
+            }
+            log($CS_Anest)
+        }, 1000)
 
+        if (!document.getElementById('SSSFrame_MevaStyle')){
+            $('<style id="SSSFrame_MevaStyle">').html(`
+#HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:#F5F5F5;}
+#DIEN-POPUP table, #DIEN-POPUP td, #DIEN-POPUP th {border: 1px solid black;border-collapse: collapse;font-size:14px;}
+#DIEN-POPUP tr:not(.pres-consignes-deplacements-restriction) {border: 2px solid black;border-collapse: collapse;}
+#DIEN-POPUP tr.pres-consignes-deplacements.pres-consignes-restreint {border-bottom: 0px solid white;}
+#DIEN-POPUP tr.pres-consignes-deplacements-restriction.deplacements-restreints {border-top: 0px solid white;}
+#DIEN-POPUP table {width:100%;}
+#DIEN-POPUP table td+td {text-align:center;}
+#DIEN-POPUP [contenteditable][placeholder]:empty:before {content: attr(placeholder);color: #aaa;font-style:italic;}
+#DIEN-POPUP [contenteditable][placeholder]:empty:focus:before {content: "";}
+#DIEN-POPUP .pres-consignes-restreint [contenteditable][placeholder]:empty:before {color: #a22;font-style:initial;}
+#DIEN-POPUP .pres-consignes-restreint [contenteditable][placeholder] {color: #a22;font-style:initial;}
+#DIEN-POPUP .pres-consignes-restreint [contenteditable][placeholder] {color: #111;font-style:initial;}
+#DIEN-POPUP [contenteditable][placeholder] {color: #aaa;font-style:italic;}
+#DIEN-POPUP tr.pres-consignes-deplacements-restriction {display:none}
+#DIEN-POPUP tr.pres-consignes-deplacements-restriction.deplacements-restreints {display:table-row;}
+#DIEN-POPUP td.pres-consignes-restreint.deplacements-restreints {border-bottom:1px solid white;}
+#DIEN-POPUP .pres-consignes-deplacements-restriction td[colspan] {border-top:1px solid white;}
+#DIEN-POPUP .pres-consignes-deplacements-restriction td[colspan] input:first-child {margin-left:141px;}
+#DIEN-POPUP tr.pres-consignes-deplacements-restriction input+label {margin-right:25px;}
+.ui-widget-content .ui-state-default.ui-button-validate {background:#090;color:#fee;}
+div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY//8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb/5ef24osbIzDq79BnaYoSuvk8GYITafQKJaBWh1WrHl8JinLp9wBF4fqiZPZ33wAfP8GUa+i93oK18gCOp2BsFQHW1xMp/Fh4QjEzc3lYQlLhaL5ITakKvP8AWq6gk85CjyVhbBYAeW9Qq/Ne2nC7ufEmJpNcN5OjvcI2k/MW2KszsAZUZejRONTHHnv43yFaOGZCZnIicSAYAaQK1LkF80zYinYoQfRIDLCuEQgBr1aB7R2m24vm7Cw5Aw4RLRyFkV0HdiQGloEik8MM1FdW0XrI48DpJPZwKAIjk2P/QIIWDKMlzNHvD1zmyVM/sL6B02d+HN29j4PpaTIKM61Geo29KkJjq7fcjwaGWXl45x49nvcA6QxOvD4c3nLiy7Wpv0Pay8vCaSAII5WBthJEkxeG3G443NxXcpP+5AVoviV8c97G/tVJYWgL1bMoHC89R9PFj3W74XBw+9en6Fj4TxzxvPC/Uw2G2MEXjV//kEpgRFM89AAAAABJRU5ErkJggg==");
+background-position:initial;}
+`).appendTo('body')
+        }
+        if (!SSSFrame_win.document.getElementById('SSSFrame_Script')){
+            let script = document.createElement('script')
+            script.id = "SSSFrame_Script"
+            script.innerHTML = `
+String.prototype.searchI = function(searchString) {
+return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+}
+$.expr[":"].containsI = function (a, i, m) {
+return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
+` + output_Selector.toString() + autoPresConsignesRapides.toString()
+
+            SSSFrame_win.document.body.append(script)
+        }
     }else if (location.href.search("initSSS")+1){
         if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
         //setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
@@ -834,7 +836,6 @@ var datePicker = new Litepicker({
   sortiePerm.show()
  }
 })
-
 if (!window.parent.autoExtendPerm){
  let script = window.parent.document.getElementById('autoPermScript')
  if (script) {script.remove()}
@@ -851,7 +852,6 @@ if (!window.parent.autoExtendPerm){
     "output_Selector();ev.path[0].onload=''}}"
  window.parent.document.body.append(script)
 }
-
 if (window.parent.datePermRestante){
  let dateRestante = window.parent.datePermRestante
  if (dateRestante.hours > 48){
