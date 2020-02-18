@@ -20,7 +20,7 @@
 (function() {
 
     var µ = unsafeWindow
-    if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.jQuery};
+    if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.jQuery || window.parent.jQuery};
     var log = console.log
     $('<script>').html(`if (!$ || !$.fn) {var $ = window.jQuery || window.parent.$ || window.parent.jQuery}
 String.prototype.searchI = function(searchString) {
