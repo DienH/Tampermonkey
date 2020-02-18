@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.21
+// @version      0.2.20
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -28,7 +28,7 @@ if (typeof "searchString" == "string"){
 	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
 } else {return undefined}
 }`).appendTo('body')
-    $('<script id="DienSriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey/Dien.js">').appendTo('body')
+    $('<script id="DienSriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js">').appendTo('body')
     //$('<script id="DienSriptPlus">').html(GM_getResourceText('DienJS'))
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
     if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""})}
@@ -44,48 +44,19 @@ if (typeof "searchString" == "string"){
     if (location.pathname == "/m-eva/"){
         $('#SSSFrame').load((ev)=>{
             let SSSFrame_win = ev.target.contentWindow.name == "SSSFrame" ? ev.target.contentWindow : document.getElementById('SSSFrame').contentWindow
-            
+            let SSSFrame_wait = setInterval(()=>{
+                let $CS_Anest = $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document)
+                if ($CS_Anest.length){
+                    SSSFrame_win.dispatchEvent(new Event('resize'))
+                    clearInterval(SSSFrame_wait)
+                }
+            }, 500)
             $(SSSFrame_win).resize((ev)=>{
                 let SSSFrame_win = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
                 setTimeout(()=>{
-                    $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document).remove()
-                }, 500)
-            })
-        })
-        window.frameWait = setInterval(()=>{
-            let $frames = $('iframe', $('#SSSFrame')[0].contentDocument)
-            if ($frames.is("#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal")){
-                $frames.filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal').each(
-                    (i, el)=>{
-                        if (el.contentWindow.NZb) clearInterval(window.frameWait)
-                    }
-                )
-            }
-        }, 500)
-        window.mevaWait = setInterval(()=>{
-            let SSSFrame = document.getElementById('SSSFrame')
-            if (SSSFrame){
-                SSSFrame.onload = ()=>{
-                    SSSFrame.contentWindow.removeEventListener('click', monitorClick)
-                    SSSFrame.contentWindow.addEventListener('click', monitorClick)
-                }
-            }
-        },500)
-    }else if (location.href.search("Hospitalisation.fwks")){
-        let SSSFrame_win = window, SSSFrame_wait = setInterval(()=>{
-            let state = 0, $CS_Anest = $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`)
-            if ($CS_Anest.length){
-                $CS_Anest.remove()
-                SSSFrame_win.dispatchEvent(new Event('resize'))
-                state = 1
-            } else if(state == 1 && !$CS_Anest.length){
-                clearInterval(SSSFrame_wait)
-            }
-            log($CS_Anest)
-        }, 1000)
-
-        if (!document.getElementById('SSSFrame_MevaStyle')){
-            $('<style id="SSSFrame_MevaStyle">').html(`
+                    if (!SSSFrame_win.document.getElementById('SSSFrame_MevaStyle')){
+                        let cssStyle = document.createElement('style');cssStyle.id = "SSSFrame_MevaStyle"
+                        cssStyle.innerHTML = `
 #HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:#F5F5F5;}
 #DIEN-POPUP table, #DIEN-POPUP td, #DIEN-POPUP th {border: 1px solid black;border-collapse: collapse;font-size:14px;}
 #DIEN-POPUP tr:not(.pres-consignes-deplacements-restriction) {border: 2px solid black;border-collapse: collapse;}
@@ -109,22 +80,47 @@ if (typeof "searchString" == "string"){
 
 div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY//8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb/5ef24osbIzDq79BnaYoSuvk8GYITafQKJaBWh1WrHl8JinLp9wBF4fqiZPZ33wAfP8GUa+i93oK18gCOp2BsFQHW1xMp/Fh4QjEzc3lYQlLhaL5ITakKvP8AWq6gk85CjyVhbBYAeW9Qq/Ne2nC7ufEmJpNcN5OjvcI2k/MW2KszsAZUZejRONTHHnv43yFaOGZCZnIicSAYAaQK1LkF80zYinYoQfRIDLCuEQgBr1aB7R2m24vm7Cw5Aw4RLRyFkV0HdiQGloEik8MM1FdW0XrI48DpJPZwKAIjk2P/QIIWDKMlzNHvD1zmyVM/sL6B02d+HN29j4PpaTIKM61Geo29KkJjq7fcjwaGWXl45x49nvcA6QxOvD4c3nLiy7Wpv0Pay8vCaSAII5WBthJEkxeG3G443NxXcpP+5AVoviV8c97G/tVJYWgL1bMoHC89R9PFj3W74XBw+9en6Fj4TxzxvPC/Uw2G2MEXjV//kEpgRFM89AAAAABJRU5ErkJggg==");
 background-position:initial;}
-`).appendTo('body')
-        }
-        if (!SSSFrame_win.document.getElementById('SSSFrame_Script')){
-            let script = document.createElement('script')
-            script.id = "SSSFrame_Script"
-            script.innerHTML = `
+`
+                        SSSFrame_win.document.body.append(cssStyle)
+                    }
+                    if (!SSSFrame_win.document.getElementById('SSSFrame_Script')){
+                        let script = document.createElement('script')
+                        script.id = "SSSFrame_Script"
+                        script.innerHTML = `
 String.prototype.searchI = function(searchString) {
-return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
 }
 $.expr[":"].containsI = function (a, i, m) {
-return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
+  return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
 
 ` + output_Selector.toString() + autoPresConsignesRapides.toString()
 
-            SSSFrame_win.document.body.append(script)
-        }
+                        SSSFrame_win.document.body.append(script)
+                    }
+                    $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document).remove()
+                }, 500)
+            })
+        })
+        window.frameWait = setInterval(()=>{
+            let $frames = $('iframe', $('#SSSFrame')[0].contentDocument)
+            if ($frames.is("#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal")){
+                $frames.filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal').each(
+                    (i, el)=>{
+                        if (el.contentWindow.NZb) clearInterval(window.frameWait)
+                    }
+                )
+            }
+        }, 500)
+        window.mevaWait = setInterval(()=>{
+            let SSSFrame = document.getElementById('SSSFrame')
+            if (SSSFrame){
+                SSSFrame.onload = ()=>{
+                    SSSFrame.contentWindow.removeEventListener('click', monitorClick)
+                    SSSFrame.contentWindow.addEventListener('click', monitorClick)
+                }
+            }
+        },500)
+
     }else if (location.href.search("initSSS")+1){
         if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
         //setInterval(()=>{if (document.querySelector("#div-quitteSession")){document.querySelector("#div-quitteSession div").click()}}, 500)
