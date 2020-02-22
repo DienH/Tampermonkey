@@ -7,7 +7,7 @@
 // @match        http*://meva/*
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
 // @require      https://code.jquery.com/jquery.min.js
-// @require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey/Dien.js
+// require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js
 // require      https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.2/math.js
 // @resource     DienJS https://raw.githubusercontent.com/DienH/Tampermonkey/master/Dien.js
 // @grant        unsafeWindow
@@ -26,7 +26,10 @@
     if (!µ.$){µ.$ = $}
     //log(location.href, µ.jQuery, µ.parent.jQuery, window.parent.jQuery, window.jQuery, $)
     if(!$('#DienScriptPlus', document).length){
-        $('body', document).append($('<script id="DienScriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey/Dien.js">', document)).append(
+        $('body', document)
+           // .append($('<script id="DienScriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js">', document))
+            .append($('<script id="DienScriptPlus">').html(GM_getResourceText('DienJS')))
+            .append(
             $('<script>').html(`if (!$ || !$.fn) {window.$ = window.parent.$ || window.parent.jQuery}
 String.prototype.searchI = function(searchString) {
 if (typeof "searchString" == "string"){
@@ -34,7 +37,6 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 } else {return undefined}
 }`))
     }
-    //$('<script id="DienSriptPlus">').html(GM_getResourceText('DienJS'))
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
     if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""})}
     let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link'), title = ""
@@ -129,7 +131,7 @@ String.prototype.searchI = function(searchString) {
 $.expr[":"].containsI = function (a, i, m) {
  return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;
 };
-` + output_Selector.toString() + autoPresConsignesRapides.toString()
+` + output_Selector.toString() + autoPresConsignesRapides.toString() + currentPres_Selector.toString()
             SSSFrame_win.document.body.append(script)
         }
 
@@ -169,11 +171,15 @@ $.expr[":"].containsI = function (a, i, m) {
                         SSSFrame.listeConsignes = ""
                     }else {
                         SSSFrame.listeConsignes.done=true
-                        Object.keys(SSSFrame.listeConsignes).forEach(el=>{
-                            if (typeof SSSFrame.listeConsignes[el] == "object" && !SSSFrame.listeConsignes[el].done){
-                                if (SSSFrame.listeConsignes[el].consigne != "autorise"){
+                        Object.keys(SSSFrame.listeConsignes).forEach(cons=>{
+                            if (typeof SSSFrame.listeConsignes[cons] == "object" && !SSSFrame.listeConsignes[cons].done){
+                                if (SSSFrame.listeConsignes[cons].consigne != "autorise"){
                                     SSSFrame.listeConsignes.done=false
-                                    SSSFrame.output_Selector([el, SSSFrame.listeConsignes[el].consigne])
+                                    if (SSSFrame.listeConsignes[cons].changeComment){
+                                        SSSFrame.currentPres_Selector([cons, SSSFrame.listeConsignes[cons].consigne])
+                                    }else{
+                                        SSSFrame.output_Selector([cons, SSSFrame.listeConsignes[cons].consigne])
+                                    }
                                     return false
                                 } else {
                                     SSSFrame.listeConsignes[el].done=true
@@ -246,6 +252,17 @@ body {background-color:#F5F5F5;}
                         $('#btPrescrire')[0].click()
                     }
                     break;
+            }
+        }
+        if ($('#modif_action', document).length){
+            if (SSSFrame.listeConsignes){
+                let [consigne, autorisation] = $('b:eq(0)', document.body).text().split(' : ')
+                if (autorisation){
+                    consigne = consigne.split(" ")[2].toStringI().toLowerCase().log()
+                    autorisation = autorisation.split(" ")[0].toStringI().toLowerCase().log()
+                    if (SSSFrame.listeConsignes[consigne].consigne == autorisation){
+                    }
+                }
             }
         }
         switch ($('h1',document).text()){
@@ -371,6 +388,25 @@ body {background-color:#F5F5F5;}
     }
 })();
 
+function currentPres_Selector(presName, presComment = ""){
+    if (typeof $ == "undefined" || typeof $.fn == "undefined"){var $ = window.$ || window.parent.$}
+    if (typeof presName == "string"){
+        presName = presName.split(" ")
+    }
+    if (typeof presComment == "string"){
+        presComment = presComment.split(" ")
+    }
+    let selector = "div.gwt-HTML"
+    if (Array.isArray(presName) && Array.isArray(presComment)){
+        presName.forEach(name=>{
+            selector += ":containsI("+name+")"
+        })
+        presComment.forEach(name=>{
+            selector += ":containsI("+name+")"
+        })
+        $(selector).click2()
+    }
+}
 function output_Selector(sel, checkExists = false){
     if (typeof $ == "undefined" || typeof $.fn == "undefined"){var $ = window.$ || window.parent.$}
     let output = document.heoPane_output || window.parent.document.heoPane_output,
@@ -542,7 +578,7 @@ function presOutputConsignesRapides(ev){
                         text: "Valider",
                         class: "ui-button ui-button-validate",
                         click: function() {
-                            let listeConsignes={}, consignesValides=true
+                            let listeConsignes={deplacements:{},changeComment:[]}, consignesValides=true
                             $('#DIEN-POPUP tbody tr').each((i,el)=>{
                                 if ($(el).hasClass('pres-consignes-deplacements-restriction')){
                                     listeConsignes.deplacements.restriction = $('input:checked', el).attr('descente')
@@ -558,13 +594,21 @@ function presOutputConsignesRapides(ev){
                             })
                             if (consignesValides){
                                 $( this ).dialog( "close" );
+                                let nbToDelete = 0
                                 Object.keys(listeConsignes).forEach(el=>{
-                                    if (SSSFrame.currentListeConsignes[el].consigne == listeConsignes[el].consigne && SSSFrame.currentListeConsignes[el].comment == listeConsignes[el].comment){
-                                        listeConsignes[el].done=true
+                                    if (SSSFrame.currentListeConsignes[el].consigne == listeConsignes[el].consigne){
+                                        if(SSSFrame.currentListeConsignes[el].comment == listeConsignes[el].comment){
+                                            listeConsignes[el].done=true
+                                        } else {
+                                            listeConsignes[el].changeComment = true
+                                        }
+                                    } else if (SSSFrame.currentListeConsignes[el].consigne != "autorise"){
+                                        nbToDelete++
                                     }
                                 })
                                 SSSFrame.listeConsignes = listeConsignes
-                                $('table[name=HEOFRAME] button:contains(Arrêt)').click2()
+                                if (nbToDelete){$('table[name=HEOFRAME] button:contains(Arrêt)').click2()}else{
+                                }
                             } else {
                                 alert('Préciser les restrictions !')
                             }
