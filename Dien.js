@@ -325,9 +325,9 @@
 		return this.slice(index+1)
 	}
     });
-	$.waitFor = async selector => {
+	$.waitFor = async (selector, context) => {
 		let $selection
-	   		while ( ($selection = $(selector)).length === 0) {
+	   		while ( ($selection = $(selector, context || document)).length === 0) {
 			await new Promise( resolve => requestAnimationFrame(resolve) )
 	 	   }
 	    	return $selection;
