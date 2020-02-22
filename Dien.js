@@ -428,5 +428,12 @@ String.prototype.searchI = function(searchString) {
 	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase()
 		.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
 }
-
+Object.prototype.log = function(){
+	console.log(this)
+	return this
+}
+Array.propotype.log = function(){
+	console.log(this)
+	return this
+}
 addFn([getPath, getSearchParams,download,log,addFn, JSON2CSV, waitForElement]);
