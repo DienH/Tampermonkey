@@ -304,6 +304,12 @@
 		if (thing.length){
 			if (typeof thing[0] == "function"){
 				console.log(thing[0](this))
+			} else if (typeof thing[0] == "text"){
+				let array = []
+				$(this).each((i,el)=>{
+					array.push($(el).attr(thing[0]))
+				})
+				console.log(array)
 			}else{
 				console.log(...thing);
 			}
@@ -432,7 +438,7 @@ Object.prototype.log = function(){
 	console.log(this)
 	return this
 }
-Array.propotype.log = function(){
+Array.prototype.log = function(){
 	console.log(this)
 	return this
 }
