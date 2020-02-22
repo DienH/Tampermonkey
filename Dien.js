@@ -389,6 +389,7 @@ function addFn(func) {
         dienScript.innerHTML = func.toString();
     }else if (typeof func === "object"){
         for (var f in func){
+		if (typeof 
             dienScript.innerHTML = dienScript.innerHTML+"\n"+func[f].toString();
         }
     }
@@ -433,9 +434,5 @@ String.prototype.toStringI = function() {
 String.prototype.searchI = function(searchString) {
 	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase()
 		.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
-}
-Array.prototype.log = function(){
-	console.log(this)
-	return this
 }
 addFn([getPath, getSearchParams,download,log,addFn, JSON2CSV, waitForElement]);
