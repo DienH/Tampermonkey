@@ -389,7 +389,6 @@ function addFn(func) {
         dienScript.innerHTML = func.toString();
     }else if (typeof func === "object"){
         for (var f in func){
-		if (typeof 
             dienScript.innerHTML = dienScript.innerHTML+"\n"+func[f].toString();
         }
     }
