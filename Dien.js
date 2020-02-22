@@ -307,7 +307,7 @@
 			} else if (typeof thing[0] == "string"){
 				let array = []
 				$(this).each((i,el)=>{
-					array.push($(el).attr(thing[0]))
+					array.push($(el).a(thing[0]))
 				})
 				console.log(array)
 			}else{
