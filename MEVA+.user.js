@@ -20,15 +20,20 @@
 (function() {
 
     var µ = unsafeWindow
-    if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.jQuery || window.parent.jQuery};
     var log = console.log
-    $('<script>').html(`if (!$ || !$.fn) {var $ = window.jQuery || window.parent.$ || window.parent.jQuery}
+    if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.parent.jQuery || window.jQuery };
+    if ($.fn.jquery == "1.7" && µ.parent.jQuery){$ = µ.parent.jQuery}
+    if (!µ.$){µ.$ = $}
+    //log(location.href, µ.jQuery, µ.parent.jQuery, window.parent.jQuery, window.jQuery, $)
+    if(!$('#DienScriptPlus', document).length){
+        $('body', document).append($('<script id="DienScriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey/Dien.js">', document)).append(
+            $('<script>').html(`if (!$ || !$.fn) {window.$ = window.parent.$ || window.parent.jQuery}
 String.prototype.searchI = function(searchString) {
 if (typeof "searchString" == "string"){
-	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
 } else {return undefined}
-}`).appendTo('body')
-    $('<script id="DienSriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey/Dien.js">').appendTo('body')
+}`))
+    }
     //$('<script id="DienSriptPlus">').html(GM_getResourceText('DienJS'))
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
     if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""})}
@@ -136,24 +141,13 @@ $.expr[":"].containsI = function (a, i, m) {
 
     } else if ((location.href.search('heoOutput.jsp')+1)){
         let SSSFrame = window.parent
-        $('body', document).append($('<style>', document).text(`
+        $('body', document).append($('<style>').text(`
 .presPsy-rapide {position: absolute;right: 0;color: green!important;}
 .presPsy-rapide:hover {text-decoration:underline;}
-`)).append($('<script>', document).text(presOutputConsignesRapides.toString()))
+`)).append($('<script>').text(presOutputConsignesRapides.toString()))
         switch($('div.outlineTitle', document).text().trim()){
             case "Prescriptions Usuelles de Psychiatrie Adulte":
                 $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', true)
-                /*
-                $('button.GD42JS-DO5 span.GD42JS-DP5:contains(Oups)', SSSFrame.document).log().each((i,el)=>{
-                    el.onmousedown = function(ev){
-                        log(ev.target, ev.target.parentElement.parentElement)
-                        if ($('div.outlineTitle',ev.view.document.heoPane_output.document).text().log().trim() == "Prescriptions Usuelles de Psychiatrie Adulte"){
-                            ev.target.parentElement.parentElement.disabled = true
-                        } else {
-                            ev.target.parentElement.parentElement.disabled = false
-                        }
-                    }
-                })*/
                 $('a:contains("Retourner à la liste")', document).remove()
                 $('a:contains("Consignes")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Consignes rapides</a>').click(presOutputConsignesRapides))
                 $('a:contains("Sorties Temp")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Permission rapide</a>').click(presOutputConsignesRapides))
@@ -169,19 +163,24 @@ $.expr[":"].containsI = function (a, i, m) {
                 break
             case "Consignes d'Hébergement":
                 $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', false)
-                if ( SSSFrame.listeConsignes){
-                    SSSFrame.listeConsignes.done=true
-                    Object.keys(SSSFrame.listeConsignes).forEach(el=>{
-                        if (typeof SSSFrame.listeConsignes[el] == "object" && !SSSFrame.listeConsignes[el].done){
-                            if (SSSFrame.listeConsignes[el].consigne != "autorise"){
-                                SSSFrame.listeConsignes.done=false
-                                SSSFrame.output_Selector([el, SSSFrame.listeConsignes[el].consigne])
-                                return false
-                            } else {
-                                SSSFrame.listeConsignes[el].done=true
+                    log(SSSFrame.listeConsignes)
+                if (SSSFrame.listeConsignes){
+                    if (SSSFrame.listeConsignes.done){
+                        SSSFrame.listeConsignes = ""
+                    }else {
+                        SSSFrame.listeConsignes.done=true
+                        Object.keys(SSSFrame.listeConsignes).forEach(el=>{
+                            if (typeof SSSFrame.listeConsignes[el] == "object" && !SSSFrame.listeConsignes[el].done){
+                                if (SSSFrame.listeConsignes[el].consigne != "autorise"){
+                                    SSSFrame.listeConsignes.done=false
+                                    SSSFrame.output_Selector([el, SSSFrame.listeConsignes[el].consigne])
+                                    return false
+                                } else {
+                                    SSSFrame.listeConsignes[el].done=true
+                                }
                             }
-                        }
-                    })
+                        })
+                    }
                 }
                 break
             case "Sorties Temporaires (permissions de sortie)":
@@ -215,26 +214,25 @@ body {background-color:#F5F5F5;}
                 case "Examen Tomodensitométrique":
                     break;
                 case "":
+                        //log(SSSFrame.listeConsignes)
                     // Fenetre Arrêt / Suspension de prescription
-                    if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2()){
-                    }
                     if (SSSFrame.listeConsignes){
                         Object.keys(SSSFrame.listeConsignes).forEach(el=>{
-                            SSSFrame.listeConsignes
-                            $('tr[id="Nursing"][name^="Gestion"]', document)
-                                .filter((i,elm)=>($(elm).a('name').searchI(el)+1) && !($(elm).a('name').split(" : ")[1].searchI(SSSFrame.listeConsignes[el].consigne)+1))
+                            $('tr[id="Nursing"][name^="Gestion"]', document).log()
+                                .filter((i,elm)=>($(elm).a('name').searchI(el)+1) && !($(elm).a('name').split(" : ")[1].searchI(SSSFrame.listeConsignes[el].consigne)+1)).log()
                                 .find('input').click2()
                         })
                         SSSFrame.consignesWaiter = SSSFrame.setInterval(()=>{
-                            if (!$('#HEO_POPUP').is(':visible')){
+                            if (!$('#HEO_POPUP', SSSFrame.document).is(':visible')){
                                 SSSFrame.autoPresConsignesRapides(SSSFrame.listeConsignes)
                             }
                         },250)
-                        if ($('input:checked').length){
+                        if ($('input:checked', document).length){
                             $('#playbackOrders', document).click2()
                         } else {
                             $('#HEO_POPUP a.GD42JS-DKWB', window.parent.document).click2()
                         }
+                    } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
                     }
                     break
                 default:
@@ -251,6 +249,11 @@ body {background-color:#F5F5F5;}
             }
         }
         switch ($('h1',document).text()){
+            case "Erreur":
+                if (document.body.innerText.search('session HEO a été interrompue')+1){
+                    $('input[name=OK]', document).click2()
+                }
+                break
             case "Information":
                 if (document.body.innerText.search('date de début est située dans le passé')+1){
                     $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', SSSFrame.document).click2()
@@ -264,7 +267,7 @@ body {background-color:#F5F5F5;}
         switch ($('h1',document).text()){
             case "Arrêter/Suspendre/Reprendre":
                 if (SSSFrame.listeConsignes){
-                    $('button:contains("Arrêter ces prescriptions")').click2()
+                    $('button:contains("Arrêter ces prescriptions")', document).click2()
                 }
                 break
         }
