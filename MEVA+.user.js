@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.22
+// @version      0.2.23
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -280,44 +280,44 @@ body {background-color:#F5F5F5;}
                         break;
                 }
             } else if ($('.orderName:contains("INFORMATION SUR LE PATIENT")', heoOutputFrame.document).length){
-                $('#HEO_INPUT', window.parent.document).each((i,el)=>setTimeout(elm=>{let a = new Date();elm.value=a.toLocaleDateString()+" "+a.toLocaleTimeString([], {timeStyle: 'short'})}, 250, el))
+                $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{let a = new Date();elm.value=a.toLocaleDateString()+" "+a.toLocaleTimeString([], {timeStyle: 'short'})}, 250, el))
             } else if ($('.orderName:contains("Isolement : Indication")', heoOutputFrame.document).length){
                 switch (promptTitle){
                     case "Interventions alternatives tentées:":
-                        $('a[onclick]:contains("(_)"):not(:contains("5")), a[onclick]:contains("ENTREE")').click2()
+                        $('a[onclick]:contains("(_)"):not(:contains("5")), a[onclick]:contains("ENTREE")', document).click2()
                         break
                     case "Indication Isolement:":
-                        $('a[onclick]:contains("(_)"):contains("Prévention")').click2()
+                        $('a[onclick]:contains("(_)"):contains("Prévention")', document).log().click2()
                         break
                     case "Absence de contre-indication à l'isolement:":
-                        $('a[onclick]:contains("(x)"):contains("Absence de CI")').each(()=>$('a[onclick]:contains("ENTREE")').click2())
+                        $('a[onclick]:contains("(x)"):contains("Absence de CI")', document).each(()=>$('a[onclick]:contains("ENTREE")', document).click2())
                         break
                     case "Présence Soignants Renfort / Soins:":
                     case "Examen somatique réalisé :":
                     case "Présence Soignants Repas:":
                     case "Présence Soignants Soins Hygiène:":
                     case "Oreiller Standard:":
-                        $('a[onclick]:contains("OUI")').click2()
+                        $('a[onclick]:contains("OUI")', document).log().click2()
                         break
                     case "Matelas:":
-                        $('a[onclick]:contains("STANDARD")').click2()
+                        $('a[onclick]:contains("STANDARD")', document).click2()
                         break
                     case "Objets Autorisés:":
                     case "Vêtements Autorisés:":
                     case "Mobilier Autorisé:":
-                        $('#HEO_INPUT', window.parent.document).each((i,el)=>setTimeout(elm=>{elm.value="AUCUN"}, 250, el))
+                        $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value="AUCUN"}, 250, el))
                         break
                     case "Visites:":
-                        $('a[onclick]:contains("RESTREINT")').click2()
+                        $('a[onclick]:contains("RESTREINT")', document).click2()
                         break
                 }
             } else if ($('.orderName:contains("Mise en Isolement")', heoOutputFrame.document).length){
                  switch (promptTitle){
                      case "Mode d'Hospitalisation:":
-                         $('a[onclick]:contains("(x)")').each(()=>$('a[onclick]:contains("ENTREE")').click2())
+                         $('a[onclick]:contains("(x)")', document).each(()=>$('a[onclick]:contains("ENTREE")', document).click2())
                          break
                      case "Information Mise en Isolement:":
-                        $('a[onclick]:contains("Patient"):contains("(_)")').click2()
+                        $('a[onclick]:contains("Patient"):contains("(_)")', document).click2()
                          break
                  }
             } else if (SSSFrame.listeConsignes && $('div.orderName:contains(Gestion)', heoOutputFrame.document).length){
@@ -328,16 +328,16 @@ body {background-color:#F5F5F5;}
                     case "Circulation du Patient:":
                         switch (SSSFrame.listeConsignes.deplacements.restriction){
                             case "soignant":
-                                $('a[onclick]:contains("(_)"):contains("1 soignant")').click2()
-                                $('a[onclick]:contains("ENTREE")').click2()
+                                $('a[onclick]:contains("(_)"):contains("1 soignant")', document).click2()
+                                $('a[onclick]:contains("ENTREE")', document).click2()
                                 break
                             case "proche":
-                                $('a[onclick]:contains("(_)"):contains("famille ou ami")').click2()
-                                $('a[onclick]:contains("ENTREE")').click2()
+                                $('a[onclick]:contains("(_)"):contains("famille ou ami")', document).click2()
+                                $('a[onclick]:contains("ENTREE")', document).click2()
                                 break
                             case "seul":
-                                $('a[onclick]:contains("(_)"):contains("seul")').click2()
-                                $('a[onclick]:contains("ENTREE")').click2()
+                                $('a[onclick]:contains("(_)"):contains("seul")', document).click2()
+                                $('a[onclick]:contains("ENTREE")', document).click2()
                                 break
                         }
                         break
