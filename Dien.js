@@ -304,7 +304,7 @@
 		if (thing.length){
 			if (typeof thing[0] == "function"){
 				console.log(thing[0](this))
-			} else if (typeof thing[0] == "text"){
+			} else if (typeof thing[0] == "string"){
 				let array = []
 				$(this).each((i,el)=>{
 					array.push($(el).attr(thing[0]))
