@@ -253,7 +253,7 @@ body {background-color:#F5F5F5;}
         switch ($('h1',document).text()){
             case "Information":
                 if (document.body.innerText.search('date de début est située dans le passé')+1){
-                    $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', window.parent.document).click2()
+                    $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', SSSFrame.document).click2()
                 } else if (document.body.innerText.search('Les prescriptions en mémoire')+1){
                     $('input[name=OK]', document).click2()
                 }
@@ -276,7 +276,7 @@ body {background-color:#F5F5F5;}
             if ((pres = window.parent.autoEnhancedPres) && $('.orderName:containsI("'+pres.nom+'"):containsI("'+pres.forme+'")', heoOutputFrame.document).length){
                 switch (promptTitle){
                     case "Dose par prise:":
-                        $('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")').click2() //.each((i,el)=>el.click())
+                        $('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")', document).click2() //.each((i,el)=>el.click())
                         break;
                 }
             } else if ($('.orderName:contains("INFORMATION SUR LE PATIENT")', heoOutputFrame.document).length){
@@ -344,7 +344,7 @@ body {background-color:#F5F5F5;}
                     case "Saisissez une date et heure de début":
                     case "Durée: (avec une date et heure de fin optionnelle)":
                     case "Fréquence:":
-                        $('a[onclick]:contains("ENTREE")').click2()
+                        $('a[onclick]:contains("ENTREE")', document).click2()
                         break
                     case "Nombre de cigarettes autorisées par jour :":
                     case "Commentaires :":
