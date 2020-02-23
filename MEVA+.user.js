@@ -1106,21 +1106,20 @@ function monitorContextClick(ev){
     if (!$ || !$.fn) {var $ = window.document.SSSFrame.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
     window.monitorClickEnabled = true
-    console.log(ev, ev.which, ev.buttons, ev.button)
     if (ev.type == "contextmenu"){
+        ev.preventDefault()
             if (ev.target.classList.contains("GOAX34LJHB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_arrow_refresh") ||
                 ($(ev.target).has('.GOAX34LJHB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_arrow_refresh').length &&
                  (ev.target.classList.contains('GOAX34LI3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button-bg') ||
                   ev.target.classList.contains('GOAX34LJ3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button-borderleft') ||
                   ev.target.classList.contains('GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button')))){
                 ev.view.parent.dispatchEvent(new Event('resize'))
-                ev.preventDefault();
-            } else if (ev.target.classList.contains('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine')){
-                ev.target.click()
-                ev.preventDefault()
             }
     } else if (ev.type == "mousedown"){
         if (ev.which == 3){
+            if ($(ev.target).parents('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine').length){
+                ev.target.click()
+            }
         }
     }
 }
@@ -1132,7 +1131,9 @@ function monitorClick(ev){
     let Meva = GM_getValue('Meva',{"user":"", "password":""})
     window.monitorClickEnabled = true
     //console.log(ev.target)
-    if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
+    if (ev.target.classList.contains('GD42JS-DLOB')){
+        $('a.GD42JS-DKWB', ev.view.document).click2()
+    } else if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
         console.log('bouh')
         ev.target.parentElement.nextElementSibling.click()
         ev.target.lastValue = ev.target.value
