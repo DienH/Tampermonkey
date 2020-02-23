@@ -30,12 +30,14 @@
            // .append($('<script id="DienScriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js">', document))
             .append($('<script id="DienScriptPlus">').html(GM_getResourceText('DienJS')))
             .append(
-            $('<script>').html(`if (!$ || !$.fn) {window.$ = window.parent.$ || window.parent.jQuery}
+            $('<script>').html(`if (!$ || !$.fn) {window.$ = window.parent.$ || window.parent.jQuery || window.document.SSSFrame.jQuery}
+//if (!jQuery || !jQuery.fn){jQuery = window.$}
 String.prototype.searchI = function(searchString) {
 if (typeof "searchString" == "string"){
 return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
 } else {return undefined}
-}`))
+}`)).append($('<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">'))
+        .append($('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>'))
     }
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
     if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""})}
@@ -116,6 +118,13 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                       `jRxoT1by8vLS5c+dqnDnawoULNXaisRNt2bJl2sqVKzW+PbW1a9dqfHNqrKrm6+urcanXOAPUd10BIfBfNO+db7uKud8AAAAASUVORK5CYII="`+
                       `style="width: 18px;transform: translateY(3px);cursor:pointer;" class="gwt-Image">`)).up().up().css('width',190)
                 SSSFrame.dispatchEvent(new Event('resize'))
+            }
+            if (!$('#contextMenu_patients', SSSFrame.document).length){
+                $('body', SSSFrame.document).append($(`
+<ul id="contextMenu_patients">
+  <li><div>Prescriptions</div></li>
+</ul>
+`).menu().hide())
             }
         }, 2000)
 
@@ -1119,6 +1128,7 @@ function monitorContextClick(ev){
         if (ev.which == 3){
             if ($(ev.target).parents('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine').length){
                 ev.target.click()
+                $('#contextMenu_patients').position({at: "left+1 top+1",my:"left-5 top-5", of:ev}).show()
             }
         }
     }
