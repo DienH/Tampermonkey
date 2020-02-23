@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.25
+// @version      0.2.26
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -51,12 +51,12 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
     if (location.pathname == "/m-eva/"){
         /*
         $('#SSSFrame').load((ev)=>{
-            let SSSFrame_win = ev.target.contentWindow.name == "SSSFrame" ? ev.target.contentWindow : document.getElementById('SSSFrame').contentWindow
+            let SSSFrame = ev.target.contentWindow.name == "SSSFrame" ? ev.target.contentWindow : document.getElementById('SSSFrame').contentWindow
 
-            $(SSSFrame_win).resize((ev)=>{
-                let SSSFrame_win = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
+            $(SSSFrame).resize((ev)=>{
+                let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
                 setTimeout(()=>{
-                    $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame_win.document).remove()
+                    $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame.document).remove()
                 }, 500)
             })
         })
@@ -76,48 +76,48 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
             if (SSSFrame){
                 SSSFrame.onload = ()=>{
                     SSSFrame.contentWindow.removeEventListener('click', monitorClick)
+                    SSSFrame.contentWindow.removeEventListener('mousedown', monitorContextClick)
                     SSSFrame.contentWindow.removeEventListener('contextmenu', monitorContextClick)
                     SSSFrame.contentWindow.addEventListener('click', monitorClick)
+                    SSSFrame.contentWindow.addEventListener('mousedown', monitorContextClick)
                     SSSFrame.contentWindow.addEventListener('contextmenu', monitorContextClick)
                 }
             }
         },500)
+    } else if (location.href.search("errorLoadContext.jsp")+1){
+        $('a[target*=_top]:contains(Recharger)', document).click2()
     }else if (location.href.search("quitteSession")+1){
         $.waitFor('div.gwt-Label:contains(Cliquez ici)', document).then(el=>el.click2())
     }else if (location.href.search("Hospitalisation.fwks")+1 || location.href.search("m-eva.fwks")+1){
-        let SSSFrame_win = window, SSSFrame_wait = setInterval(()=>{
-            let state = 0, tries = 0, CS_AnestTitle = (`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`)
+        let SSSFrame = window, SSSFrame_wait = setInterval(()=>{
+            let state = 0, CS_AnestTitle = (`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`)
             if ($(CS_AnestTitle).length){
                 $(CS_AnestTitle).remove()
-                let $dateInput = $('input.GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error').parent()
-                if (!$dateInput.siblings('[title*=Aujourd]').length){
-                    $dateInput.before(
-                        $(`<img title="Aujourd'hui" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsSAAALEgHS3X78AAAH+klEQVR42q1WeUyV2RU/3WKbph2t`+
-                          `/3TqZCa109Tp1GmDog4dMHVQB5eIuBL3nVrRDooBcQsoaK0CimIELIvKVh4+HohjZR9UXOrXGFFwFwyKIPDYH8uv59z3PnwPGZwm/ZJfzv3ud+89v/u755z7EQCyR2u9hbKyjbRu3Toa+auRFBUeTWfP5FD`+
-                          `/cYOiAxQbF0O+G33p/Q/epz+vW08+K/8y4Fjq7e2lnp5euv+4krKvJVN6QTx5ec6lPcF74lPOpOJPMz/7cn/CDsq5mkamsmS2qZQtKEvl9xQrriQrGC+foSxGasE/aOqUL+jLTX5UXFSC3`+
-                          `/zuQ3j7eFJJWSGl5cdTdVW1ct7d3W0l0N7SSQlnT9Ds6NE0Mew9cp7xEeXmm/Iryx9gzKp3Az6Pepdc9g4nl7CfkUvoMPp07zCasHcoTdgzlMbveYfGh7xD40J+SuOCf6Ls2N1D6ZMvRtKR2HCqq2nAxx4jMCn4A`+
-                          `/IO9CC3rb8kQ4ZBEejs7CTVMDebqSi/mJKMcXBN/BF+ve/74Mn4T2EFPlwyBJ+dGgKXmB/ij3FWuDiAv8W+xqcxQ+AW/2OMivweNuxagfLShxjlNRxOid/F5xHvITAoEJmmDOXXYrHYCJibqDCviGKzIuF0ivDJCcL44OHwCB+F3+4njEsjjD1NcD7zLZFMGJNE+H3oD+B26OcYfYDf0wnuJ0Zg87a`+
-                          `/MgGrApZOG4HmFjMTKKYTxgg4pbLzTHZoJPyB7YQsXvCfTOJ/gBrPmxzPc8ecZctrObFP95Mj4B/kB2POWesR6Ao0NTfRv87nUbThoJrgbOIFeNI403fgnCXW1vct4Gxn1dwsXkMInGMCp36BgJ3+yP7KZFWgyxYDjU2NdM50nqIy`+
-                          `/oax53nSBcZXNvv/AK/llEeYnDYCQcEByL2Y4xgDDY0NlGUwUXj6XnycTxhdyCiw2behYBDYjfmohOBqGIb9+/cjvzBP+e3q6rIRaGig5ORkSjacQkGNEUUvsqyozUJxrQklL7Md8HVdjkJp/TkrXuXikh2kT76XCHi8rFXacA6Z`+
-                          `/07Cob8fwtclJTYCltcEEhLjKdOQid427ulkdNisxYYuRrcdemzoxTc/vbYxFuvrk3tVCI8Ix6VLlxyPoL6+nuLi4ig1LRWN5gaYW5rQxBDb3GpGS3sLWtqaFVo7WtFmh`+
-                          `/bONnRY2tHZ1WFFdycsCpa+vraONnT1WFBReRdRUVEoKytzPIK6ujo6fvy4HAO4OoGZKculEh0dHWhtbUVPTw+4aqKtrU318WTrJrlPnyN9Mkf6ZLw88i7f5Hn06BGio6Nx48YNRwIvX76kI0eOUFJSEu7du4cHDx7gyZMnuHv3LlgdNVn67t+`+
-                          `/r9pCoLGxUS34/PnzPiJCQCCExbGMkUcndvv2bZw8eRI3b958fRdIo7a2lsLDw+UYICR27dqFDRs2KLnE8enTp3Hw4EEcPnxY7UAeaYeEhODYsWMqsllFRaK4uBiLFy9WY2JjY3H58mXVPnDggGrL+tevX3dU4MWLF8SLUExMjBp85coV7Nu3T7`+
-                          `WvXbuGzZs398VVQEAANE0DE1ZWdxQREaHaYnfu3KmIvHr1SrUjIyORmZmp3vmocfXqVUcCLCPxbiQOlFR5eXlqorQTExNx9OhR1RYpxVlaWppatKioSPWVl5cjKCgIVVVV2LFjh1LN399fETKZTJg/f37fMYpib2RBTU0NsUMSRyLjhQsXsHXrVj`+
-                          `UpPz8fq1ev7lPAx8cHpaWlSn6Wsm/XciRCdtasWepI3N3dwcri1q1bipysK/HFsYaSvjpgU+DZs2cUGBhIsohErxAQqWVSe3s7du/erXa0bds2RUzGyDv/Nakdr1+/HryGshK8Mk/IiFoSyHKE0ldZWamOrrCw0JFAdXU1bdmyhWQnZrNZMX`+
-                          `/69KlqNzU1qTTic1OxISknUS4ORYE7d+4oQkJU+uS7PkYyRKysJ49kkQQjH7HjEfDZ0aZNm0giXVJHIM65Qqq2WD3P9W/iUBxLX3Nzs3IkY8TqtULiRq8R8sgRhIWFicKOCvBuieWTTFAOJPcFOgGdhEAUEQK6OuK8paWlDzoBHUJUrH4EwcHBy`+
-                          `M3NdVSAz43WrFlDoaGhyok4l5TRneokBPYExPlABOxJ6ATkqaioUNmVnZ3t+E/4+PFjWr58uaSiciJFRScxEBF7EgMR6U9C2qKABKQEstFodFTg4cOHtGjRIpJoF0dCoD+J/kSExGBE7EnoBCRgJYsMBsObBLhY0Pbt25UjvhsGJWGvRH8iA6kh`+
-                          `VgJWCpafnx/S09Mdj4DTg2bPni21QDngu+ENEm87ksFISFu/jDZu3IiUlBRHBTg9aMaMGSTyiCPJX8ldIaKT0TEQobeR0muJVEUpVny5OSrA6UFTp05VBCRq9V18U1RLjuvQC49eJ3TIjkV2gbT1OrBq1SokJCQ4EuD0UASEHddpXLx4UV1IOuQ`+
-                          `+0FFQUDAguLwqyAVlD7kVxcpVnJGRgaVLl0L+vsQvb8BKgIODPD09acqUKXB1dX0Dbm5umDhxIiZNmqQumcmTJ4MJY9q0aZg+fTpmzpypLiGOI8yZMwfz5s3DggUL4O3tDc4uLFmyRDnmWoMVK1bIHeGoAOcnsRNiB3m8uMZENLECdqR5eHho7Eh`+
-                          `jRxoT1by8vLS5c+dqnDnawoULNXaisRNt2bJl2sqVKzW+PbW1a9dqfHNqrKrm6+urcanXOAPUd10BIfBfNO+db7uKud8AAAAASUVORK5CYII="`+
-                          `style="width: 18px;transform: translateY(3px);cursor:pointer;" class="gwt-Image">`)).up().up().css('width',190)
-                    SSSFrame_win.dispatchEvent(new Event('resize'))
-                    state = 1
-                }
-            } else if(tries > 10 || (state == 1 && !$(CS_AnestTitle).length)){
-                clearInterval(SSSFrame_wait)
             }
-            tries += 1
-        }, 1000)
+            let $dateInput = $('input.GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error', SSSFrame.document).parent()
+            if (!$dateInput.siblings('[title*=Aujourd]').length){
+                $dateInput.before(
+                    $(`<img title="Aujourd'hui" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsSAAALEgHS3X78AAAH+klEQVR42q1WeUyV2RU/3WKbph2t`+
+                      `/3TqZCa109Tp1GmDog4dMHVQB5eIuBL3nVrRDooBcQsoaK0CimIELIvKVh4+HohjZR9UXOrXGFFwFwyKIPDYH8uv59z3PnwPGZwm/ZJfzv3ud+89v/u755z7EQCyR2u9hbKyjbRu3Toa+auRFBUeTWfP5FD`+
+                      `/cYOiAxQbF0O+G33p/Q/epz+vW08+K/8y4Fjq7e2lnp5euv+4krKvJVN6QTx5ec6lPcF74lPOpOJPMz/7cn/CDsq5mkamsmS2qZQtKEvl9xQrriQrGC+foSxGasE/aOqUL+jLTX5UXFSC3`+
+                      `/zuQ3j7eFJJWSGl5cdTdVW1ct7d3W0l0N7SSQlnT9Ds6NE0Mew9cp7xEeXmm/Iryx9gzKp3Az6Pepdc9g4nl7CfkUvoMPp07zCasHcoTdgzlMbveYfGh7xD40J+SuOCf6Ls2N1D6ZMvRtKR2HCqq2nAxx4jMCn4A`+
+                      `/IO9CC3rb8kQ4ZBEejs7CTVMDebqSi/mJKMcXBN/BF+ve/74Mn4T2EFPlwyBJ+dGgKXmB/ij3FWuDiAv8W+xqcxQ+AW/2OMivweNuxagfLShxjlNRxOid/F5xHvITAoEJmmDOXXYrHYCJibqDCviGKzIuF0ivDJCcL44OHwCB+F3+4njEsjjD1NcD7zLZFMGJNE+H3oD+B26OcYfYDf0wnuJ0Zg87a`+
+                      `/MgGrApZOG4HmFjMTKKYTxgg4pbLzTHZoJPyB7YQsXvCfTOJ/gBrPmxzPc8ecZctrObFP95Mj4B/kB2POWesR6Ao0NTfRv87nUbThoJrgbOIFeNI403fgnCXW1vct4Gxn1dwsXkMInGMCp36BgJ3+yP7KZFWgyxYDjU2NdM50nqIy`+
+                      `/oax53nSBcZXNvv/AK/llEeYnDYCQcEByL2Y4xgDDY0NlGUwUXj6XnycTxhdyCiw2behYBDYjfmohOBqGIb9+/cjvzBP+e3q6rIRaGig5ORkSjacQkGNEUUvsqyozUJxrQklL7Md8HVdjkJp/TkrXuXikh2kT76XCHi8rFXacA6Z`+
+                      `/07Cob8fwtclJTYCltcEEhLjKdOQid427ulkdNisxYYuRrcdemzoxTc/vbYxFuvrk3tVCI8Ix6VLlxyPoL6+nuLi4ig1LRWN5gaYW5rQxBDb3GpGS3sLWtqaFVo7WtFmh`+
+                      `/bONnRY2tHZ1WFFdycsCpa+vraONnT1WFBReRdRUVEoKytzPIK6ujo6fvy4HAO4OoGZKculEh0dHWhtbUVPTw+4aqKtrU318WTrJrlPnyN9Mkf6ZLw88i7f5Hn06BGio6Nx48YNRwIvX76kI0eOUFJSEu7du4cHDx7gyZMnuHv3LlgdNVn67t+`+
+                      `/r9pCoLGxUS34/PnzPiJCQCCExbGMkUcndvv2bZw8eRI3b958fRdIo7a2lsLDw+UYICR27dqFDRs2KLnE8enTp3Hw4EEcPnxY7UAeaYeEhODYsWMqsllFRaK4uBiLFy9WY2JjY3H58mXVPnDggGrL+tevX3dU4MWLF8SLUExMjBp85coV7Nu3T7`+
+                      `WvXbuGzZs398VVQEAANE0DE1ZWdxQREaHaYnfu3KmIvHr1SrUjIyORmZmp3vmocfXqVUcCLCPxbiQOlFR5eXlqorQTExNx9OhR1RYpxVlaWppatKioSPWVl5cjKCgIVVVV2LFjh1LN399fETKZTJg/f37fMYpib2RBTU0NsUMSRyLjhQsXsHXrVj`+
+                      `UpPz8fq1ev7lPAx8cHpaWlSn6Wsm/XciRCdtasWepI3N3dwcri1q1bipysK/HFsYaSvjpgU+DZs2cUGBhIsohErxAQqWVSe3s7du/erXa0bds2RUzGyDv/Nakdr1+/HryGshK8Mk/IiFoSyHKE0ldZWamOrrCw0JFAdXU1bdmyhWQnZrNZMX`+
+                      `/69KlqNzU1qTTic1OxISknUS4ORYE7d+4oQkJU+uS7PkYyRKysJ49kkQQjH7HjEfDZ0aZNm0giXVJHIM65Qqq2WD3P9W/iUBxLX3Nzs3IkY8TqtULiRq8R8sgRhIWFicKOCvBuieWTTFAOJPcFOgGdhEAUEQK6OuK8paWlDzoBHUJUrH4EwcHBy`+
+                      `M3NdVSAz43WrFlDoaGhyok4l5TRneokBPYExPlABOxJ6ATkqaioUNmVnZ3t+E/4+PFjWr58uaSiciJFRScxEBF7EgMR6U9C2qKABKQEstFodFTg4cOHtGjRIpJoF0dCoD+J/kSExGBE7EnoBCRgJYsMBsObBLhY0Pbt25UjvhsGJWGvRH8iA6kh`+
+                      `VgJWCpafnx/S09Mdj4DTg2bPni21QDngu+ENEm87ksFISFu/jDZu3IiUlBRHBTg9aMaMGSTyiCPJX8ldIaKT0TEQobeR0muJVEUpVny5OSrA6UFTp05VBCRq9V18U1RLjuvQC49eJ3TIjkV2gbT1OrBq1SokJCQ4EuD0UASEHddpXLx4UV1IOuQ`+
+                      `+0FFQUDAguLwqyAVlD7kVxcpVnJGRgaVLl0L+vsQvb8BKgIODPD09acqUKXB1dX0Dbm5umDhxIiZNmqQumcmTJ4MJY9q0aZg+fTpmzpypLiGOI8yZMwfz5s3DggUL4O3tDc4uLFmyRDnmWoMVK1bIHeGoAOcnsRNiB3m8uMZENLECdqR5eHho7Eh`+
+                      `jRxoT1by8vLS5c+dqnDnawoULNXaisRNt2bJl2sqVKzW+PbW1a9dqfHNqrKrm6+urcanXOAPUd10BIfBfNO+db7uKud8AAAAASUVORK5CYII="`+
+                      `style="width: 18px;transform: translateY(3px);cursor:pointer;" class="gwt-Image">`)).up().up().css('width',190)
+                SSSFrame.dispatchEvent(new Event('resize'))
+            }
+        }, 2000)
 
         if (!document.getElementById('SSSFrame_MevaStyle')){
             $('<style id="SSSFrame_MevaStyle">', document).html(`
@@ -145,7 +145,7 @@ div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-butto
 background-position:initial;}
 `).appendTo('body')
         }
-        if (!SSSFrame_win.document.getElementById('SSSFrame_Script')){
+        if (!SSSFrame.document.getElementById('SSSFrame_Script')){
             let script = document.createElement('script')
             script.id = "SSSFrame_Script"
             script.innerHTML = `
@@ -156,7 +156,7 @@ $.expr[":"].containsI = function (a, i, m) {
  return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;
 };
 ` + output_Selector.toString() + autoPresConsignesRapides.toString() + currentPres_Selector.toString()
-            SSSFrame_win.document.body.append(script)
+            SSSFrame.document.body.append(script)
         }
 
     }else if (location.href.search("initSSS")+1){
@@ -655,7 +655,7 @@ function presOutputConsignesRapides(ev){
 }
 
 function addAutoPrescriptor(ev){
-    let SSSFrame_win = ev.view.document.name == "SSSFrame" ? ev.view.document : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame_win.$
+    let SSSFrame = ev.view.document.name == "SSSFrame" ? ev.view.document : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame.$
     let DCI = {loxapac:"loxapine", nozinan:"levomepromazine", tercian:"cyamemazine", theralene:"alimemazine", abilify:"aripiprazole", risperdal:"risperidone",zyprexa:"olanzapine",
                nozinan:"levomepromazine", leponex:"clozapine", valium:"diazepam", seresta:"oxazepam", tranxene:"clorazepate", lysanxia:"prazepam", temesta:"lorazepam", xanax:"alprazolam",
                atarax:"hydroxyzine", imovane:"zopiclone", revia:"naltrexone", selincro:"nalmefene", noctamide:"lormetazepam"
@@ -673,10 +673,10 @@ function addAutoPrescriptor(ev){
         },
         formes = ["cp", "buv", "inj", "gel"],
         frequence = {"coucher":[0,0,0,1], "matin":[1,0,0], "midi":[0,1,0], "soir": [0,0,1]}
-    if($('#HEO_INPUT', SSSFrame_win.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
+    if($('#HEO_INPUT', SSSFrame.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
         if(ev.keyCode==13){
             let pres = ev.target.value.split(" ")
-            if ($("#preHeaderMarkup", SSSFrame_win.document.heoPane_prompt.document).is(':contains(Sélectionnez un item)') && typeof pres == "object" && pres.length > 1){
+            if ($("#preHeaderMarkup", SSSFrame.document.heoPane_prompt.document).is(':contains(Sélectionnez un item)') && typeof pres == "object" && pres.length > 1){
                 if (pres[0] == "mod") {pres.modif = pres.shift()}
                 pres.nom = DCI[pres[0]] || pres[0]
                 pres.dose = Number(pres[2]) || Number(pres[1]) || ""
@@ -783,11 +783,11 @@ function addAutoPrescriptor(ev){
                         i++
                     }
                     ev.target.value=pres[0]+" "+pres[1]
-                    SSSFrame_win.autoEnhancedPres = pres
-                    SSSFrame_win.autoEnhancedPresWaiter = setInterval((presc)=>{
-                        if (SSSFrame_win.output_Selector(presc[0] + " "+presc[1], true)){
-                            SSSFrame_win.output_Selector(presc[0] + " "+presc[1])
-                            clearInterval(SSSFrame_win.autoEnhancedPresWaiter)
+                    SSSFrame.autoEnhancedPres = pres
+                    SSSFrame.autoEnhancedPresWaiter = setInterval((presc)=>{
+                        if (SSSFrame.output_Selector(presc[0] + " "+presc[1], true)){
+                            SSSFrame.output_Selector(presc[0] + " "+presc[1])
+                            clearInterval(SSSFrame.autoEnhancedPresWaiter)
                         }
                     },250, pres)
                     //setTimeout((ev)=>
@@ -1106,13 +1106,22 @@ function monitorContextClick(ev){
     if (!$ || !$.fn) {var $ = window.document.SSSFrame.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
     window.monitorClickEnabled = true
-    if (ev.target.classList.contains("GOAX34LJHB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_arrow_refresh") ||
-        ($(ev.target).has('.GOAX34LJHB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_arrow_refresh').length &&
-        (ev.target.classList.contains('GOAX34LI3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button-bg') ||
-        ev.target.classList.contains('GOAX34LJ3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button-borderleft') ||
-        ev.target.classList.contains('GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button')))){
-        ev.view.parent.dispatchEvent(new Event('resize'))
-        ev.preventDefault();
+    console.log(ev, ev.which, ev.buttons, ev.button)
+    if (ev.type == "contextmenu"){
+            if (ev.target.classList.contains("GOAX34LJHB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_arrow_refresh") ||
+                ($(ev.target).has('.GOAX34LJHB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_arrow_refresh').length &&
+                 (ev.target.classList.contains('GOAX34LI3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button-bg') ||
+                  ev.target.classList.contains('GOAX34LJ3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button-borderleft') ||
+                  ev.target.classList.contains('GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button')))){
+                ev.view.parent.dispatchEvent(new Event('resize'))
+                ev.preventDefault();
+            } else if (ev.target.classList.contains('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine')){
+                ev.target.click()
+                ev.preventDefault()
+            }
+    } else if (ev.type == "mousedown"){
+        if (ev.which == 3){
+        }
     }
 }
 function monitorClick(ev){
@@ -1155,7 +1164,8 @@ function monitorClick(ev){
         } else {
             $('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button', ev.view.document).click2()
         }
-    } else if ((ev.originalEvent && ev.originalEvent.isTrusted) && $(ev.target).parents('.GOAX34LOBB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-DatePicker').length){
+    } else if ((ev.isTrusted) && $(ev.target).parents('.GOAX34LOBB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-DatePicker').length){
+
         $.waitFor('div.GOAX34LLLB-fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-BlockMaskTextDiv', ev.view.document).then($el2=>{
             $('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button', ev.view.document).click2()
         })
