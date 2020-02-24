@@ -122,7 +122,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
             if (!$('#contextMenu_patients', SSSFrame.document).length){
                 $('body', SSSFrame.document).append($(`
 <ul id="contextMenu_patients">
-  <li><div>Prescriptions</div></li>
+  <li><div><span style="padding-right: 8px;"><img src="/heoclient-application-web/icon/heo_blue_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);">Prescriptions</div></li>
 </ul>
 `).menu().hide())
             }
@@ -152,6 +152,9 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 .ui-widget-content .ui-state-default.ui-button-validate {background:#090;color:#fee;}
 div.ui-dialog[aria-describedby="DIEN-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY//8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb/5ef24osbIzDq79BnaYoSuvk8GYITafQKJaBWh1WrHl8JinLp9wBF4fqiZPZ33wAfP8GUa+i93oK18gCOp2BsFQHW1xMp/Fh4QjEzc3lYQlLhaL5ITakKvP8AWq6gk85CjyVhbBYAeW9Qq/Ne2nC7ufEmJpNcN5OjvcI2k/MW2KszsAZUZejRONTHHnv43yFaOGZCZnIicSAYAaQK1LkF80zYinYoQfRIDLCuEQgBr1aB7R2m24vm7Cw5Aw4RLRyFkV0HdiQGloEik8MM1FdW0XrI48DpJPZwKAIjk2P/QIIWDKMlzNHvD1zmyVM/sL6B02d+HN29j4PpaTIKM61Geo29KkJjq7fcjwaGWXl45x49nvcA6QxOvD4c3nLiy7Wpv0Pay8vCaSAII5WBthJEkxeG3G443NxXcpP+5AVoviV8c97G/tVJYWgL1bMoHC89R9PFj3W74XBw+9en6Fj4TxzxvPC/Uw2G2MEXjV//kEpgRFM89AAAAABJRU5ErkJggg==");
 background-position:initial;}
+#contextMenu_patients {position:fixed!important;}
+#contextMenu_patients.ui-menu .ui-menu-item-wrapper {padding:8px;}
+#contextMenu_patients.ui-menu .ui-menu-item {padding:0;}
 `).appendTo('body')
         }
         if (!SSSFrame.document.getElementById('SSSFrame_Script')){
