@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.26
+// @version      0.2.27
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -122,7 +122,12 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
             if (!$('#contextMenu_patients', SSSFrame.document).length){
                 $('body', SSSFrame.document).append($(`
 <ul id="contextMenu_patients">
-  <li><div><span style="padding-right: 8px;"><img src="/heoclient-application-web/icon/heo_blue_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);">Prescriptions</div></li>
+  <li><div><img src="/heoclient-application-web/icon/heo_blue_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Prescriptions</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/acte_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Observations</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/web/pancarte_medicale_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Synthèse</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/labo_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Labo</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Ordonnance</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Documents</div></li>
 </ul>
 `).menu().hide())
             }
@@ -1131,7 +1136,7 @@ function monitorContextClick(ev){
         if (ev.which == 3){
             if ($(ev.target).parents('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine').length){
                 ev.target.click()
-                $('#contextMenu_patients').position({at: "left+1 top+1",my:"left-5 top-5", of:ev}).show()
+                $('#contextMenu_patients').show().position({at: "left+1 top+1",my:"left-5 top-5", of:ev})
             }
         }
     }
@@ -1144,6 +1149,12 @@ function monitorClick(ev){
     let Meva = GM_getValue('Meva',{"user":"", "password":""})
     window.monitorClickEnabled = true
     //console.log(ev.target)
+    if ($('#contextMenu_patients:visible').length){
+        if(!$('#contextMenu_patients').has(ev.target).length){
+            $('#contextMenu_patients:visible').hide()
+        }else{
+        }
+    }
     if (ev.target.classList.contains('GD42JS-DLOB')){
         $('a.GD42JS-DKWB', ev.view.document).click2()
     } else if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
