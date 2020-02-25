@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.27
+// @version      0.2.28
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
+// @include      http*://serv-cyberlab.chu-clermontferrand.fr/cyberlab/*
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
 // @require      https://code.jquery.com/jquery.min.js
 // require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js
@@ -21,6 +22,11 @@
 
     var µ = unsafeWindow
     var log = console.log
+    if (location.href.search("serv-cyberlab.chu-clermontferrand.fr")+1){
+        let $
+        if (!$ || !$.fn) {$ = µ.jQuery || window.jQuery };
+        return true
+    }
     if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.parent.jQuery || window.jQuery };
     if ($.fn.jquery == "1.7" && µ.parent.jQuery){$ = µ.parent.jQuery}
     if (!µ.$){µ.$ = $}
@@ -122,13 +128,13 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
             if (!$('#contextMenu_patients', SSSFrame.document).length){
                 $('body', SSSFrame.document).append($(`
 <ul id="contextMenu_patients">
-  <li><div><img src="/heoclient-application-web/icon/heo_blue_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Prescriptions</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/acte_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Observations</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/web/pancarte_medicale_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Synthèse</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/labo_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Résultats de labo</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">PACS</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Ordonnance</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Documents</div></li>
+  <li><div><img src="/heoclient-application-web/icon/heo_blue_32.png" class="gwt-Image">Prescriptions</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/acte_32.png" class="gwt-Image">Observations</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/web/pancarte_medicale_32.png" class="gwt-Image">Synthèse</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/labo_32.png" class="gwt-Image">Résultats de labo</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image">PACS</div></li>
+  <li><div><img src="" class="gwt-Image icon-ordonnance">Ordonnance</div></li>
+  <li><div><img src="" class="gwt-Image icon-documents">Documents</div></li>
 </ul>
 `).menu().hide())
             }
@@ -161,6 +167,9 @@ background-position:initial;}
 #contextMenu_patients {position:fixed!important;}
 #contextMenu_patients.ui-menu .ui-menu-item-wrapper {padding:8px;}
 #contextMenu_patients.ui-menu .ui-menu-item {padding:0;}
+#contextMenu_patients .gwt-Image {width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;}
+#contextMenu_patients .gwt-Image.icon-documents {padding-right: 4px;content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAMxSURBVDhPdZLrT1N3GMc7txcmlhcmUxPj2y1LTMxeLBpJTP8CE0tGdJE4EyVLUGMr4WaBjgrCzKCOoiBooUaglhZaioXTUnrh9OZpexwtp/eW0QsdUEmIGpeFfXcoJsaAT/K8+SXPJ9/Lj6PvKev1qCs9zLTAwMwIBsOEsC0xV10VN9eWJaw1Z/6arz2e8zccAofzBWevmVVcou0jV+DTCRDzjiLhUyLm6t+K2Dr/CVtaNxmjKB+xNslDIbJEDOz7cPZxkjYRnbQ1wquvQ2SRQjKVwkp+BYXCKjYKebxeW8bGenp98+07Q279zSUAnypZsjfSec8dZJwtoG1yjI8/h2ZiAnNWK3x+Gn6aBhMKY2l5GauFTdkuQGKunl5xtSBLNiFirAY53QOVZhzE7Bwo+k+4KR9eBRmEonGkVzd2A+LmOjrr/BXpeRGihABWXRv6ngxCPfkCdg8Fu5sCtRDEYiyJVP6zADEyLCBmEsKm70Dv4FPojBa4AyE4/AE46ACoxQjCmcJeFhrovFtStJAw18CobkG7VAa5UoMZ0lNcC/UKrmAEgfTabsCSbSfEnKP5A0CCNhYwMKrBlN0NncUBg4OC2bsAf2r1cwAJcs5mxIxCGJRNEN/rQj+rwOD0Yoo9nvUFQTJJeFNr3XtYqKdzbAuZ7RZmboJQidF+/w+oXhB4GU7AxcSK64kuwewPyTicA0fYsxJ2dz4VC/Bvh1hswSiAcYzN4H43hrVTIBfCcAbCoJgomOXcf3KleuyHU6cufHfixLfl5eVfFgFJa4Mp69hpIW66BULTirYHA3g2Y8eUN44JVwimYAauaBrdfQPvleqJtHcxMk1HUiL5sP4bToZsOf23R2LOkKJ/k2yIWkXtlvB281ZX/xDkKh0qKq/jp6vX8IugDk2SuxhVa6E32QqqSaJD/JvsaFHFGik+mp0X3YvPVr/WPqqkz52v+F06pHysmDQ5Oh4psvV3pe8qhQ0rl69WEd2yPmLgscI9olRrpdKe74uA7UlZft4fJW78aBq63Mjlcr/m8Xhf1bc/PNg1ojv+QGk4e7uz92RpaWkJ+87l8/mH+RcvHuPxeNz/AX7dZzZ5DoFPAAAAAElFTkSuQmCC)}
+#contextMenu_patients .gwt-Image.icon-ordonnance {padding-right: 4px;content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIbSURBVDhPY6AqEF/3yExszaMasXUP6sTWPqoVW/PQheH/f0aoNE7AKGkdKidjEWImWTw7T7xt40IYFqtcXCVtHWYhaxWuzFBfzwRVjwrk7UMlpCxD9ktZhLzHhaUtgs9L2YSrQbWgAgnzcE2gomfSliH/cWKLkE+SVsG2UC2oAGYAEP+Qsgx+AnTNLSD9C4h/AjX+lrYM/kuMAU+BinYCFU8GOvcG0NZV0hZBc6UsgvcCxe4D+R8JugCo8AtQ4Wugzd9AtgNd8gPuAsuQR1Kx1S7ia++IMdT/Rw1MJBfcBOLNQPZxoAGXgPQpoAvuAA16LJXaNUds1Z1TwGg9I7LmsRcDA1LUIgXiWaDibSD/Am09A8SHgezrUpahJ8Rnn9kgtvbhfzBec3+V1qorbFDtSAaAFAP9DLIRGA5/gPzfQPqvtFXoNdF559aLrXnwEYxX318jk9wrBE8XSGFwRNIiJBmo8RzQoNVAGhKIViHbxaYfqwNqXgi0vVt8/qU8KeuImUD5dAbjNFa4AUB/Pwcacg/olTeggATa/gUo/kPaMvSK2Nzz24HO/yu69sFdscXXVkjbRq0EGn5ZwjJInkHMJkgJqPAOUCPWRAT00jPx7u0LRdc+/A404Jv49GOLpKzDZgHlGiVsQkQZjIHOAOaDQKAh9UAXNKBjoGtqpYJLnUXXPYwHZrJU8dRuc6BXc0D5BxgCBDMaAcDAAABTEhAox93HNQAAAABJRU5ErkJggg==)}
 `).appendTo('body')
         }
         if (!SSSFrame.document.getElementById('SSSFrame_Script')){
@@ -1135,9 +1144,14 @@ function monitorContextClick(ev){
             }
     } else if (ev.type == "mousedown"){
         if (ev.which == 3){
-            if ($(ev.target).parents('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine').length){
+            let $patient
+            if (($patient = $(ev.target).parents('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine')).length){
                 ev.target.click()
-                $('#contextMenu_patients').show().position({at: "left+1 top+1",my:"left-5 top-5", of:ev})
+                $('span:first',ev.target).text()
+                $.waitFor('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient:contains('+$('span:first',$patient).text()+')')
+                .then($el=>{
+                    $('#contextMenu_patients').show().position({at: "left+1 top+1",my:"left-5 top-5", of:ev})
+                })
             }
         }
     }
@@ -1155,6 +1169,8 @@ function monitorClick(ev){
             let action = $(ev.target).text()
             if (action == "Prescriptions"){
                 action = "HEO - Prescrire"
+            } else if (action == "Documents"){
+                action = "Gestion Documentaire"
             }
             $('div.carousel_enabled_item:contains('+action+')').click2()
         }
