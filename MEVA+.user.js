@@ -125,7 +125,8 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <li><div><img src="/heoclient-application-web/icon/heo_blue_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Prescriptions</div></li>
   <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/acte_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Observations</div></li>
   <li><div><img src="/m-eva-resourcestatic/icons/produits/web/pancarte_medicale_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Synthèse</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/labo_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Labo</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/labo_32.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Résultats de labo</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">PACS</div></li>
   <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Ordonnance</div></li>
   <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image" style="width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;">Documents</div></li>
 </ul>
@@ -1150,10 +1151,14 @@ function monitorClick(ev){
     window.monitorClickEnabled = true
     //console.log(ev.target)
     if ($('#contextMenu_patients:visible').length){
-        if(!$('#contextMenu_patients').has(ev.target).length){
-            $('#contextMenu_patients:visible').hide()
-        }else{
+        if($('#contextMenu_patients').has(ev.target).length){
+            let action = $(ev.target).text()
+            if (action == "Prescriptions"){
+                action = "HEO - Prescrire"
+            }
+            $('div.carousel_enabled_item:contains('+action+')').click2()
         }
+        $('#contextMenu_patients:visible').hide()
     }
     if (ev.target.classList.contains('GD42JS-DLOB')){
         $('a.GD42JS-DKWB', ev.view.document).click2()
