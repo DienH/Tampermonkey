@@ -1162,7 +1162,9 @@ function monitorContextClick(ev){
         if (ev.which == 3){
             let $patient
             if (($patient = $(ev.target).parents('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine')).length){
-                ev.target.click()
+                if (!$(ev.target).parents(".GOAX34LORB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLineSelected").length){
+                    ev.target.click()
+                }
                 $.waitFor('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient:contains('+$('span:first',$patient).text()+')')
                 .then($el=>{
                     $('#contextMenu_patients').show().position({at: "left+1 top+1",my:"left-5 top-5", of:ev})
@@ -1186,21 +1188,25 @@ function monitorClick(ev){
                 action = "HEO - Prescrire"
             } else if (action == "Documents"){
                 action = "Gestion Documentaire"
+            } else if (action == "Résultats de labo"){
+                let patientIPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains(IPP)').text().split(' : ')[1],
+                patientBD = $('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient').text().split(" (")[2].split(')')[0].split('/').reverse().join(''),
+                labo_url = 'https://serv-cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
+
             }
             $('div.carousel_enabled_item:contains('+action+')').click2()
         }
         $('#contextMenu_patients:visible').hide()
     }
-    /*
     let $patient
-    if (($patient = $(ev.target).parents('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine')).length){
+    if (ev.isTrusted && ($patient = $(ev.target).parents('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine')).length){
         $.waitFor('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient:contains('+$('span:first',$patient).text()+')')
             .then($el=>{
             if ($('div.carousel_disabled_item').length){
                 ev.target.click()
             }
         })
-    } else */
+    } else
         if (ev.target.classList.contains('GD42JS-DLOB')){
         $('a.GD42JS-DKWB', ev.view.document).click2()
     } else if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
