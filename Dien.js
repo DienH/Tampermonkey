@@ -326,14 +326,15 @@
 	}
     });
 	$.waitFor = async (selector, context = document, delay = 0) => {
-		let $selection, start = Date.now()
+		let $selection, start = Date.now(), frameRef
 		if (typeof context == "number"){
 			delay = context
 			context = document
 		}
 		while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
-			await new Promise( resolve => requestAnimationFrame(resolve) )
+			await new Promise( resolve => {frameRef=requestAnimationFrame(resolve)} )
 		}
+		cancelAnimationFrame(frameRef)
 	    	return $selection;
 	}
 }($ || jQuery));
