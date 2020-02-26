@@ -138,6 +138,18 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 </ul>
 `).menu().hide())
             }
+            if(!$('#hoverMenu_Pres', SSSFrame.document).length){
+                $('body', SSSFrame.document).append($(`
+<div id="hoverMenu_Pres">
+  <span title="Modifier"><img src="/heoclient-application-web/images/pencil.png" class="gwt-Image"></span>
+  <span title="Arrêt immédiat"><img src="/heoclient-application-web/images/stop.png" class="gwt-Image"></span>
+  <span title="Arrêt programmé"><img src="/heoclient-application-web/images/time_delete.png" class="gwt-Image"></span>
+  <span title="Suspendre"><img src="/heoclient-application-web/images/control_pause_blue.png" class="gwt-Image"></span>
+  <span title="Annuler arrêt & modifications"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
+  <span title="Reprendre"><img src="/heoclient-application-web/images/control_play_blue.png" class="gwt-Image"></span>
+</ul>
+`).hide())
+            }
         }, 2000)
 
         if (!document.getElementById('SSSFrame_MevaStyle')){
@@ -168,8 +180,8 @@ background-position:initial;}
 #contextMenu_patients.ui-menu .ui-menu-item-wrapper {padding:8px;}
 #contextMenu_patients.ui-menu .ui-menu-item {padding:0;}
 #contextMenu_patients .gwt-Image {width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;}
-#contextMenu_patients .gwt-Image.icon-documents {padding-right: 4px;content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAMxSURBVDhPdZLrT1N3GMc7txcmlhcmUxPj2y1LTMxeLBpJTP8CE0tGdJE4EyVLUGMr4WaBjgrCzKCOoiBooUaglhZaioXTUnrh9OZpexwtp/eW0QsdUEmIGpeFfXcoJsaAT/K8+SXPJ9/Lj6PvKev1qCs9zLTAwMwIBsOEsC0xV10VN9eWJaw1Z/6arz2e8zccAofzBWevmVVcou0jV+DTCRDzjiLhUyLm6t+K2Dr/CVtaNxmjKB+xNslDIbJEDOz7cPZxkjYRnbQ1wquvQ2SRQjKVwkp+BYXCKjYKebxeW8bGenp98+07Q279zSUAnypZsjfSec8dZJwtoG1yjI8/h2ZiAnNWK3x+Gn6aBhMKY2l5GauFTdkuQGKunl5xtSBLNiFirAY53QOVZhzE7Bwo+k+4KR9eBRmEonGkVzd2A+LmOjrr/BXpeRGihABWXRv6ngxCPfkCdg8Fu5sCtRDEYiyJVP6zADEyLCBmEsKm70Dv4FPojBa4AyE4/AE46ACoxQjCmcJeFhrovFtStJAw18CobkG7VAa5UoMZ0lNcC/UKrmAEgfTabsCSbSfEnKP5A0CCNhYwMKrBlN0NncUBg4OC2bsAf2r1cwAJcs5mxIxCGJRNEN/rQj+rwOD0Yoo9nvUFQTJJeFNr3XtYqKdzbAuZ7RZmboJQidF+/w+oXhB4GU7AxcSK64kuwewPyTicA0fYsxJ2dz4VC/Bvh1hswSiAcYzN4H43hrVTIBfCcAbCoJgomOXcf3KleuyHU6cufHfixLfl5eVfFgFJa4Mp69hpIW66BULTirYHA3g2Y8eUN44JVwimYAauaBrdfQPvleqJtHcxMk1HUiL5sP4bToZsOf23R2LOkKJ/k2yIWkXtlvB281ZX/xDkKh0qKq/jp6vX8IugDk2SuxhVa6E32QqqSaJD/JvsaFHFGik+mp0X3YvPVr/WPqqkz52v+F06pHysmDQ5Oh4psvV3pe8qhQ0rl69WEd2yPmLgscI9olRrpdKe74uA7UlZft4fJW78aBq63Mjlcr/m8Xhf1bc/PNg1ojv+QGk4e7uz92RpaWkJ+87l8/mH+RcvHuPxeNz/AX7dZzZ5DoFPAAAAAElFTkSuQmCC)}
-#contextMenu_patients .gwt-Image.icon-ordonnance {padding-right: 4px;content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIbSURBVDhPY6AqEF/3yExszaMasXUP6sTWPqoVW/PQheH/f0aoNE7AKGkdKidjEWImWTw7T7xt40IYFqtcXCVtHWYhaxWuzFBfzwRVjwrk7UMlpCxD9ktZhLzHhaUtgs9L2YSrQbWgAgnzcE2gomfSliH/cWKLkE+SVsG2UC2oAGYAEP+Qsgx+AnTNLSD9C4h/AjX+lrYM/kuMAU+BinYCFU8GOvcG0NZV0hZBc6UsgvcCxe4D+R8JugCo8AtQ4Wugzd9AtgNd8gPuAsuQR1Kx1S7ia++IMdT/Rw1MJBfcBOLNQPZxoAGXgPQpoAvuAA16LJXaNUds1Z1TwGg9I7LmsRcDA1LUIgXiWaDibSD/Am09A8SHgezrUpahJ8Rnn9kgtvbhfzBec3+V1qorbFDtSAaAFAP9DLIRGA5/gPzfQPqvtFXoNdF559aLrXnwEYxX318jk9wrBE8XSGFwRNIiJBmo8RzQoNVAGhKIViHbxaYfqwNqXgi0vVt8/qU8KeuImUD5dAbjNFa4AUB/Pwcacg/olTeggATa/gUo/kPaMvSK2Nzz24HO/yu69sFdscXXVkjbRq0EGn5ZwjJInkHMJkgJqPAOUCPWRAT00jPx7u0LRdc+/A404Jv49GOLpKzDZgHlGiVsQkQZjIHOAOaDQKAh9UAXNKBjoGtqpYJLnUXXPYwHZrJU8dRuc6BXc0D5BxgCBDMaAcDAAABTEhAox93HNQAAAABJRU5ErkJggg==)}
+#contextMenu_patients .gwt-Image.icon-documents {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAMxSURBVDhPdZLrT1N3GMc7txcmlhcmUxPj2y1LTMxeLBpJTP8CE0tGdJE4EyVLUGMr4WaBjgrCzKCOoiBooUaglhZaioXTUnrh9OZpexwtp/eW0QsdUEmIGpeFfXcoJsaAT/K8+SXPJ9/Lj6PvKev1qCs9zLTAwMwIBsOEsC0xV10VN9eWJaw1Z/6arz2e8zccAofzBWevmVVcou0jV+DTCRDzjiLhUyLm6t+K2Dr/CVtaNxmjKB+xNslDIbJEDOz7cPZxkjYRnbQ1wquvQ2SRQjKVwkp+BYXCKjYKebxeW8bGenp98+07Q279zSUAnypZsjfSec8dZJwtoG1yjI8/h2ZiAnNWK3x+Gn6aBhMKY2l5GauFTdkuQGKunl5xtSBLNiFirAY53QOVZhzE7Bwo+k+4KR9eBRmEonGkVzd2A+LmOjrr/BXpeRGihABWXRv6ngxCPfkCdg8Fu5sCtRDEYiyJVP6zADEyLCBmEsKm70Dv4FPojBa4AyE4/AE46ACoxQjCmcJeFhrovFtStJAw18CobkG7VAa5UoMZ0lNcC/UKrmAEgfTabsCSbSfEnKP5A0CCNhYwMKrBlN0NncUBg4OC2bsAf2r1cwAJcs5mxIxCGJRNEN/rQj+rwOD0Yoo9nvUFQTJJeFNr3XtYqKdzbAuZ7RZmboJQidF+/w+oXhB4GU7AxcSK64kuwewPyTicA0fYsxJ2dz4VC/Bvh1hswSiAcYzN4H43hrVTIBfCcAbCoJgomOXcf3KleuyHU6cufHfixLfl5eVfFgFJa4Mp69hpIW66BULTirYHA3g2Y8eUN44JVwimYAauaBrdfQPvleqJtHcxMk1HUiL5sP4bToZsOf23R2LOkKJ/k2yIWkXtlvB281ZX/xDkKh0qKq/jp6vX8IugDk2SuxhVa6E32QqqSaJD/JvsaFHFGik+mp0X3YvPVr/WPqqkz52v+F06pHysmDQ5Oh4psvV3pe8qhQ0rl69WEd2yPmLgscI9olRrpdKe74uA7UlZft4fJW78aBq63Mjlcr/m8Xhf1bc/PNg1ojv+QGk4e7uz92RpaWkJ+87l8/mH+RcvHuPxeNz/AX7dZzZ5DoFPAAAAAElFTkSuQmCC)}
+#contextMenu_patients .gwt-Image.icon-ordonnance {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIbSURBVDhPY6AqEF/3yExszaMasXUP6sTWPqoVW/PQheH/f0aoNE7AKGkdKidjEWImWTw7T7xt40IYFqtcXCVtHWYhaxWuzFBfzwRVjwrk7UMlpCxD9ktZhLzHhaUtgs9L2YSrQbWgAgnzcE2gomfSliH/cWKLkE+SVsG2UC2oAGYAEP+Qsgx+AnTNLSD9C4h/AjX+lrYM/kuMAU+BinYCFU8GOvcG0NZV0hZBc6UsgvcCxe4D+R8JugCo8AtQ4Wugzd9AtgNd8gPuAsuQR1Kx1S7ia++IMdT/Rw1MJBfcBOLNQPZxoAGXgPQpoAvuAA16LJXaNUds1Z1TwGg9I7LmsRcDA1LUIgXiWaDibSD/Am09A8SHgezrUpahJ8Rnn9kgtvbhfzBec3+V1qorbFDtSAaAFAP9DLIRGA5/gPzfQPqvtFXoNdF559aLrXnwEYxX318jk9wrBE8XSGFwRNIiJBmo8RzQoNVAGhKIViHbxaYfqwNqXgi0vVt8/qU8KeuImUD5dAbjNFa4AUB/Pwcacg/olTeggATa/gUo/kPaMvSK2Nzz24HO/yu69sFdscXXVkjbRq0EGn5ZwjJInkHMJkgJqPAOUCPWRAT00jPx7u0LRdc+/A404Jv49GOLpKzDZgHlGiVsQkQZjIHOAOaDQKAh9UAXNKBjoGtqpYJLnUXXPYwHZrJU8dRuc6BXc0D5BxgCBDMaAcDAAABTEhAox93HNQAAAABJRU5ErkJggg==)}
 `).appendTo('body')
         }
         if (!SSSFrame.document.getElementById('SSSFrame_Script')){
@@ -185,6 +197,7 @@ $.expr[":"].containsI = function (a, i, m) {
 ` + output_Selector.toString() + autoPresConsignesRapides.toString() + currentPres_Selector.toString()
             SSSFrame.document.body.append(script)
         }
+        $.waitFor('#workbody', SSSFrame.document).then($el=>$el.log().on('mouseover', '.GD42JS-DJYB.GD42JS-DJ-B tr', ev=>console.log(ev.currentTarget.innerText)))
 
     }else if (location.href.search("initSSS")+1){
         if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
@@ -201,7 +214,7 @@ $.expr[":"].containsI = function (a, i, m) {
         $.waitFor('div.outlineTitle', document).then(el=>{
             switch(el.text().trim()){
                 case "Prescriptions Usuelles de Psychiatrie Adulte":
-                    $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', true)
+                    //$('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', true)
                     $('a:contains("Retourner à la liste")', document).remove()
                     $('a:contains("Consignes")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Consignes rapides</a>').click(presOutputConsignesRapides))
                     $('a:contains("Sorties Temp")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Permission rapide</a>').click(presOutputConsignesRapides))
@@ -1129,6 +1142,9 @@ document.body.datePicker = datePicker
         document.body.append(dateScriptInit)
     }
 }
+function monitorPresMouseOver(ev){
+
+}
 function monitorContextClick(ev){
     if (!$ || !$.fn) {var $ = window.document.SSSFrame.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
@@ -1147,7 +1163,6 @@ function monitorContextClick(ev){
             let $patient
             if (($patient = $(ev.target).parents('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine')).length){
                 ev.target.click()
-                $('span:first',ev.target).text()
                 $.waitFor('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient:contains('+$('span:first',$patient).text()+')')
                 .then($el=>{
                     $('#contextMenu_patients').show().position({at: "left+1 top+1",my:"left-5 top-5", of:ev})
@@ -1176,7 +1191,17 @@ function monitorClick(ev){
         }
         $('#contextMenu_patients:visible').hide()
     }
-    if (ev.target.classList.contains('GD42JS-DLOB')){
+    /*
+    let $patient
+    if (($patient = $(ev.target).parents('.GOAX34LMRB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLine')).length){
+        $.waitFor('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient:contains('+$('span:first',$patient).text()+')')
+            .then($el=>{
+            if ($('div.carousel_disabled_item').length){
+                ev.target.click()
+            }
+        })
+    } else */
+        if (ev.target.classList.contains('GD42JS-DLOB')){
         $('a.GD42JS-DKWB', ev.view.document).click2()
     } else if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
         console.log('bouh')
