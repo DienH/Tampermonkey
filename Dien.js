@@ -325,11 +325,15 @@
 		return this.slice(index+1)
 	}
     });
-	$.waitFor = async (selector, context) => {
-		let $selection
-	   		while ( ($selection = $(selector, context || document)).length === 0) {
+	$.waitFor = async (selector, context = document, delay = 0) => {
+		let $selection, start = Date.now()
+		if (typeof context == "number"){
+			delay = context
+			context = document
+		}
+		while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
 			await new Promise( resolve => requestAnimationFrame(resolve) )
-	 	   }
+		}
 	    	return $selection;
 	}
 }($ || jQuery));
