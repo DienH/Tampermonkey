@@ -197,7 +197,12 @@ $.expr[":"].containsI = function (a, i, m) {
 ` + output_Selector.toString() + autoPresConsignesRapides.toString() + currentPres_Selector.toString()
             SSSFrame.document.body.append(script)
         }
-        $.waitFor('#workbody', SSSFrame.document).then($el=>$el.log().on('mouseover', '.GD42JS-DJYB.GD42JS-DJ-B tr', ev=>console.log(ev.currentTarget.innerText)))
+        $.waitFor('#workbody', SSSFrame.document).then($el=>$el.on('mouseover', '.GD42JS-DJYB.GD42JS-DJ-B tr', ev=>{
+            let traitement = $('td>div:has(subseq)', ev.currentTarget)
+            traitement.poso = traitement.textContent()
+            traitement.name = traitement.find('b').text()
+            console.log(ev.currentTarget.innerText)
+        }))
 
     }else if (location.href.search("initSSS")+1){
         if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
