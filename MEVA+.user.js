@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.29
+// @version      0.2.30
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -25,6 +25,7 @@
     if (location.href.search("serv-cyberlab.chu-clermontferrand.fr")+1){
         let $
         if (!$ || !$.fn) {$ = µ.jQuery || window.jQuery };
+        $('tr[onclick]:first').click()
         return true
     }
     if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.parent.jQuery || window.jQuery };
