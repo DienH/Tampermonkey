@@ -98,7 +98,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
     }else if (location.href.search("quitteSession")+1){
         $.waitFor('div.gwt-Label:contains(Cliquez ici)', document).then(el=>el.click2())
     }else if (location.href.search("Hospitalisation.fwks")+1 || location.href.search("m-eva.fwks")+1){
-        let SSSFrame = window, SSSFrame_wait = setInterval(()=>{
+        let SSSFrame = unsafeWindow, SSSFrame_wait = setInterval(()=>{
             let state = 0, CS_AnestTitle = (`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`)
             if ($(CS_AnestTitle).length){
                 $(CS_AnestTitle).remove()
@@ -149,9 +149,17 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <span title="Annuler arrêt & modifications"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
   <span title="Reprendre"><img src="/heoclient-application-web/images/control_play_blue.png" class="gwt-Image"></span>
 </ul>
-`).hide())
+`).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver)
+            SSSFrame.listingPrescriptions=true
+            $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
             }
-        $.waitFor('#workbody:not(.mouseOver_Monitored)', SSSFrame.document).then($el=>$el.addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver))
+            /*
+        $.waitFor('#workbody:not(.mouseOver_Monitored)', SSSFrame.document).then($el=>{
+            $el.addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver)
+            SSSFrame.listingPrescriptions=true
+            $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
+        })
+        */
         }, 2000)
 
         if (!document.getElementById('SSSFrame_MevaStyle')){
@@ -308,8 +316,12 @@ body {background-color:#F5F5F5;}
                         if ($('input:checked', document).length){
                             $('#playbackOrders', document).click2()
                         } else {
-                            $('#HEO_POPUP a.GD42JS-DKWB', window.parent.document).click2()
+                            $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
                         }
+                    } else if (SSSFrame.listingPrescriptions){
+                        SSSFrame.listingPrescriptions = false
+                        delete SSSFrame.listingPrescriptions
+                        $('table[width] tr[id]>td>div[name]', document)
                     } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
                     }
                     break
@@ -355,7 +367,7 @@ body {background-color:#F5F5F5;}
         let SSSFrame = window.parent
         switch ($('h1',document).text()){
             case "Arrêter/Suspendre/Reprendre":
-                if (SSSFrame.listeConsignes){
+                if (SSSFrame.listeConsignes || SSSFrame.listingPrescriptions){
                     $('button:contains("Arrêter ces prescriptions")', document).click2()
                 }
                 break
