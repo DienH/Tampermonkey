@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.30
+// @version      0.2.31
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -151,6 +151,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 </ul>
 `).hide())
             }
+        $.waitFor('#workbody:not(.mouseOver_Monitored)', SSSFrame.document).then($el=>$el.addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver))
         }, 2000)
 
         if (!document.getElementById('SSSFrame_MevaStyle')){
@@ -183,10 +184,10 @@ background-position:initial;}
 #contextMenu_patients .gwt-Image {width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;}
 #contextMenu_patients .gwt-Image.icon-documents {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAMxSURBVDhPdZLrT1N3GMc7txcmlhcmUxPj2y1LTMxeLBpJTP8CE0tGdJE4EyVLUGMr4WaBjgrCzKCOoiBooUaglhZaioXTUnrh9OZpexwtp/eW0QsdUEmIGpeFfXcoJsaAT/K8+SXPJ9/Lj6PvKev1qCs9zLTAwMwIBsOEsC0xV10VN9eWJaw1Z/6arz2e8zccAofzBWevmVVcou0jV+DTCRDzjiLhUyLm6t+K2Dr/CVtaNxmjKB+xNslDIbJEDOz7cPZxkjYRnbQ1wquvQ2SRQjKVwkp+BYXCKjYKebxeW8bGenp98+07Q279zSUAnypZsjfSec8dZJwtoG1yjI8/h2ZiAnNWK3x+Gn6aBhMKY2l5GauFTdkuQGKunl5xtSBLNiFirAY53QOVZhzE7Bwo+k+4KR9eBRmEonGkVzd2A+LmOjrr/BXpeRGihABWXRv6ngxCPfkCdg8Fu5sCtRDEYiyJVP6zADEyLCBmEsKm70Dv4FPojBa4AyE4/AE46ACoxQjCmcJeFhrovFtStJAw18CobkG7VAa5UoMZ0lNcC/UKrmAEgfTabsCSbSfEnKP5A0CCNhYwMKrBlN0NncUBg4OC2bsAf2r1cwAJcs5mxIxCGJRNEN/rQj+rwOD0Yoo9nvUFQTJJeFNr3XtYqKdzbAuZ7RZmboJQidF+/w+oXhB4GU7AxcSK64kuwewPyTicA0fYsxJ2dz4VC/Bvh1hswSiAcYzN4H43hrVTIBfCcAbCoJgomOXcf3KleuyHU6cufHfixLfl5eVfFgFJa4Mp69hpIW66BULTirYHA3g2Y8eUN44JVwimYAauaBrdfQPvleqJtHcxMk1HUiL5sP4bToZsOf23R2LOkKJ/k2yIWkXtlvB281ZX/xDkKh0qKq/jp6vX8IugDk2SuxhVa6E32QqqSaJD/JvsaFHFGik+mp0X3YvPVr/WPqqkz52v+F06pHysmDQ5Oh4psvV3pe8qhQ0rl69WEd2yPmLgscI9olRrpdKe74uA7UlZft4fJW78aBq63Mjlcr/m8Xhf1bc/PNg1ojv+QGk4e7uz92RpaWkJ+87l8/mH+RcvHuPxeNz/AX7dZzZ5DoFPAAAAAElFTkSuQmCC)}
 #contextMenu_patients .gwt-Image.icon-ordonnance {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIbSURBVDhPY6AqEF/3yExszaMasXUP6sTWPqoVW/PQheH/f0aoNE7AKGkdKidjEWImWTw7T7xt40IYFqtcXCVtHWYhaxWuzFBfzwRVjwrk7UMlpCxD9ktZhLzHhaUtgs9L2YSrQbWgAgnzcE2gomfSliH/cWKLkE+SVsG2UC2oAGYAEP+Qsgx+AnTNLSD9C4h/AjX+lrYM/kuMAU+BinYCFU8GOvcG0NZV0hZBc6UsgvcCxe4D+R8JugCo8AtQ4Wugzd9AtgNd8gPuAsuQR1Kx1S7ia++IMdT/Rw1MJBfcBOLNQPZxoAGXgPQpoAvuAA16LJXaNUds1Z1TwGg9I7LmsRcDA1LUIgXiWaDibSD/Am09A8SHgezrUpahJ8Rnn9kgtvbhfzBec3+V1qorbFDtSAaAFAP9DLIRGA5/gPzfQPqvtFXoNdF559aLrXnwEYxX318jk9wrBE8XSGFwRNIiJBmo8RzQoNVAGhKIViHbxaYfqwNqXgi0vVt8/qU8KeuImUD5dAbjNFa4AUB/Pwcacg/olTeggATa/gUo/kPaMvSK2Nzz24HO/yu69sFdscXXVkjbRq0EGn5ZwjJInkHMJkgJqPAOUCPWRAT00jPx7u0LRdc+/A404Jv49GOLpKzDZgHlGiVsQkQZjIHOAOaDQKAh9UAXNKBjoGtqpYJLnUXXPYwHZrJU8dRuc6BXc0D5BxgCBDMaAcDAAABTEhAox93HNQAAAABJRU5ErkJggg==)}
-#hoverMenu_pres {position:fixed;}
+#hoverMenu_pres {position:fixed;background:white;border:solid 1px grey;border-radius:3px;}
 #hoverMenu_pres span {cursor:pointer;}
-#hoverMenu_pres span[title="Reprendre"] {display:none}
-#hoverMenu_pres.suspended span {display:none}
+#hoverMenu_pres span[title="Reprendre"], #hoverMenu_pres span[title="Annuler arrêt & modifications"], #hoverMenu_pres.suspended span {display:none}
+#hoverMenu_pres span img {margin:3px;}
 #hoverMenu_pres.suspended span[title="Reprendre"], #hoverMenu_pres.suspended span[title="Reprendre"] {display:block}
 `).appendTo('body')
         }
@@ -203,7 +204,6 @@ $.expr[":"].containsI = function (a, i, m) {
 ` + output_Selector.toString() + autoPresConsignesRapides.toString() + currentPres_Selector.toString()
             SSSFrame.document.body.append(script)
         }
-        $.waitFor('#workbody', SSSFrame.document).then($el=>$el.log().on('mouseover', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver))
 
     }else if (location.href.search("initSSS")+1){
         if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
@@ -670,11 +670,13 @@ function presOutputConsignesRapides(ev){
                                 $( this ).dialog( "close" );
                                 let nbToDelete = 0
                                 Object.keys(listeConsignes).forEach(el=>{
-                                    if (SSSFrame.currentListeConsignes[el].consigne == listeConsignes[el].consigne){
+                                    if (el == "changeComment"){
+                                    } else if (SSSFrame.currentListeConsignes[el].consigne == listeConsignes[el].consigne){
                                         if(SSSFrame.currentListeConsignes[el].comment == listeConsignes[el].comment){
                                             listeConsignes[el].done=true
                                         } else {
                                             listeConsignes[el].changeComment = true
+                                            listeConsignes.changeComment.push(el)
                                         }
                                     } else if (SSSFrame.currentListeConsignes[el].consigne != "autorise"){
                                         nbToDelete++
@@ -1151,7 +1153,21 @@ document.body.datePicker = datePicker
 function monitorPresMouseOver(ev){
     if (!$ || !$.fn) {var $ = unsafeWindow.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
-    //$('#hoverMenu_pres', ev.view.document).show().position({at: "center",my:"center", of:ev, using:(a,b)=>{console.log(a,b)}})
+    if (ev.type == "mouseover"){
+        if(!$(ev.currentTarget).hasClass('currentHover_pres')){
+            $('tr.currentHover_pres').removeClass('currentHover_pres')
+            $('#hoverMenu_pres', ev.view.document).show().position({at: "center",my:"left center", of:ev, using:(pos,elPos)=>{
+                //console.log(pos,elPos)
+                elPos.element.element.css({top:($(elPos.target.element[0].currentTarget).offset().top+2), left:pos.left+2})
+            }})
+            $(ev.currentTarget).addClass('currentHover_pres')
+        }
+    } else {
+        if (!$(ev.toElement).parents('tr').hasClass('currentHover_pres') && (!ev.toElement.id || !ev.toElement.id == "hoverMenu_pres")){
+            $('#hoverMenu_pres', ev.view.document).hide()
+            $(ev.currentTarget).removeClass('currentHover_pres')
+        }
+    }
 }
 function monitorContextClick(ev){
     if (!$ || !$.fn) {var $ = window.document.SSSFrame.jQuery};
