@@ -331,14 +331,16 @@
 			delay = context
 			context = document
 		}
-		while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
-			if (!checkFrequency){
+		if (!checkFrequency){
+			while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
 				await new Promise( resolve => {frameRef=requestAnimationFrame(resolve)} )
-			} else {
+			}
+			cancelAnimationFrame(frameRef)}
+		} else {
+			while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
 				await new Promise( resolve => setTimeout(resolve, checkFrequency))
 			}
 		}
-		if (!checkFrequency){cancelAnimationFrame(frameRef)}
 	    	return $selection;
 	}
 }($ || jQuery));
