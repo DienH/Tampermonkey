@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.32
+// @version      0.2.33
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -143,14 +143,14 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 $('#workbody', SSSFrame.document).append($(`
 <div id="hoverMenu_pres">
   <span title="Modifier" action="MODIFY"><img src="/heoclient-application-web/images/pencil.png" class="gwt-Image"></span>
-  <span title="Arrêt immédiat" action="DCAO"><img src="/heoclient-application-web/images/stop.png" class="gwt-Image"></span>
-  <span title="Arrêt programmé" action="DCAO0"><img src="/heoclient-application-web/images/time_delete.png" class="gwt-Image"></span>
+  <span title="Arrêt immédiat" action="DCAO-0"><img src="/heoclient-application-web/images/stop.png" class="gwt-Image"></span>
+  <span title="Arrêt programmé" action="DCAO"><img src="/heoclient-application-web/images/time_delete.png" class="gwt-Image"></span>
   <span title="Suspendre" action="HOLD"><img src="/heoclient-application-web/images/control_pause_blue.png" class="gwt-Image"></span>
   <span title="Annuler arrêt & modifications" action="RESET_ORDER"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
   <span title="Reprendre" action="RESUME"><img src="/heoclient-application-web/images/control_play_blue.png" class="gwt-Image"></span>
 </ul>
 `).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver)
-            $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
+            if (typeof SSSFrame.listingPrescriptions == "undefined") $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
             }
             /*
         $.waitFor('#workbody:not(.mouseOver_Monitored)', SSSFrame.document).then($el=>{
@@ -195,7 +195,7 @@ background-position:initial;}
 #hoverMenu_pres span {cursor:pointer;}
 #hoverMenu_pres span[title="Reprendre"], #hoverMenu_pres span[title="Annuler arrêt & modifications"], #hoverMenu_pres.suspended span {display:none}
 #hoverMenu_pres span img {margin:3px;}
-#hoverMenu_pres.suspended span[title="Reprendre"], #hoverMenu_pres.suspended span[title="Reprendre"] {display:block}
+#hoverMenu_pres.suspended span[title="Reprendre"], #hoverMenu_pres.modified span[title="Annuler arrêt & modifications"] {display:block}
 `).appendTo('body')
         }
         if (!SSSFrame.document.getElementById('SSSFrame_Script')){
@@ -1168,13 +1168,14 @@ function monitorPresMouseOver(ev){
     if (!$ || !$.fn) {var $ = unsafeWindow.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
     if (ev.type == "mouseover"){
-        if(!$(ev.currentTarget).hasClass('currentHover_pres')){
+        if(!$(ev.currentTarget).hasClass('currentHover_pres') && ev.view.listingPrescriptions){
             $('tr.currentHover_pres').removeClass('currentHover_pres')
-            $('#hoverMenu_pres', ev.view.document).show().position({at: "center",my:"left center", of:ev, using:(pos,elPos)=>{
+            $('#hoverMenu_pres', ev.view.document).attr('class', "").show().position({at: "center",my:"left center", of:ev, using:(pos,elPos)=>{
                 //console.log(pos,elPos)
                 elPos.element.element.css({top:($(elPos.target.element[0].currentTarget).offset().top+2), left:pos.left+2})
             }})
             $(ev.currentTarget).addClass('currentHover_pres')
+            if ($(ev.currentTarget).has('span.heoDiscontinuedOrder').length){$('#hoverMenu_pres', ev.view.document).addClass('modified')}
         }
     } else {
         if (!$(ev.toElement).parents('tr').hasClass('currentHover_pres') && (!$(ev.toElement).parents('#hoverMenu_pres').add(ev.toElement).is("#hoverMenu_pres"))){
@@ -1245,10 +1246,11 @@ function monitorClick(ev){
             }
         })
     } else if ($(ev.target).parents('#hoverMenu_pres').length){
-        let action = ev.target.action || ev.target.parentElement.action,
-        act="http://meva/heoclient-application-web/commander?HEOCMD=@DCAO="+ev.view.listingPrescriptions[$(".currentHover_pres b",ev.view).text()].id+(action == "DCAO0" ? ",0" : "")
-        console.log(act)
-        //ev.view.document.pcFrame.location=act
+        let action = $(ev.target).parent('span').addBack().attr('action'), act
+        //console.log($(".currentHover_pres b",ev.view.document).text(), ev.view.listingPrescriptions, ev.view.listingPrescriptions[$(".currentHover_pres b",ev.view.document).text()])
+        act="http://meva/heoclient-application-web/commander?HEOCMD=@"+action.split('-')[0]+"="+ev.view.listingPrescriptions[$(".currentHover_pres b",ev.view.document).text()].id+(action == "DCAO-0" ? ",0" : "")
+        ev.view.document.pcFrame.location=act
+        $('#hoverMenu_pres').hide()
     } else if (ev.target.classList.contains('GD42JS-DLOB')){
         $('a.GD42JS-DKWB', ev.view.document).click2()
     } else if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
