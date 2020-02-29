@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.31
+// @version      0.2.32
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -142,15 +142,14 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
             if(!$('#hoverMenu_pres', SSSFrame.document).length){
                 $('#workbody', SSSFrame.document).append($(`
 <div id="hoverMenu_pres">
-  <span title="Modifier"><img src="/heoclient-application-web/images/pencil.png" class="gwt-Image"></span>
-  <span title="Arrêt immédiat"><img src="/heoclient-application-web/images/stop.png" class="gwt-Image"></span>
-  <span title="Arrêt programmé"><img src="/heoclient-application-web/images/time_delete.png" class="gwt-Image"></span>
-  <span title="Suspendre"><img src="/heoclient-application-web/images/control_pause_blue.png" class="gwt-Image"></span>
-  <span title="Annuler arrêt & modifications"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
-  <span title="Reprendre"><img src="/heoclient-application-web/images/control_play_blue.png" class="gwt-Image"></span>
+  <span title="Modifier" action="MODIFY"><img src="/heoclient-application-web/images/pencil.png" class="gwt-Image"></span>
+  <span title="Arrêt immédiat" action="DCAO"><img src="/heoclient-application-web/images/stop.png" class="gwt-Image"></span>
+  <span title="Arrêt programmé" action="DCAO0"><img src="/heoclient-application-web/images/time_delete.png" class="gwt-Image"></span>
+  <span title="Suspendre" action="HOLD"><img src="/heoclient-application-web/images/control_pause_blue.png" class="gwt-Image"></span>
+  <span title="Annuler arrêt & modifications" action="RESET_ORDER"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
+  <span title="Reprendre" action="RESUME"><img src="/heoclient-application-web/images/control_play_blue.png" class="gwt-Image"></span>
 </ul>
 `).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver)
-            SSSFrame.listingPrescriptions=true
             $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
             }
             /*
@@ -318,10 +317,13 @@ body {background-color:#F5F5F5;}
                         } else {
                             $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
                         }
-                    } else if (SSSFrame.listingPrescriptions){
-                        SSSFrame.listingPrescriptions = false
-                        delete SSSFrame.listingPrescriptions
-                        $('table[width] tr[id]>td>div[name]', document)
+                    } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
+                        SSSFrame.listingPrescriptions = {}
+                        $('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
+                            let posoPres = $(el).parent().next().text().split('- ')
+                            SSSFrame.listingPrescriptions[el.innerText]={id:el.id,poso:posoPres[0].trim(),freq:(posoPres.length>1 ? posoPres[1].trim():""), comment:(posoPres.length>2 ? posoPres[2].trim():"")}
+                            $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
+                        })
                     } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
                     }
                     break
@@ -367,7 +369,7 @@ body {background-color:#F5F5F5;}
         let SSSFrame = window.parent
         switch ($('h1',document).text()){
             case "Arrêter/Suspendre/Reprendre":
-                if (SSSFrame.listeConsignes || SSSFrame.listingPrescriptions){
+                if (SSSFrame.listeConsignes || typeof SSSFrame.listingPrescriptions == "undefined"){
                     $('button:contains("Arrêter ces prescriptions")', document).click2()
                 }
                 break
@@ -1175,7 +1177,7 @@ function monitorPresMouseOver(ev){
             $(ev.currentTarget).addClass('currentHover_pres')
         }
     } else {
-        if (!$(ev.toElement).parents('tr').hasClass('currentHover_pres') && (!ev.toElement.id || !ev.toElement.id == "hoverMenu_pres")){
+        if (!$(ev.toElement).parents('tr').hasClass('currentHover_pres') && (!$(ev.toElement).parents('#hoverMenu_pres').add(ev.toElement).is("#hoverMenu_pres"))){
             $('#hoverMenu_pres', ev.view.document).hide()
             $(ev.currentTarget).removeClass('currentHover_pres')
         }
@@ -1242,8 +1244,12 @@ function monitorClick(ev){
                 ev.target.click()
             }
         })
-    } else
-        if (ev.target.classList.contains('GD42JS-DLOB')){
+    } else if ($(ev.target).parents('#hoverMenu_pres').length){
+        let action = ev.target.action || ev.target.parentElement.action,
+        act="http://meva/heoclient-application-web/commander?HEOCMD=@DCAO="+ev.view.listingPrescriptions[$(".currentHover_pres b",ev.view).text()].id+(action == "DCAO0" ? ",0" : "")
+        console.log(act)
+        //ev.view.document.pcFrame.location=act
+    } else if (ev.target.classList.contains('GD42JS-DLOB')){
         $('a.GD42JS-DKWB', ev.view.document).click2()
     } else if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
         ev.target.parentElement.nextElementSibling.click()
