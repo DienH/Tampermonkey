@@ -7,7 +7,7 @@
 // @match        http*://meva/*
 // @include      http*://serv-cyberlab.chu-clermontferrand.fr/cyberlab/*
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
-// @require      https://code.jquery.com/jquery.min.js
+// require      https://code.jquery.com/jquery.min.js
 // require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js
 // require      https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.2/math.js
 // @resource     DienJS https://raw.githubusercontent.com/DienH/Tampermonkey/master/Dien.js
@@ -19,7 +19,18 @@
 
 
 (function() {
-
+    if (window.frameElement){
+        switch(window.frameElement.id){
+            case "mevaModulesEntry":
+            case "mevaContainerEntry":
+            case "HCP":
+            case "fr.mckesson.entrepot.portal.EntrepotPortal":
+            case "fr.mckesson.soins.application.web.portal.SoinsModulePortal":
+            case "fr.mckesson.framework.gwt.desktop.server.DesktopServer":
+                return false
+                break
+        }
+    }
     var µ = unsafeWindow
     var log = console.log
     if (location.href.search("serv-cyberlab.chu-clermontferrand.fr")+1){
@@ -193,9 +204,9 @@ background-position:initial;}
 #contextMenu_patients .gwt-Image.icon-ordonnance {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIbSURBVDhPY6AqEF/3yExszaMasXUP6sTWPqoVW/PQheH/f0aoNE7AKGkdKidjEWImWTw7T7xt40IYFqtcXCVtHWYhaxWuzFBfzwRVjwrk7UMlpCxD9ktZhLzHhaUtgs9L2YSrQbWgAgnzcE2gomfSliH/cWKLkE+SVsG2UC2oAGYAEP+Qsgx+AnTNLSD9C4h/AjX+lrYM/kuMAU+BinYCFU8GOvcG0NZV0hZBc6UsgvcCxe4D+R8JugCo8AtQ4Wugzd9AtgNd8gPuAsuQR1Kx1S7ia++IMdT/Rw1MJBfcBOLNQPZxoAGXgPQpoAvuAA16LJXaNUds1Z1TwGg9I7LmsRcDA1LUIgXiWaDibSD/Am09A8SHgezrUpahJ8Rnn9kgtvbhfzBec3+V1qorbFDtSAaAFAP9DLIRGA5/gPzfQPqvtFXoNdF559aLrXnwEYxX318jk9wrBE8XSGFwRNIiJBmo8RzQoNVAGhKIViHbxaYfqwNqXgi0vVt8/qU8KeuImUD5dAbjNFa4AUB/Pwcacg/olTeggATa/gUo/kPaMvSK2Nzz24HO/yu69sFdscXXVkjbRq0EGn5ZwjJInkHMJkgJqPAOUCPWRAT00jPx7u0LRdc+/A404Jv49GOLpKzDZgHlGiVsQkQZjIHOAOaDQKAh9UAXNKBjoGtqpYJLnUXXPYwHZrJU8dRuc6BXc0D5BxgCBDMaAcDAAABTEhAox93HNQAAAABJRU5ErkJggg==)}
 #hoverMenu_pres {position:fixed;background:white;border:solid 1px grey;border-radius:3px;}
 #hoverMenu_pres span {cursor:pointer;}
-#hoverMenu_pres span[title="Reprendre"], #hoverMenu_pres span[title="Annuler arrêt & modifications"], #hoverMenu_pres.suspended span {display:none}
+#hoverMenu_pres span[title="Reprendre"], #hoverMenu_pres span[title="Annuler arrêt & modifications"], #hoverMenu_pres.suspended span, #hoverMenu_pres.stopped span {display:none}
 #hoverMenu_pres span img {margin:3px;}
-#hoverMenu_pres.suspended span[title="Reprendre"], #hoverMenu_pres.modified span[title="Annuler arrêt & modifications"] {display:block}
+#hoverMenu_pres.suspended span[title="Reprendre"], #hoverMenu_pres.modified span[title="Annuler arrêt & modifications"], #hoverMenu_pres.stopped span[title="Annuler arrêt & modifications"] {display:block}
 `).appendTo('body')
         }
         if (!SSSFrame.document.getElementById('SSSFrame_Script')){
@@ -1175,7 +1186,9 @@ function monitorPresMouseOver(ev){
                 elPos.element.element.css({top:($(elPos.target.element[0].currentTarget).offset().top+2), left:pos.left+2})
             }})
             $(ev.currentTarget).addClass('currentHover_pres')
-            if ($(ev.currentTarget).has('span.heoDiscontinuedOrder').length){$('#hoverMenu_pres', ev.view.document).addClass('modified')}
+            if ($(ev.currentTarget).has('span.heoDiscontinuedOrder').length){$('#hoverMenu_pres', ev.view.document).addClass('stopped')}
+            if ($(ev.currentTarget).has('heldOrderMarkup').length){$('#hoverMenu_pres', ev.view.document).addClass('suspended')}
+            if ($(ev.currentTarget).has('heoModifiedOrder').length){$('#hoverMenu_pres', ev.view.document).addClass('modified')}
         }
     } else {
         if (!$(ev.toElement).parents('tr').hasClass('currentHover_pres') && (!$(ev.toElement).parents('#hoverMenu_pres').add(ev.toElement).is("#hoverMenu_pres"))){
