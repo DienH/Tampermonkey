@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.33
+// @version      0.2.34
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
 // @include      http*://serv-cyberlab.chu-clermontferrand.fr/cyberlab/*
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
-// require      https://code.jquery.com/jquery.min.js
+// @require      https://code.jquery.com/jquery.min.js
 // require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js
 // require      https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.2/math.js
 // @resource     DienJS https://raw.githubusercontent.com/DienH/Tampermonkey/master/Dien.js
@@ -23,6 +23,7 @@
         switch(window.frameElement.id){
             case "mevaModulesEntry":
             case "mevaContainerEntry":
+            case "hiddenContextFrame":
             case "HCP":
             case "fr.mckesson.entrepot.portal.EntrepotPortal":
             case "fr.mckesson.soins.application.web.portal.SoinsModulePortal":
@@ -30,6 +31,12 @@
                 return false
                 break
         }
+        switch(window.frameElement.name){
+            case "heoPane_Hidden":
+                return false
+                break
+        }
+        if (window.frameElement.name.search("FormPanel_HCP")+1) return false
     }
     var µ = unsafeWindow
     var log = console.log
@@ -50,6 +57,22 @@
             .append(
             $('<script>').html(`if (!$ || !$.fn) {window.$ = window.parent.$ || window.parent.jQuery || window.document.SSSFrame.jQuery}
 //if (!jQuery || !jQuery.fn){jQuery = window.$}
+$.waitFor = async (selector, context = document, delay = 0, checkFrequency = 250) => {
+		let $selection, start = Date.now(), frameRef
+		if (typeof context == "number"){
+			delay = context
+			context = document
+		}
+		while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
+			if (!checkFrequency){
+				await new Promise( resolve => {frameRef=requestAnimationFrame(resolve)} )
+			} else {
+				await new Promise( resolve => setTimeout(resolve, checkFrequency))
+			}
+		}
+		if (!checkFrequency){cancelAnimationFrame(frameRef)}
+	    	return $selection;
+	}
 String.prototype.searchI = function(searchString) {
 if (typeof "searchString" == "string"){
 return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
@@ -94,6 +117,9 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
         window.mevaWait = setInterval(()=>{
             let SSSFrame = document.getElementById('SSSFrame')
             if (SSSFrame){
+                SSSFrame.monitorClick = monitorClick
+                SSSFrame.monitorContextClick = monitorContextClick
+                SSSFrame.monitorPresMouseOver = monitorPresMouseOver
                 SSSFrame.onload = ()=>{
                     SSSFrame.contentWindow.removeEventListener('click', monitorClick)
                     SSSFrame.contentWindow.removeEventListener('mousedown', monitorContextClick)
@@ -109,8 +135,8 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
     }else if (location.href.search("quitteSession")+1){
         $.waitFor('div.gwt-Label:contains(Cliquez ici)', document).then(el=>el.click2())
     }else if (location.href.search("Hospitalisation.fwks")+1 || location.href.search("m-eva.fwks")+1){
-        let SSSFrame = unsafeWindow, SSSFrame_wait = setInterval(()=>{
-            let state = 0, CS_AnestTitle = (`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`)
+        let SSSFrame = unsafeWindow, CS_AnestTitle = (`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`),
+            SSSFrame_wait = setInterval(()=>{
             if ($(CS_AnestTitle).length){
                 $(CS_AnestTitle).remove()
             }
@@ -161,7 +187,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <span title="Reprendre" action="RESUME"><img src="/heoclient-application-web/images/control_play_blue.png" class="gwt-Image"></span>
 </ul>
 `).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver)
-            if (typeof SSSFrame.listingPrescriptions == "undefined") $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
+            if (typeof SSSFrame.listingPrescriptions == "undefined" && $('div.GD42JS-DKYB.GD42JS-DK-B').length) $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
             }
             /*
         $.waitFor('#workbody:not(.mouseOver_Monitored)', SSSFrame.document).then($el=>{
@@ -290,6 +316,18 @@ $.expr[":"].containsI = function (a, i, m) {
                     break
             }
         })
+    } else if (location.href.search("docs/dc.htm")+1){
+        let SSSFrame = window.parent
+        switch ($('h1',document).text()){
+            case "Arrêter/Suspendre/Reprendre":
+                if (SSSFrame.listeConsignes || typeof SSSFrame.listingPrescriptions == "undefined"){
+                    $('button:contains("Arrêter ces prescriptions")', document).click2()
+                    if (typeof SSSFrame.listingPrescriptions == "undefined"){
+                        $('#HEO_POPUP', SSSFrame.document).hide()
+                    }
+                }
+                break
+        }
     } else if ((location.href.search("popupContents.jsp")+1)){
         let styleEl = document.createElement('style'), title, pres, SSSFrame = window.parent
         styleEl.innerHTML = `
@@ -329,10 +367,20 @@ body {background-color:#F5F5F5;}
                             $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
                         }
                     } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
+                        $('#HEO_POPUP', SSSFrame.document).hide()
                         SSSFrame.listingPrescriptions = {}
                         $('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
-                            let posoPres = $(el).parent().next().text().split('- ')
-                            SSSFrame.listingPrescriptions[el.innerText]={id:el.id,poso:posoPres[0].trim(),freq:(posoPres.length>1 ? posoPres[1].trim():""), comment:(posoPres.length>2 ? posoPres[2].trim():"")}
+                            let posoPres = $(el).parent().next(),
+                                start = $(el).parent().next().next().text().split("/");start[2]=(new Date()).getFullYear()+" à "+start[2].split(" ")[1];start = start.join("/");
+                            posoPres = posoPres.find('div.tooltip').text() || posoPres.text()
+                            posoPres = posoPres.split('- ')
+                            SSSFrame.listingPrescriptions[el.innerText+posoPres.join("- ")+" »"+start] = {
+                                id:el.id,
+                                poso:posoPres[0].trim(),
+                                freq:(posoPres.length>1 ? posoPres[1].trim():""),
+                                comment:(posoPres.length>2 ? posoPres[2].trim():""),
+                                début:start
+                            }
                             $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
                         })
                     } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
@@ -373,15 +421,6 @@ body {background-color:#F5F5F5;}
                     $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', SSSFrame.document).click2()
                 } else if (document.body.innerText.search('Les prescriptions en mémoire')+1){
                     $('input[name=OK]', document).click2()
-                }
-                break
-        }
-    } else if (location.href.search("docs/dc.htm")+1){
-        let SSSFrame = window.parent
-        switch ($('h1',document).text()){
-            case "Arrêter/Suspendre/Reprendre":
-                if (SSSFrame.listeConsignes || typeof SSSFrame.listingPrescriptions == "undefined"){
-                    $('button:contains("Arrêter ces prescriptions")', document).click2()
                 }
                 break
         }
@@ -1179,7 +1218,7 @@ function monitorPresMouseOver(ev){
     if (!$ || !$.fn) {var $ = unsafeWindow.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
     if (ev.type == "mouseover"){
-        if(!$(ev.currentTarget).hasClass('currentHover_pres') && ev.view.listingPrescriptions){
+        if(!$(ev.currentTarget).hasClass('currentHover_pres') && ev.view.listingPrescriptions && !$(ev.currentTarget).has('.heoSubHeader').length){
             $('tr.currentHover_pres').removeClass('currentHover_pres')
             $('#hoverMenu_pres', ev.view.document).attr('class', "").show().position({at: "center",my:"left center", of:ev, using:(pos,elPos)=>{
                 //console.log(pos,elPos)
@@ -1243,7 +1282,8 @@ function monitorClick(ev){
             } else if (action == "Résultats de labo"){
                 let patientIPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains(IPP)').text().split(' : ')[1],
                 patientBD = $('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient').text().split(" (")[2].split(')')[0].split('/').reverse().join(''),
-                labo_url = 'https://serv-cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
+                labo_url = 'https://serv-cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
+                    '?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
 
             }
             $('div.carousel_enabled_item:contains('+action+')').click2()
@@ -1259,10 +1299,14 @@ function monitorClick(ev){
             }
         })
     } else if ($(ev.target).parents('#hoverMenu_pres').length){
-        let action = $(ev.target).parent('span').addBack().attr('action'), act
+        let action = $(ev.target).parent('span').addBack().attr('action'), act, currPres = $(".currentHover_pres",ev.view.document)[0].innerText.trim().split("...")[0]
         //console.log($(".currentHover_pres b",ev.view.document).text(), ev.view.listingPrescriptions, ev.view.listingPrescriptions[$(".currentHover_pres b",ev.view.document).text()])
-        act="http://meva/heoclient-application-web/commander?HEOCMD=@"+action.split('-')[0]+"="+ev.view.listingPrescriptions[$(".currentHover_pres b",ev.view.document).text()].id+(action == "DCAO-0" ? ",0" : "")
-        ev.view.document.pcFrame.location=act
+        console.log(currPres)
+        currPres = ev.view.listingPrescriptions[currPres]
+        if (currPres){
+            act="http://meva/heoclient-application-web/commander?HEOCMD=@"+action.split('-')[0]+"="+ev.view.listingPrescriptions[currPres].id+(action == "DCAO-0" ? ",0" : "")
+            ev.view.document.pcFrame.location=act
+        }
         $('#hoverMenu_pres').hide()
     } else if (ev.target.classList.contains('GD42JS-DLOB')){
         $('a.GD42JS-DKWB', ev.view.document).click2()
