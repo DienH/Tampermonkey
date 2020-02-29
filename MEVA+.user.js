@@ -17,7 +17,6 @@
 // @grant        GM_getResourceText
 // ==/UserScript==
 
-
 (function() {
     if (window.frameElement){
         switch(window.frameElement.id){
