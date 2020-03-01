@@ -335,7 +335,7 @@
 			while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
 				await new Promise( resolve => {frameRef=requestAnimationFrame(resolve)} )
 			}
-			cancelAnimationFrame(frameRef)}
+			cancelAnimationFrame(frameRef)
 		} else {
 			while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
 				await new Promise( resolve => setTimeout(resolve, checkFrequency))
@@ -410,7 +410,7 @@ function getSearchParams(url){
 	let searchParams = "", searchParamsObject = {}
 	if (typeof url == "string"){
 		try{url = new URL(url);searchParams =  url.searchParams;}
-		catch{searchParams = new URLSearchParams(url)}
+		catch(e){searchParams = new URLSearchParams(url)}
 	} else {
 		searchParams = new URLSearchParams(location.search)
 	}
