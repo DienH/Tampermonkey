@@ -56,22 +56,6 @@
             .append(
             $('<script>').html(`if (!$ || !$.fn) {window.$ = window.parent.$ || window.parent.jQuery || window.document.SSSFrame.jQuery}
 //if (!jQuery || !jQuery.fn){jQuery = window.$}
-$.waitFor = async (selector, context = document, delay = 0, checkFrequency = 250) => {
-		let $selection, start = Date.now(), frameRef
-		if (typeof context == "number"){
-			delay = context
-			context = document
-		}
-		while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
-			if (!checkFrequency){
-				await new Promise( resolve => {frameRef=requestAnimationFrame(resolve)} )
-			} else {
-				await new Promise( resolve => setTimeout(resolve, checkFrequency))
-			}
-		}
-		if (!checkFrequency){cancelAnimationFrame(frameRef)}
-	    	return $selection;
-	}
 String.prototype.searchI = function(searchString) {
 if (typeof "searchString" == "string"){
 return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
@@ -1286,7 +1270,7 @@ function monitorClick(ev){
     //console.log(unsafeWindow.document.SSSFrame.jQuery, unsafeWindow.parent.jQuery, window.parent.jQuery, window.jQuery)
     if (!$ || !$.fn) {var $ = window.document.SSSFrame.jQuery};
 
-    if (!ev.view){ev.view = unsafeWindow}
+    if (!ev.view){ev.view = unsafeWindow||window}
     let Meva = GM_getValue('Meva',{"user":"", "password":""})
     window.monitorClickEnabled = true
     //console.log(ev.target)
