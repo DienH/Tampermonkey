@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.34
+// @version      0.2.35
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -170,7 +170,11 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <span title="Annuler arrêt & modifications" action="RESET_ORDER"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
 </ul>
 `).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver)
-            if (typeof SSSFrame.listingPrescriptions == "undefined" && $('div.GD42JS-DKYB.GD42JS-DK-B').length) $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
+                let IPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP : ")', SSSFrame.document).text().split(" : ")[1]
+            if ((typeof SSSFrame.listingPrescriptions == "undefined"|| SSSFrame.listingPrescriptions.IPP != IPP ) && $('div.GD42JS-DKYB.GD42JS-DK-B').length){
+                delete SSSFrame.listingPrescriptions
+                $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
+            }
             }
             /*
         $.waitFor('#workbody:not(.mouseOver_Monitored)', SSSFrame.document).then($el=>{
@@ -350,7 +354,7 @@ body {background-color:#F5F5F5;}
                         }
                     } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
                         $('#HEO_POPUP', SSSFrame.document).hide()
-                        SSSFrame.listingPrescriptions = {}
+                        SSSFrame.listingPrescriptions = {IPP:$('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP :")', SSSFrame.document).text().split(" : ")[1]}
                         $('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
                             let posoPres = $(el).parent().next(),
                                 start = $(el).parent().next().next().text().split("/");start[2]=(new Date()).getFullYear()+" à "+start[2].split(" ")[1];start = start.join("/");
