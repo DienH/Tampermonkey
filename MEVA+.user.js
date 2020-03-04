@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.35
+// @version      0.2.36
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -174,6 +174,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
             if ((typeof SSSFrame.listingPrescriptions == "undefined"|| SSSFrame.listingPrescriptions.IPP != IPP ) && $('div.GD42JS-DKYB.GD42JS-DK-B').length){
                 delete SSSFrame.listingPrescriptions
                 $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
+                $('div.GD42JS-DLOB', SSSFrame.document).hide()
             }
             }
             /*
@@ -368,6 +369,7 @@ body {background-color:#F5F5F5;}
                                 début:start
                             }
                             $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
+                            $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>$el.show())
                         })
                     } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
                     }
