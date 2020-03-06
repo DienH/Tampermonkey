@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.36
+// @version      0.2.37
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -267,26 +267,26 @@ $.expr[":"].containsI = function (a, i, m) {
                     $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', false)
                     log(SSSFrame.listeConsignes)
                     if (SSSFrame.listeConsignes){
-                        if (SSSFrame.listeConsignes.done){
-                            SSSFrame.listeConsignes = ""
-                        }else {
-                            SSSFrame.listeConsignes.done=true
-                            Object.keys(SSSFrame.listeConsignes).forEach(cons=>{
-                                if (typeof SSSFrame.listeConsignes[cons] == "object" && !SSSFrame.listeConsignes[cons].done){
-                                    if (SSSFrame.listeConsignes[cons].consigne != "autorise"){
-                                        SSSFrame.listeConsignes.done=false
-                                        if (SSSFrame.listeConsignes[cons].changeComment){
-                                            SSSFrame.currentPres_Selector([cons, SSSFrame.listeConsignes[cons].consigne])
-                                        }else{
-                                            SSSFrame.output_Selector([cons, SSSFrame.listeConsignes[cons].consigne])
-                                        }
-                                        return false
-                                    } else {
-                                        SSSFrame.listeConsignes[el].done=true
+                        SSSFrame.listeConsignes.done=true
+                        Object.keys(SSSFrame.listeConsignes).forEach(cons=>{
+                            if (typeof SSSFrame.listeConsignes[cons] == "object" && !SSSFrame.listeConsignes[cons].done && !Array.isArray(SSSFrame.listeConsignes[cons])){
+                                if (SSSFrame.listeConsignes[cons].consigne != "autorise"){
+                                    SSSFrame.listeConsignes.done=false
+                                    if (SSSFrame.listeConsignes[cons].changeComment){
+                                        SSSFrame.currentPres_Selector([cons, SSSFrame.listeConsignes[cons].consigne])
+                                    }else{
+                                        SSSFrame.output_Selector([cons, SSSFrame.listeConsignes[cons].consigne])
                                     }
+                                    return false
+                                } else {
+                                    SSSFrame.listeConsignes[el].done=true
                                 }
-                            })
-                        }
+                            }
+                        })
+                    }
+                    if (SSSFrame.listeConsignes.done){
+                        SSSFrame.listeConsignes = ""
+                        SSSFrame.output_Selector()
                     }
                     break
                 case "Sorties Temporaires (permissions de sortie)":
@@ -358,10 +358,11 @@ body {background-color:#F5F5F5;}
                         SSSFrame.listingPrescriptions = {IPP:$('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP :")', SSSFrame.document).text().split(" : ")[1]}
                         $('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
                             let posoPres = $(el).parent().next(),
-                                start = $(el).parent().next().next().text().split("/");start[2]=(new Date()).getFullYear()+" à "+start[2].split(" ")[1];start = start.join("/");
+                                start = $(el).parent().next().next().text().split("/");start[2]=(new Date()).getFullYear()+" à "+start[2].split(" ")[1];start = start.join("/");start=start.split("CET")[0]
                             posoPres = posoPres.find('div.tooltip').text() || posoPres.text()
                             posoPres = posoPres.split('- ')
-                            SSSFrame.listingPrescriptions[el.innerText+posoPres.join("- ")+" »"+start] = {
+                            log(posoPres)
+                            SSSFrame.listingPrescriptions[el.innerText+posoPres.join("- ")+(posoPres.length ==1 && !posoPres[0] ? "»" : " »")+start] = {
                                 id:el.id,
                                 poso:posoPres[0].trim(),
                                 freq:(posoPres.length>1 ? posoPres[1].trim():""),
@@ -756,6 +757,7 @@ function presOutputConsignesRapides(ev){
                                 })
                                 SSSFrame.listeConsignes = listeConsignes
                                 if (nbToDelete){$('table[name=HEOFRAME] button:contains(Arrêt)').click2()}else{
+                                    $("a[onclick*='doSel(\\'1\\'']",SSSFrame.document.heo_Output.document).click2()
                                 }
                             } else {
                                 alert('Préciser les restrictions !')
@@ -1307,12 +1309,12 @@ function monitorClick(ev){
             }
         })
     } else if ($(ev.target).parents('#hoverMenu_pres').length){
-        let action = $(ev.target).parent('span').addBack().attr('action'), act, currPres = $(".currentHover_pres",ev.view.document)[0].innerText.trim().split("...")[0]
+        let action = $(ev.target).parent('span').addBack().attr('action'), act, currPres = $(".currentHover_pres",ev.view.document)[0].innerText.trim().split("...")
+        currPres=(currPres.length-1) ? currPres[0] : currPres.join("...")
         //console.log($(".currentHover_pres b",ev.view.document).text(), ev.view.listingPrescriptions, ev.view.listingPrescriptions[$(".currentHover_pres b",ev.view.document).text()])
-        if (currPres.search('CET')+1){
+        if (currPres.search(' CET')+1){
             currPres = currPres.split(" CET")[0].split(" ; début le ").join(" »")
         }
-        console.log(currPres)
         currPres = ev.view.listingPrescriptions[currPres]
         if (currPres){
             act="http://meva/heoclient-application-web/commander?HEOCMD=@"+action.split('-')[0]+"="+currPres.id+(action == "DCAO-0" ? ",0" : "")
