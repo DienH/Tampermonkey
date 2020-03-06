@@ -118,7 +118,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
     }else if (location.href.search("quitteSession")+1){
         $.waitFor('div.gwt-Label:contains(Cliquez ici)', document).then(el=>el.click2())
     }else if (location.href.search("Hospitalisation.fwks")+1 || location.href.search("m-eva.fwks")+1){
-        let SSSFrame = unsafeWindow, CS_AnestTitle = (`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`),
+        let SSSFrame = unsafeWindow, CS_AnestTitle = (`div.carousel_enabled_item:contains("Consultation d'anesthésie")`),
             SSSFrame_wait = setInterval(()=>{
             if ($(CS_AnestTitle).length){
                 $(CS_AnestTitle).remove()
@@ -168,15 +168,22 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <span title="Suspendre" action="HOLD"><img src="/heoclient-application-web/images/control_pause_blue.png" class="gwt-Image"></span>
   <span title="Reprendre" action="RESUME"><img src="/heoclient-application-web/images/control_play_blue.png" class="gwt-Image"></span>
   <span title="Annuler arrêt & modifications" action="RESET_ORDER"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
-</ul>
+</div>
 `).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver)
                 let IPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP : ")', SSSFrame.document).text().split(" : ")[1]
-            if ((typeof SSSFrame.listingPrescriptions == "undefined"|| SSSFrame.listingPrescriptions.IPP != IPP ) && $('div.GD42JS-DKYB.GD42JS-DK-B').length){
-                delete SSSFrame.listingPrescriptions
-                $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
-                $('div.GD42JS-DLOB', SSSFrame.document).hide()
+                if ((typeof SSSFrame.listingPrescriptions == "undefined"|| SSSFrame.listingPrescriptions.IPP != IPP ) && $('div.GD42JS-DKYB.GD42JS-DK-B').length){
+                    delete SSSFrame.listingPrescriptions
+                    $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
+                    $('div.GD42JS-DLOB', SSSFrame.document).hide()
+                }
             }
-            }
+                $(`div.carousel_enabled_item:contains("Résultats"):not(.modified)`).addClass('modified').each((i,el)=>{el.onclick=ev=>{
+                    let patientIPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains(IPP)').text().split(' : ')[1],
+                        patientBD = $('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient').text().split(" (")[2].split(')')[0].split('/').reverse().join(''),
+                        labo_url = 'https://serv-cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
+                        '?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
+                    open(labo_url)
+                }})
             /*
         $.waitFor('#workbody:not(.mouseOver_Monitored)', SSSFrame.document).then($el=>{
             $el.addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver)
@@ -1281,7 +1288,7 @@ function monitorClick(ev){
     if (!ev.view){ev.view = unsafeWindow||window}
     let Meva = GM_getValue('Meva',{"user":"", "password":""})
     window.monitorClickEnabled = true
-    //console.log(ev.target)
+    console.log(ev.target)
     if ($('#contextMenu_patients:visible').length){
         if($('#contextMenu_patients').has(ev.target).length){
             let action = $(ev.target).text()
