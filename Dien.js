@@ -118,9 +118,9 @@
 	src(newSrc){
 		if (typeof newSrc == "string" || typeof newSrc == "function")
 		{
-			return this.attr("id", newSrc)
+			return this.attr("src", newSrc)
 		} else {
-			return this.attr("id")
+			return this.attr("src")
 		}
 	},
 	id(newID){
