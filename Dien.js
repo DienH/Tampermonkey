@@ -442,7 +442,9 @@ String.prototype.toStringI = function() {
 	return this.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
 }
 String.prototype.searchI = function(searchString) {
-	return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase()
-		.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+	if (this.toUpperCase){
+		return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase()
+			.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+	}
 }
 //addFn([getPath, getSearchParams,download,log,addFn, JSON2CSV, waitForElement]);
