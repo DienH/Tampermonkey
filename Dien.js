@@ -75,11 +75,6 @@
             if (changeLink) return $(this).attr("href", link);
             return $(this).attr("href");
         },
-        src(link){
-            changeLink = (typeof link === "string") ? true : false;
-            if (changeLink) return $(this).attr("src", link);
-            return $(this).attr("src");
-        },
         //attribute or property shortcut
         a(array, attribute, value){
 		if (typeof array !== "boolean"){
