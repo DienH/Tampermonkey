@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.37
+// @version      0.2.38
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -1028,7 +1028,7 @@ function permPicker(ev){
         window.removeEventListener('mousemove', permPicker)
         return
     }
-    if (typeof Litepicker != 'undefined'){
+    if (typeof Litepicker != 'undefined' || typeof NJTimePicker != 'undefined'){
         let dateScriptInit = document.createElement('script')
         dateScriptInit.innerHTML = `
 if (!$) {var $ = $ || window.parent.jQuery}
