@@ -1229,6 +1229,8 @@ document.body.datePicker = datePicker
 }
 `
         document.body.append(dateScriptInit)
+    } else {
+        setTimeout(permPicker, 250)
     }
 }
 function monitorPresMouseOver(ev){
