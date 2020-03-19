@@ -767,8 +767,10 @@ function presOutputConsignesRapides(ev){
                                     }
                                 })
                                 SSSFrame.listeConsignes = listeConsignes
-                                if (nbToDelete){$('table[name=HEOFRAME] button:contains(Arrêt)').click2()}else{
-                                    $("a[onclick*='doSel(\\'1\\'']",SSSFrame.document.heo_Output.document).click2()
+                                if (nbToDelete){
+                                    $('table[name=HEOFRAME] button:contains(Arrêt)').click2()
+                                }else{
+                                    $("a[onclick*='doSel(\\'1\\'']",SSSFrame.document.heoPane_output.document).click2()
                                 }
                             } else {
                                 alert('Préciser les restrictions !')
