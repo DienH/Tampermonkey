@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.38
+// @version      0.2.39
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -196,6 +196,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
         if (!document.getElementById('SSSFrame_MevaStyle')){
             $('<style id="SSSFrame_MevaStyle">', document).html(`
 #HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:#F5F5F5;}
+#HEO_POPUP.force_hidden {visibility:hidden!important}
 #DIEN-POPUP table, #DIEN-POPUP td, #DIEN-POPUP th {border: 1px solid black;border-collapse: collapse;font-size:14px;}
 #DIEN-POPUP tr:not(.pres-consignes-deplacements-restriction) {border: 2px solid black;border-collapse: collapse;}
 #DIEN-POPUP tr.pres-consignes-deplacements.pres-consignes-restreint {border-bottom: 0px solid white;}
@@ -227,7 +228,7 @@ background-position:initial;}
 #hoverMenu_pres span {cursor:pointer;}
 #hoverMenu_pres span[title="Reprendre"], #hoverMenu_pres span[title="Annuler arrêt & modifications"], #hoverMenu_pres.suspended span, #hoverMenu_pres.stopped span {display:none}
 #hoverMenu_pres span img {margin:2px;}
-#hoverMenu_pres.suspended span[title="Reprendre"], #hoverMenu_pres.suspended span[title="Arrêt immédiat"], #hoverMenu_pres.modified span[title="Annuler arrêt & modifications"], #hoverMenu_pres.stopped span[title="Annuler arrêt & modifications"] {display:inline-block}
+/* #hoverMenu_pres.suspended span[title="Reprendre"], #hoverMenu_pres.suspended span[title="Arrêt immédiat"], #hoverMenu_pres.modified span[title="Annuler arrêt & modifications"], #hoverMenu_pres.stopped span[title="Annuler arrêt & modifications"] {display:inline-block} */
 `).appendTo('body')
         }
         if (!SSSFrame.document.getElementById('SSSFrame_Script')){
@@ -315,7 +316,7 @@ $.expr[":"].containsI = function (a, i, m) {
                 if (SSSFrame.listeConsignes || typeof SSSFrame.listingPrescriptions == "undefined"){
                     $('button:contains("Arrêter ces prescriptions")', document).click2()
                     if (typeof SSSFrame.listingPrescriptions == "undefined"){
-                        $('#HEO_POPUP', SSSFrame.document).hide()
+                        $('#HEO_POPUP', SSSFrame.document).addClass('force_hidden')
                     }
                 }
                 break
@@ -377,7 +378,10 @@ body {background-color:#F5F5F5;}
                                 début:start
                             }
                             $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
-                            $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>$el.show())
+                            $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
+                                $el.show()
+                                $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
+                            })
                         })
                     } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
                     }
