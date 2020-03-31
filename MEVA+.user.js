@@ -1394,7 +1394,7 @@ NZb = function (a, b, c) {
     return IZb(a.f, c, a.b, a.d, d, b)
 }
 `
-        $('iframe', $('#SSSFrame').contents()).filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal').each(
+        $('iframe').filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal').each(
             (i,el)=>{
                 let script = el.contentDocument.createElement('script')
                 script.innerHTML = repaired_NZb
