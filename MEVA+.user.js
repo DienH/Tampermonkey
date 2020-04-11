@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.40
+// @version      0.2.41
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -309,7 +309,7 @@ $.expr[":"].containsI = function (a, i, m) {
                     break
             }
         })
-    } else if (location.href.search("docs/dc.htm")+1){
+    } else if (location.href.search("docs/dc.htm")+1){ // --------------------------- Popup-document frame ------------------------------
         let SSSFrame = window.parent
         switch ($('h1',document).text()){
             case "Arrêter/Suspendre/Reprendre":
@@ -321,7 +321,7 @@ $.expr[":"].containsI = function (a, i, m) {
                 }
                 break
         }
-    } else if ((location.href.search("popupContents.jsp")+1)){
+    } else if ((location.href.search("popupContents.jsp")+1)){ // --------------------------- Popup Content frame ------------------------------
         let styleEl = document.createElement('style'), title, pres, SSSFrame = window.parent
         styleEl.innerHTML = `
 .outOf2DaysRange {background:coral;}
@@ -364,12 +364,11 @@ body {background-color:#F5F5F5;}
                     } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
                         $('#HEO_POPUP', SSSFrame.document).hide()
                         SSSFrame.listingPrescriptions = {IPP:$('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP :")', SSSFrame.document).text().split(" : ")[1]}
-                        $('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
+                        if (!$('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
                             let posoPres = $(el).parent().next(),
                                 start = $(el).parent().next().next().text().split("/");start[2]=(new Date()).getFullYear()+" à "+start[2].split(" ")[1];start = start.join("/");start=start.split("CET")[0]
                             posoPres = posoPres.find('div.tooltip').text() || posoPres.text()
                             posoPres = posoPres.split('- ')
-                            log(posoPres)
                             SSSFrame.listingPrescriptions[el.innerText+posoPres.join("- ")+(posoPres.length ==1 && !posoPres[0] ? "»" : " »")+start] = {
                                 id:el.id,
                                 poso:posoPres[0].trim(),
@@ -382,7 +381,12 @@ body {background-color:#F5F5F5;}
                                 $el.show()
                                 $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
                             })
-                        })
+                        }).length){
+                            $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
+                                $el.show()
+                                $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
+                            })
+                        }
                     } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
                     }
                     break
@@ -444,7 +448,7 @@ body {background-color:#F5F5F5;}
                 }
                 break
         }
-    } else if (location.href.search("heoPrompt.jsp")+1){
+    } else if (location.href.search("heoPrompt.jsp")+1){ // -------------------------------- Prompt frame -----------------------------
         let SSSFrame = window.parent, heoOutputFrame = SSSFrame.document.heoPane_output
         const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
         if (document.getElementById('preHeaderMarkup')){
