@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.41
+// @version      0.2.42
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -229,6 +229,8 @@ background-position:initial;}
 #hoverMenu_pres span[title="Reprendre"], #hoverMenu_pres span[title="Annuler arrêt & modifications"], #hoverMenu_pres.suspended span, #hoverMenu_pres.stopped span {display:none}
 #hoverMenu_pres span img {margin:2px;}
 /* #hoverMenu_pres.suspended span[title="Reprendre"], #hoverMenu_pres.suspended span[title="Arrêt immédiat"], #hoverMenu_pres.modified span[title="Annuler arrêt & modifications"], #hoverMenu_pres.stopped span[title="Annuler arrêt & modifications"] {display:inline-block} */
+button.ui-button.ui-button-validate.ui-corner-all.ui-widget+button {background:background: #bb0000;color: white;}
+button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background:background: green;color: white;}
 `).appendTo('body')
         }
         if (!SSSFrame.document.getElementById('SSSFrame_Script')){
