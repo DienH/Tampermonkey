@@ -427,7 +427,9 @@ function JSON2CSV(JSONdata, title){
 }
 
 String.prototype.capitalize = function() {
-  return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase()
+    if (!(this instanceof String)){return (typeof this) }
+    return this.toString().split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')
+        .split('-').map(word=>word.charAt(0).toUpperCase() + word.slice(1)).join('-')
 }
 String.prototype.log = function(){
 	console.log(this.toString())
