@@ -403,7 +403,7 @@ function addFn(func) {
 
 function getSearchParams(url){
 	let searchParams = "", searchParamsObject = {}
-	if (typeof url == "string"){
+	if (typeof url == "string" && url){
 		try{url = new URL(url);searchParams =  url.searchParams;}
 		catch(e){searchParams = new URLSearchParams(url)}
 	} else {
