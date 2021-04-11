@@ -76,40 +76,27 @@
             return $(this).attr("href");
         },
         //attribute or property shortcut
-        a(array, attribute, value){
-		if (typeof array !== "boolean"){
-			value = attribute
-			attribute = array
-			array = false
+        a(array, attribute, value) {
+	    if (typeof array !== "boolean") {
+		value = attribute
+		attribute = array
+		array = false
+	    }
+	    let attr = $(this).attr(attribute);
+	    let useAttr = (typeof attr === "undefined") ? false : true;
+	    if (typeof value === "undefined") {
+		if (array) {
+		    let elements = $(this),
+			vals = [];
+		    for (var i = 0; typeof (elements[i]) != 'undefined'; vals.push(useAttr ? elements[i++].getAttribute(attribute) : elements[i++][attribute]));
+		    return vals
+		} else {
+		    return (useAttr ? attr : $(this).prop(attribute));
 		}
-            let attr = $(this).attr(attribute);
-            let useAttr = (typeof attr === "undefined") ? false : true;
-            if (useAttr){
-                if (typeof value === "undefined"){
-			if (array){
-				let elements = $(this), vals = [];
-				for(var i=0;typeof(elements[i])!='undefined';vals.push(elements[i++].getAttribute(attribute)));
-				return vals
-			} else {
-				return attr;
-			}
-                }else{
-                    return $(this).attr(attribute, value);
-                }
-            }else{
-                if (typeof value === "undefined"){
-			if (array){
-				let elements = $(this), vals = [];
-				for(var i=0;typeof(elements[i])!='undefined';vals.push(elements[i++][attribute]));
-				return vals
-			} else {
-                    		return $(this).prop(attribute);
-			}
-                }else{
-                    return $(this).prop(attribute, value);
-                }
-            }
-        },
+	    } else {
+		return $(this)[useAttr ? 'attr':'prop'](attribute, value);
+	    }
+	},
 	src(newSrc){
 		if (typeof newSrc == "string" || typeof newSrc == "function")
 		{
