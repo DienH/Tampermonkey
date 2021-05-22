@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.44
+// @version      0.2.45
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -15,6 +15,8 @@
 // @grant        GM_setValue
 // @grant        GM_getResourceText
 // ==/UserScript==
+
+//
 
 
 (function() {
@@ -175,6 +177,8 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                     delete SSSFrame.listingPrescriptions
                     $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
                     $('div.GD42JS-DLOB', SSSFrame.document).hide()
+                    //$('body', SSSFrame.document).append('<div class="full_bg"><span>Préparation de la liste de prescription</span></div>')
+                      //  .append('<style>.full_bg{position:fixed;top:0;left:0;width:100%;height:100%;background:black;opacity:0.2;</style>}')
                 }
             }
                 $(`div.carousel_enabled_item:contains("Résultats"):not(.modified)`).addClass('modified').each((i,el)=>{el.onclick=ev=>{
@@ -225,14 +229,15 @@ background-position:initial;}
 #contextMenu_patients .gwt-Image {width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;}
 #contextMenu_patients .gwt-Image.icon-documents {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAMxSURBVDhPdZLrT1N3GMc7txcmlhcmUxPj2y1LTMxeLBpJTP8CE0tGdJE4EyVLUGMr4WaBjgrCzKCOoiBooUaglhZaioXTUnrh9OZpexwtp/eW0QsdUEmIGpeFfXcoJsaAT/K8+SXPJ9/Lj6PvKev1qCs9zLTAwMwIBsOEsC0xV10VN9eWJaw1Z/6arz2e8zccAofzBWevmVVcou0jV+DTCRDzjiLhUyLm6t+K2Dr/CVtaNxmjKB+xNslDIbJEDOz7cPZxkjYRnbQ1wquvQ2SRQjKVwkp+BYXCKjYKebxeW8bGenp98+07Q279zSUAnypZsjfSec8dZJwtoG1yjI8/h2ZiAnNWK3x+Gn6aBhMKY2l5GauFTdkuQGKunl5xtSBLNiFirAY53QOVZhzE7Bwo+k+4KR9eBRmEonGkVzd2A+LmOjrr/BXpeRGihABWXRv6ngxCPfkCdg8Fu5sCtRDEYiyJVP6zADEyLCBmEsKm70Dv4FPojBa4AyE4/AE46ACoxQjCmcJeFhrovFtStJAw18CobkG7VAa5UoMZ0lNcC/UKrmAEgfTabsCSbSfEnKP5A0CCNhYwMKrBlN0NncUBg4OC2bsAf2r1cwAJcs5mxIxCGJRNEN/rQj+rwOD0Yoo9nvUFQTJJeFNr3XtYqKdzbAuZ7RZmboJQidF+/w+oXhB4GU7AxcSK64kuwewPyTicA0fYsxJ2dz4VC/Bvh1hswSiAcYzN4H43hrVTIBfCcAbCoJgomOXcf3KleuyHU6cufHfixLfl5eVfFgFJa4Mp69hpIW66BULTirYHA3g2Y8eUN44JVwimYAauaBrdfQPvleqJtHcxMk1HUiL5sP4bToZsOf23R2LOkKJ/k2yIWkXtlvB281ZX/xDkKh0qKq/jp6vX8IugDk2SuxhVa6E32QqqSaJD/JvsaFHFGik+mp0X3YvPVr/WPqqkz52v+F06pHysmDQ5Oh4psvV3pe8qhQ0rl69WEd2yPmLgscI9olRrpdKe74uA7UlZft4fJW78aBq63Mjlcr/m8Xhf1bc/PNg1ojv+QGk4e7uz92RpaWkJ+87l8/mH+RcvHuPxeNz/AX7dZzZ5DoFPAAAAAElFTkSuQmCC)}
 #contextMenu_patients .gwt-Image.icon-ordonnance {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIbSURBVDhPY6AqEF/3yExszaMasXUP6sTWPqoVW/PQheH/f0aoNE7AKGkdKidjEWImWTw7T7xt40IYFqtcXCVtHWYhaxWuzFBfzwRVjwrk7UMlpCxD9ktZhLzHhaUtgs9L2YSrQbWgAgnzcE2gomfSliH/cWKLkE+SVsG2UC2oAGYAEP+Qsgx+AnTNLSD9C4h/AjX+lrYM/kuMAU+BinYCFU8GOvcG0NZV0hZBc6UsgvcCxe4D+R8JugCo8AtQ4Wugzd9AtgNd8gPuAsuQR1Kx1S7ia++IMdT/Rw1MJBfcBOLNQPZxoAGXgPQpoAvuAA16LJXaNUds1Z1TwGg9I7LmsRcDA1LUIgXiWaDibSD/Am09A8SHgezrUpahJ8Rnn9kgtvbhfzBec3+V1qorbFDtSAaAFAP9DLIRGA5/gPzfQPqvtFXoNdF559aLrXnwEYxX318jk9wrBE8XSGFwRNIiJBmo8RzQoNVAGhKIViHbxaYfqwNqXgi0vVt8/qU8KeuImUD5dAbjNFa4AUB/Pwcacg/olTeggATa/gUo/kPaMvSK2Nzz24HO/yu69sFdscXXVkjbRq0EGn5ZwjJInkHMJkgJqPAOUCPWRAT00jPx7u0LRdc+/A404Jv49GOLpKzDZgHlGiVsQkQZjIHOAOaDQKAh9UAXNKBjoGtqpYJLnUXXPYwHZrJU8dRuc6BXc0D5BxgCBDMaAcDAAABTEhAox93HNQAAAABJRU5ErkJggg==)}
-#hoverMenu_pres {position:fixed;background:white;border:solid 1px grey;border-radius:3px;padding: 2px 5px;z-index:10;}
+#hoverMenu_pres {position:fixed;background:white;border:solid 1px grey;border-radius:3px;padding: 2px 5px;z-index:10;opacity:0.5}
+#hoverMenu_pres:hover {opacity:1}
 #hoverMenu_pres span {cursor:pointer;}
 #hoverMenu_pres span[title="Reprendre"], #hoverMenu_pres span[title="Annuler arrêt & modifications"], #hoverMenu_pres.modified, #hoverMenu_pres.suspended span, #hoverMenu_pres.stopped {display:none}
 #hoverMenu_pres span img {margin:2px;}
 #hoverMenu_pres.suspended span[title="Reprendre"] {display:inline-block}
 /* #hoverMenu_pres.suspended span[title="Reprendre"], #hoverMenu_pres.suspended span[title="Arrêt immédiat"], #hoverMenu_pres.modified span[title="Annuler arrêt & modifications"], #hoverMenu_pres.stopped span[title="Annuler arrêt & modifications"] {display:inline-block} */
-button.ui-button.ui-button-validate.ui-corner-all.ui-widget+button {background:background: #bb0000;color: white;}
-button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background:background: green;color: white;}
+button.ui-button.ui-button-validate.ui-corner-all.ui-widget+button {background: #bb0000;color: white;}
+button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background: green;color: white;}
 `).appendTo('body')
         }
         if (!SSSFrame.document.getElementById('SSSFrame_Script')){
@@ -252,14 +257,23 @@ $.expr[":"].containsI = function (a, i, m) {
     }else if (location.href.search("initSSS")+1){
         if (!window.monitorMouseMove) window.addEventListener('mousemove', clickLogin)
 
+
+
+// --------------------------- heoOutput (liste des traitements / consignes) ------------------------------
+// --------------------------- heoOutput (liste des traitements / consignes) ------------------------------
+// --------------------------- heoOutput (liste des traitements / consignes) ------------------------------
+// --------------------------- heoOutput (liste des traitements / consignes) ------------------------------
+
     } else if ((location.href.search('heoOutput.jsp')+1)){
-        let SSSFrame = window.parent
+        let SSSFrame = window.parent, heoOutputFrame = SSSFrame.document.heoPane_output
+        const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
         $('body', document).append($('<style>').text(`
 .presPsy-rapide {position: absolute;right: 0;color: green!important;}
 .presPsy-rapide:hover {text-decoration:underline;}
 `)).append($('<script>').text(presOutputConsignesRapides.toString()))
-        $.waitFor('div.outlineTitle', document).then(el=>{
-            switch(el.text().trim()){
+        $.waitFor('form[name="Command"]', document).then(el=>{
+            let outputTitle = $('div.outlineTitle', document).text().trim()
+            switch(outputTitle){
                 case "Prescriptions Usuelles de Psychiatrie Adulte":
                     //$('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', true)
                     $('a:contains("Retourner à la liste")', document).remove()
@@ -277,7 +291,7 @@ $.expr[":"].containsI = function (a, i, m) {
                     break
                 case "Consignes d'Hébergement":
                     $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', false)
-                    log(SSSFrame.listeConsignes)
+                    //log(SSSFrame.listeConsignes)
                     if (SSSFrame.listeConsignes){
                         SSSFrame.listeConsignes.done=true
                         Object.keys(SSSFrame.listeConsignes).forEach(cons=>{
@@ -310,149 +324,26 @@ $.expr[":"].containsI = function (a, i, m) {
                     break
                 default:
                     $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', false)
+                    if (outputTitle == ""){
+                        if ($('body>*:not(form):not(script):not(style)', document).text().length == 0){
+                            $('#HEO_INPUT', SSSFrame.document).val('Prescriptions usuelles de psychiatrie adulte')[0].dispatchEvent(ke);
+                        } else {
+                            $('a[onclick]:has(div.orderDisplayNum:contains("1.")):has(div.orderableList:contains("Prescriptions Usuelles de Psychiatrie Adulte"))', document).click2()
+                        }
+                    }
                     break
             }
         })
-    } else if (location.href.search("docs/dc.htm")+1){ // --------------------------- Popup-document frame ------------------------------
-        let SSSFrame = window.parent
-        switch ($('h1',document).text()){
-            case "Arrêter/Suspendre/Reprendre":
-                if (SSSFrame.listeConsignes || typeof SSSFrame.listingPrescriptions == "undefined"){
-                    $('button:contains("Arrêter ces prescriptions")', document).click2()
-                    if (typeof SSSFrame.listingPrescriptions == "undefined"){
-                        $('#HEO_POPUP', SSSFrame.document).addClass('force_hidden')
-                    }
-                }
-                break
-        }
-    } else if ((location.href.search("popupContents.jsp")+1)){ // --------------------------- Popup Content frame ------------------------------
-        let styleEl = document.createElement('style'), title, pres, SSSFrame = window.parent
-        styleEl.innerHTML = `
-.outOf2DaysRange {background:coral;}
-.nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
-body {background-color:#F5F5F5;}
-`
-        document.head.append(styleEl)
 
-        if (title = document.head.querySelector('title')){
-            switch(title.innerText){
-                case "SORTIETEMPO":
-                    $.waitFor('#Datebox', document).then($el=>{
-                        document.head.append(hourCSS)
-                        document.head.append(hourScript)
-                        document.head.append(dateScript)
-                        setTimeout(permPicker, 250)
-                    })
-                    break;
-                case "Examen Tomodensitométrique":
-                    break;
-                case "":
-                        //log(SSSFrame.listeConsignes)
-                    // Fenetre Arrêt / Suspension de prescription
-                    if (SSSFrame.listeConsignes){
-                        Object.keys(SSSFrame.listeConsignes).forEach(el=>{
-                            $('tr[id="Nursing"][name^="Gestion"]', document).log()
-                                .filter((i,elm)=>($(elm).a('name').searchI(el)+1) && !($(elm).a('name').split(" : ")[1].searchI(SSSFrame.listeConsignes[el].consigne)+1)).log()
-                                .find('input').click2()
-                        })
-                        SSSFrame.consignesWaiter = SSSFrame.setInterval(()=>{
-                            if (!$('#HEO_POPUP', SSSFrame.document).is(':visible')){
-                                SSSFrame.autoPresConsignesRapides(SSSFrame.listeConsignes)
-                            }
-                        },250)
-                        if ($('input:checked', document).length){
-                            $('#playbackOrders', document).click2()
-                        } else {
-                            $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
-                        }
-                    } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
-                        $('#HEO_POPUP', SSSFrame.document).hide()
-                        SSSFrame.listingPrescriptions = {IPP:$('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP :")', SSSFrame.document).text().split(" : ")[1]}
-                        if (!$('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
-                            let posoPres = $(el).parent().next(),
-                                start = $(el).parent().next().next().text().split("/");start[2]=(new Date()).getFullYear()+" à "+start[2].split(" ")[1];start = start.join("/");start=start.split("CET")[0]
-                            posoPres = posoPres.find('div.tooltip').text() || posoPres.text()
-                            posoPres = posoPres.split('- ')
-                            SSSFrame.listingPrescriptions[el.innerText+posoPres.join("- ")+(posoPres.length ==1 && !posoPres[0] ? "»" : " »")+start] = {
-                                id:el.id,
-                                poso:posoPres[0].trim(),
-                                freq:(posoPres.length>1 ? posoPres[1].trim():""),
-                                comment:(posoPres.length>2 ? posoPres[2].trim():""),
-                                début:start
-                            }
-                            $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
-                            $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
-                                $el.show()
-                                $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
-                            })
-                        }).length){
-                            $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
-                                $el.show()
-                                $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
-                            })
-                        }
-                    } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
-                    }
-                    break
-                default:
-                    // prescription rapide de médoc
-                    if ((pres = window.parent.autoEnhancedPres) && $("p.Titre:containsI("+pres[0]+"):containsI("+pres[1]+")", document).length){
-                        $("#frequence>option[value='"+pres.posos[0].freqName.toUpperCase()+"']", document).each((i,el)=>{el.selected=true})
-                        $("#PosoSimple", document)[0].click()
-                        $("#DoseSimple", document).val(pres.posos[0].dose)
-                        pres.posos.shift()
-                        if (!pres.posos){window.parent.autoEnhancedPres = ""}
-                        $('#btPrescrire')[0].click()
-                    }
-                    break;
-            }
-        }
-        if ($('#modif_action', document).length){
-            let subseq = $('td:contains("prescription #")', document).text().split("prescription #").join("").split(",")[0],
-            $trPres = $('#workbody subseq:contains('+subseq+')', SSSFrame.document).parents("tr")
-            if ($trPres.has('span.heoDiscontinuedOrder').length && !$('#modif_action td>a.Retour', document).length){$('#modif_action td>a:first', document).each((i,el)=>{
-                $(el).clone().insertAfter(el).attr("href", (i,t)=>{
-                    t=t.split("@")
-                    t[1]="RESET_ORDER="+t[1].split("=")[1].split(",")[0]
-                    return t.join("@")}).attr({class: "Retour", style:"padding-left:16px"}).text("annuler l'arrêt et les modifications")
-            })}
-            if ($trPres.has('span.heldOrderMarkup').length && !$('#modif_action td>a.resume', document).length){$('#modif_action td>a:first', document).each((i,el)=>{
-                $(el).clone().insertAfter(el).attr("href", (i,t)=>{
-                    t=t.split("@")
-                    t[1]="RESET_ORDER="+t[1].split("=")[1].split(",")[0]
-                    return t.join("@")}).attr({class: "resume"}).text("reprendre")
-            })}
-            if ($trPres.has('span.heoModifiedOrder').length && !$('#modif_action td>a.Retour', document).length){$('#modif_action td>a:first', document).each((i,el)=>{
-                $(el).clone().insertAfter(el).attr("href", (i,t)=>{
-                    t=t.split("@")
-                    t[1]="RESET_ORDER="+t[1].split("=")[1].split(",")[0]
-                    return t.join("@")}).attr({class: "Retour", style:"padding-left:16px"}).text("annuler l'arrêt et les modifications")
-            })}
-            if (SSSFrame.listeConsignes){
-                let [consigne, autorisation] = $('b:eq(0)', document.body).text().split(' : ')
-                if (autorisation){
-                    consigne = consigne.split(" ")[2].toStringI().toLowerCase().log()
-                    autorisation = autorisation.split(" ")[0].toStringI().toLowerCase().log()
-                    if (SSSFrame.listeConsignes[consigne].consigne == autorisation){
-                    }
-                }
-            }
-        }
-        switch ($('h1',document).text()){
-            case "Erreur":
-                if (document.body.innerText.search('session HEO a été interrompue')+1){
-                    $('input[name=OK]', document).click2()
-                }
-                break
-            case "Information":
-                if (document.body.innerText.search('date de début est située dans le passé')+1){
-                    $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', SSSFrame.document).click2()
-                } else if (document.body.innerText.search('Les prescriptions en mémoire')+1){
-                    $('input[name=OK]', document).click2()
-                }
-                break
-        }
-    } else if (location.href.search("heoPrompt.jsp")+1){ // -------------------------------- Prompt frame -----------------------------
+
+
+// -------------------------------- Prompt frame / paramètres prescriptions -----------------------------
+// -------------------------------- Prompt frame / paramètres prescriptions  -----------------------------
+// -------------------------------- Prompt frame / paramètres prescriptions  -----------------------------
+// -------------------------------- Prompt frame / paramètres prescriptions  -----------------------------
+
+
+    } else if (location.href.search("heoPrompt.jsp")+1){
         let SSSFrame = window.parent, heoOutputFrame = SSSFrame.document.heoPane_output
         const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
         if (document.getElementById('preHeaderMarkup')){
@@ -472,7 +363,7 @@ body {background-color:#F5F5F5;}
                             $('a[onclick]:contains("(_)"):not(:contains("5")), a[onclick]:contains("ENTREE")', document).click2()
                             break
                         case "Indication Isolement:":
-                            $('a[onclick]:contains("(_)"):contains("Prévention")', document).log().click2()
+                            $('a[onclick]:contains("(_)"):contains("Prévention")', document).click2() //.log()
                             break
                         case "Absence de contre-indication à l'isolement:":
                             $('a[onclick]:contains("(x)"):contains("Absence de CI")', document).each(()=>$('a[onclick]:contains("ENTREE")', document).click2())
@@ -482,7 +373,7 @@ body {background-color:#F5F5F5;}
                         case "Présence Soignants Repas:":
                         case "Présence Soignants Soins Hygiène:":
                         case "Oreiller Standard:":
-                            $('a[onclick]:contains("OUI")', document).log().click2()
+                            $('a[onclick]:contains("OUI")', document).click2() //.log()
                             break
                         case "Matelas:":
                             $('a[onclick]:contains("STANDARD")', document).click2()
@@ -549,7 +440,179 @@ body {background-color:#F5F5F5;}
                 document.head.append(hourScript)
                 document.head.append(dateScript)
                 setTimeout(dateHourPres, 500)
+            } else if (promptTitle == 'Sélectionnez le motif de non prise en compte de cette alerte ou veuillez le saisir en texte libre') {
+                $('#HEO_INPUT', SSSFrame.document).val('b')[0].dispatchEvent(ke);
+            } else if (promptTitle == 'Priorité: (de votre prescription)') {
+                setTimeout(()=>{$('#HEO_INPUT', SSSFrame.document).val('PLANIFIE') //[0].dispatchEvent(ke);
+                               }, 500)
+            } else if (promptTitle == 'OK pour confirmer cette prescription ?') {
+                $('#HEO_INPUT', SSSFrame.document)[0].dispatchEvent(ke);
+            } else if (promptTitle == "Sélectionnez un item dans la liste") {
+
+                var listePrescriptionsEquivalent = {"tdm":"Demande d'Examen Tomodensitométrique",
+                                                   "scanner":"Demande d'Examen Tomodensitométrique" }
+
+                $("a[onclick*='@THERAPEUTICSUBSTITUTION='", document).each((i,el)=>{
+                    let presSearch = el.innerText.split('"')[1], presAction = listePrescriptionsEquivalent[presSearch]
+                    if (presAction){
+                        SSSFrame.output_Selector(presAction)
+                    }
+                })
+                //listePrescriptionsEquivalent
             }
+        }
+
+
+// --------------------------- Popup-document frame ------------------------------
+// --------------------------- Popup-document frame ------------------------------
+// --------------------------- Popup-document frame ------------------------------
+// --------------------------- Popup-document frame ------------------------------
+
+    } else if (location.href.search("docs/dc.htm")+1){
+        let SSSFrame = window.parent
+        switch ($('h1',document).text()){
+            case "Arrêter/Suspendre/Reprendre":
+                if (SSSFrame.listeConsignes || typeof SSSFrame.listingPrescriptions == "undefined"){
+                    $('button:contains("Arrêter ces prescriptions")', document).click2()
+                    if (typeof SSSFrame.listingPrescriptions == "undefined"){
+                        $('#HEO_POPUP', SSSFrame.document).addClass('force_hidden')
+                    }
+                }
+                break
+        }
+
+
+
+// --------------------------- Popup Content frame ------------------------------
+// --------------------------- Popup Content frame ------------------------------
+// --------------------------- Popup Content frame ------------------------------
+// --------------------------- Popup Content frame ------------------------------
+
+    } else if ((location.href.search("popupContents.jsp")+1)){
+        let styleEl = document.createElement('style'), title, pres, SSSFrame = window.parent
+        styleEl.innerHTML = `
+.outOf2DaysRange {background:coral;}
+.nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
+body {background-color:#F5F5F5;}
+`
+        document.head.append(styleEl)
+
+        if (title = document.head.querySelector('title')){
+            switch(title.innerText){
+                case "SORTIETEMPO":
+                    $.waitFor('#Datebox', document).then($el=>{
+                        document.head.append(hourCSS)
+                        document.head.append(hourScript)
+                        document.head.append(dateScript)
+                        setTimeout(permPicker, 250)
+                    })
+                    break;
+                case "Examen Tomodensitométrique":
+                    log('bah')
+                    $('#autonomie_Chaise, #examen, #RV_service, #PC1, #scanant_non, #prem_non, #grossesse_non, #testgrossesse_non, #ci_non, #vv_non, #pac_non', document).click2()
+                    $('#Telephone', document).val('52135')
+                    break;
+                case "":
+                        //log(SSSFrame.listeConsignes)
+                    // Fenetre Arrêt / Suspension de prescription
+                    if (SSSFrame.listeConsignes){
+                        Object.keys(SSSFrame.listeConsignes).forEach(el=>{
+                            $('tr[id="Nursing"][name^="Gestion"]', document) //.log()
+                                .filter((i,elm)=>($(elm).a('name').searchI(el)+1) && !($(elm).a('name').split(" : ")[1].searchI(SSSFrame.listeConsignes[el].consigne)+1)) //.log()
+                                .find('input').click2()
+                        })
+                        SSSFrame.consignesWaiter = SSSFrame.setInterval(()=>{
+                            if (!$('#HEO_POPUP', SSSFrame.document).is(':visible')){
+                                SSSFrame.autoPresConsignesRapides(SSSFrame.listeConsignes)
+                            }
+                        },250)
+                        if ($('input:checked', document).length){
+                            $('#playbackOrders', document).click2()
+                        } else {
+                            $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
+                        }
+                    } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
+                        $('#HEO_POPUP', SSSFrame.document).hide()
+                        SSSFrame.listingPrescriptions = {IPP:$('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP :")', SSSFrame.document).text().split(" : ")[1]}
+                        $('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
+                            let posoPres = $(el).parent().next(),
+                                start = $(el).parent().next().next().text().split("/");start[2]=(new Date()).getFullYear()+" à "+start[2].split(" ")[1];start = start.join("/");start=start.split("CET")[0]
+                            posoPres = posoPres.find('div.tooltip').text() || posoPres.text()
+                            posoPres = posoPres.split('- ')
+                            SSSFrame.listingPrescriptions[el.innerText+posoPres.join("- ")+(posoPres.length ==1 && !posoPres[0] ? "»" : " »")+start] = {
+                                id:el.id,
+                                poso:posoPres[0].trim(),
+                                freq:(posoPres.length>1 ? posoPres[1].trim():""),
+                                comment:(posoPres.length>2 ? posoPres[2].trim():""),
+                                début:start
+                            }
+                            $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
+                        })
+                        $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
+                            $el.show()
+                            $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
+                            $('.full_bg', SSSFrame.document).hide()
+                        })
+                    } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
+                    }
+                    break
+                default:
+                    // prescription rapide de médoc
+                    if ((pres = window.parent.autoEnhancedPres) && $("p.Titre:containsI("+pres[0]+"):containsI("+pres[1]+")", document).length){
+                        $("#frequence>option[value='"+pres.posos[0].freqName.toUpperCase()+"']", document).each((i,el)=>{el.selected=true})
+                        $("#PosoSimple", document)[0].click()
+                        $("#DoseSimple", document).val(pres.posos[0].dose)
+                        pres.posos.shift()
+                        if (!pres.posos){window.parent.autoEnhancedPres = ""}
+                        $('#btPrescrire')[0].click()
+                    }
+                    break;
+            }
+        }
+        if ($('#modif_action', document).length){
+            let subseq = $('td:contains("prescription #")', document).text().split("prescription #").join("").split(",")[0],
+            $trPres = $('#workbody subseq:contains('+subseq+')', SSSFrame.document).parents("tr")
+            if ($trPres.has('span.heoDiscontinuedOrder').length && !$('#modif_action td>a.Retour', document).length){$('#modif_action td>a:first', document).each((i,el)=>{
+                $(el).clone().insertAfter(el).attr("href", (i,t)=>{
+                    t=t.split("@")
+                    t[1]="RESET_ORDER="+t[1].split("=")[1].split(",")[0]
+                    return t.join("@")}).attr({class: "Retour", style:"padding-left:16px"}).text("annuler l'arrêt et les modifications")
+            })}
+            if ($trPres.has('span.heldOrderMarkup').length && !$('#modif_action td>a.resume', document).length){$('#modif_action td>a:first', document).each((i,el)=>{
+                $(el).clone().insertAfter(el).attr("href", (i,t)=>{
+                    t=t.split("@")
+                    t[1]="RESET_ORDER="+t[1].split("=")[1].split(",")[0]
+                    return t.join("@")}).attr({class: "resume"}).text("reprendre")
+            })}
+            if ($trPres.has('span.heoModifiedOrder').length && !$('#modif_action td>a.Retour', document).length){$('#modif_action td>a:first', document).each((i,el)=>{
+                $(el).clone().insertAfter(el).attr("href", (i,t)=>{
+                    t=t.split("@")
+                    t[1]="RESET_ORDER="+t[1].split("=")[1].split(",")[0]
+                    return t.join("@")}).attr({class: "Retour", style:"padding-left:16px"}).text("annuler l'arrêt et les modifications")
+            })}
+            if (SSSFrame.listeConsignes){
+                let [consigne, autorisation] = $('b:eq(0)', document.body).text().split(' : ')
+                if (autorisation){
+                    consigne = consigne.split(" ")[2].toStringI().toLowerCase() //.log()
+                    autorisation = autorisation.split(" ")[0].toStringI().toLowerCase() //.log()
+                    if (SSSFrame.listeConsignes[consigne].consigne == autorisation){
+                    }
+                }
+            }
+        }
+        switch ($('h1',document).text()){
+            case "Erreur":
+                if (document.body.innerText.search('session HEO a été interrompue')+1){
+                    $('input[name=OK]', document).click2()
+                }
+                break
+            case "Information":
+                if (document.body.innerText.search('date de début est située dans le passé')+1){
+                    $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', SSSFrame.document).click2()
+                } else if (document.body.innerText.search('Les prescriptions en mémoire')+1){
+                    $('input[name=OK]', document).click2()
+                }
+                break
         }
     }
 })();
@@ -1297,6 +1360,15 @@ function monitorContextClick(ev){
         }
     }
 }
+
+String.prototype.searchI = function(searchString) {
+    if (typeof "searchString" == "string"){
+        return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+    } else {
+        return undefined
+    }
+}
+
 function monitorClick(ev){
     //console.log(unsafeWindow.document.SSSFrame.jQuery, unsafeWindow.parent.jQuery, window.parent.jQuery, window.jQuery)
     if (!$ || !$.fn) {var $ = window.document.SSSFrame.jQuery};
@@ -1304,7 +1376,7 @@ function monitorClick(ev){
     if (!ev.view){ev.view = unsafeWindow||window}
     let Meva = GM_getValue('Meva',{"user":"", "password":""})
     window.monitorClickEnabled = true
-    console.log(ev.target)
+    //console.log(ev.target)
     if ($('#contextMenu_patients:visible').length){
         if($('#contextMenu_patients').has(ev.target).length){
             let action = $(ev.target).text()
@@ -1341,7 +1413,7 @@ function monitorClick(ev){
         currPres = ev.view.listingPrescriptions[currPres]
         if (currPres){
             act="http://meva/heoclient-application-web/commander?HEOCMD=@"+action.split('-')[0]+"="+currPres.id+(action == "DCAO-0" ? ",0" : "")
-            console.log(act, currPres)
+            //console.log(act, currPres)
             ev.view.document.pcFrame.location=act
         }
         $('#hoverMenu_pres').hide()
@@ -1352,7 +1424,7 @@ function monitorClick(ev){
         ev.target.lastValue = ev.target.value
         ev.target.dateWaiterStart = Date.now()
         ev.target.dateWaiter = setInterval((el)=>{
-                console.log(el, el.lastValue, el.value)
+                //console.log(el, el.lastValue, el.value)
             if ((Date.now() - el.dateWaiterStart) > 15000){
                 clearInterval(el.dateWaiter)
             }else if (el.lastValue != el.value){
@@ -1361,6 +1433,7 @@ function monitorClick(ev){
             }
         },500,ev.target)
     } else if ($('.GOAX34LECB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormField-mandatory:visible', ev.view.document).has($(ev.target)).length && ev.target.classList.contains('gwt-Image')){
+        // click sur icone calendrier du jour
         if (ev.target.title=="Aujourd'hui"){
             $('.GOAX34LLXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-calendar_arrow', ev.target.parentElement).click2()
             $.waitFor('div.datePickerDayIsToday', ev.view.document).then($el=>{
@@ -1379,7 +1452,6 @@ function monitorClick(ev){
             $('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button', ev.view.document).click2()
         }
     } else if ((ev.isTrusted) && $(ev.target).parents('.GOAX34LOBB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-DatePicker').length){
-
         $.waitFor('div.GOAX34LLLB-fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-BlockMaskTextDiv', ev.view.document).then($el2=>{
             $('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button', ev.view.document).click2()
         })
@@ -1393,14 +1465,9 @@ function monitorClick(ev){
         $('label:contains("Plannings"):eq(0)', ev.view.document).parent().after($('<div><button id="CleanGroupsByButton" style="margin-left:50px;background:#528fff;">Effacer</button></div>'))
     } else if (ev.target.id == "CleanGroupsByButton"){
         let repaired_NZb = `
-NZb = function (a, b, c) {
-    var d,e;
-    e=JSON.parse(a.e.j.c[12]);e.groupsBy=[];a.e.j.c[12]=JSON.stringify(e);
-    setTimeout(()=>window.parent.location.reload(), 500)
-    d = xZb(a.e);
-    S$b() && T$b(U$b(a.d, a.b, 'requestSerialized'));
-    return IZb(a.f, c, a.b, a.d, d, b)
-}
+        nzb = NZb;
+NZb = function(a){let b = a;try{b = JSON.parse(a);b.groupsBy = [];b = JSON.stringify(b)}finally {return nzb(b)}}
+
 `
         $('iframe').filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal').each(
             (i,el)=>{
