@@ -450,7 +450,8 @@ $.expr[":"].containsI = function (a, i, m) {
             } else if (promptTitle == "Sélectionnez un item dans la liste") {
 
                 var listePrescriptionsEquivalent = {"tdm":"Demande d'Examen Tomodensitométrique",
-                                                   "scanner":"Demande d'Examen Tomodensitométrique" }
+                                                   "scanner":"Demande d'Examen Tomodensitométrique",
+                                                   "irm":"Demande d'IRM"}
 
                 $("a[onclick*='@THERAPEUTICSUBSTITUTION='", document).each((i,el)=>{
                     let presSearch = el.innerText.split('"')[1], presAction = listePrescriptionsEquivalent[presSearch]
@@ -507,10 +508,11 @@ body {background-color:#F5F5F5;}
                         setTimeout(permPicker, 250)
                     })
                     break;
+                case "Examen IRM CHU":
+                case "Examen RAdiologie":
                 case "Examen Tomodensitométrique":
-                    log('bah')
                     $('#autonomie_Chaise, #examen, #RV_service, #PC1, #scanant_non, #prem_non, #grossesse_non, #testgrossesse_non, #ci_non, #vv_non, #pac_non', document).click2()
-                    $('#Telephone', document).val('52135')
+                    $('#Telephone', document).val(GM_getValue('service').phone)
                     break;
                 case "":
                         //log(SSSFrame.listeConsignes)
