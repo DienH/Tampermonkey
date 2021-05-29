@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.46
+// @version      0.2.45
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -349,10 +349,27 @@ $.expr[":"].containsI = function (a, i, m) {
         if (document.getElementById('preHeaderMarkup')){
             let promptTitle = document.getElementById('preHeaderMarkup').innerText, pres
             $.waitFor('.orderName', heoOutputFrame.document).then($el=>{
-                if ((pres = window.parent.autoEnhancedPres) && $el.filter('.orderName:containsI("'+pres.nom+'"):containsI("'+pres.forme+'")').length){
+                if ((pres = SSSFrame.autoEnhancedPres) && $el.filter('.orderName:containsI("'+pres.nom+'"):containsI("'+pres.forme+'")').length){
                     switch (promptTitle){
                         case "Dose par prise:":
-                            $('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")', document).click2() //.each((i,el)=>el.click())
+                            $('#HEO_INPUT', SSSFrame.document).val(pres.posos[pres.currentPoso].dose)[0].dispatchEvent(ke);
+                            //$('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")', document).click2() //.each((i,el)=>el.click())
+                            break;
+                        case "Fréquence:":
+                            $('#HEO_INPUT', SSSFrame.document).val(pres.posos[pres.currentPoso].freqName)[0].dispatchEvent(ke)
+                            //$('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout((elm, kb)=>{elm.value=pres.posos[pres.currentPoso].freqName;elm.dispatchEvent(ke);}, 750, el, ke)).val()[0] //
+                            break;
+                        case "Commentaires:":
+                            delete SSSFrame.autoEnhancedPres
+                            $('#HEO_INPUT', SSSFrame.document)[0].dispatchEvent(ke)
+                            break;
+                        case "Saisissez une date et heure de début":
+                        case "Durée: (avec une date et heure de fin optionnelle)":
+                            $('#HEO_INPUT', SSSFrame.document)[0].dispatchEvent(ke)
+                            break;
+                        case "Médicament Hors Livret, continuer :":
+                            $('a[onclick]:contains("OK")', document).click2()
+                            $('a[onclick]:contains("(x)")', document).each(()=>$('a[onclick]:contains("ENTREE")', document).click2())
                             break;
                     }
                 } else if ($el.filter('.orderName:contains("INFORMATION SUR LE PATIENT")').length){
@@ -447,6 +464,9 @@ $.expr[":"].containsI = function (a, i, m) {
                                }, 500)
             } else if (promptTitle == 'OK pour confirmer cette prescription ?') {
                 $('#HEO_INPUT', SSSFrame.document)[0].dispatchEvent(ke);
+            } else if (promptTitle == "Médicament Hors Livret, continuer :"){
+                $('a[onclick]:contains("(_) OK")', document).click2()
+                $('a[onclick]:contains("(x)")', document).each(()=>$('a[onclick]:contains("ENTREE")', document).click2())
             } else if (promptTitle == "Sélectionnez un item dans la liste") {
 
                 var listePrescriptionsEquivalent = {"tdm":"Demande d'Examen Tomodensitométrique",
@@ -566,7 +586,7 @@ body {background-color:#F5F5F5;}
                         $("#DoseSimple", document).val(pres.posos[0].dose)
                         pres.posos.shift()
                         if (!pres.posos){window.parent.autoEnhancedPres = ""}
-                        $('#btPrescrire')[0].click()
+                        $('#btPrescrire', document).click2()
                     }
                     break;
             }
@@ -639,6 +659,7 @@ function currentPres_Selector(presName, presComment = ""){
     }
 }
 function output_Selector(sel, checkExists = false){
+    console.log('Selection : ', sel)
     if (typeof $ == "undefined" || typeof $.fn == "undefined"){var $ = window.$ || window.parent.$}
     let output = document.heoPane_output || window.parent.document.heoPane_output,
         MedocPasHorsLivret = ["diazepam", "olanzapine"]
@@ -646,20 +667,13 @@ function output_Selector(sel, checkExists = false){
     let filterString = "", pasHorsLivret = false
     if (typeof sel == "string" && sel.search(" ")+1){
         sel = sel.split(" ")
+    }
+    if (Array.isArray(sel)){
         for (let i = 0; i < sel.length ; i++){
             if (MedocPasHorsLivret.includes(sel[i])){
                 pasHorsLivret = true
-            } else {
-                filterString += ":containsI("+sel[i]+")"
             }
-        }
-    } else if (Array.isArray(sel)){
-        for (let i = 0; i < sel.length ; i++){
-            if (MedocPasHorsLivret.includes(sel[i])){
-                pasHorsLivret = true
-            } else {
-                filterString += ":containsI("+sel[i]+")"
-            }
+            filterString += ":containsI("+sel[i]+")"
         }
     }
 
@@ -670,7 +684,7 @@ function output_Selector(sel, checkExists = false){
         setTimeout((selector, out)=>{
             let $selection = $(selector, out.document)
             if ($selection.length > 1){$selection = $selection.filter(pasHorsLivret ? ":not(:has(.HorsLivret))":"*")}
-            $selection.each((i,el)=>{if (!i){setTimeout((el)=>{el.click()},250, el)}})
+            $selection.first().each((i,el)=>{setTimeout((el)=>{el.click()},250, el)})
         }, 250, sel, output)
     }
 }
@@ -863,31 +877,37 @@ function presOutputConsignesRapides(ev){
 }
 
 function addAutoPrescriptor(ev){
-    let SSSFrame = ev.view.document.name == "SSSFrame" ? ev.view.document : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame.$
-    let DCI = {loxapac:"loxapine", nozinan:"levomepromazine", tercian:"cyamemazine", theralene:"alimemazine", abilify:"aripiprazole", risperdal:"risperidone",zyprexa:"olanzapine",
-               nozinan:"levomepromazine", leponex:"clozapine", valium:"diazepam", seresta:"oxazepam", tranxene:"clorazepate", lysanxia:"prazepam", temesta:"lorazepam", xanax:"alprazolam",
-               atarax:"hydroxyzine", imovane:"zopiclone", revia:"naltrexone", selincro:"nalmefene", noctamide:"lormetazepam"
+    let SSSFrame = ev.view.document.name == "SSSFrame" ? ev.view : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame.$
+    let DCI = {loxapac:"loxapine", nozinan:"levomepromazine", tercian:"cyamemazine",
+               abilify:"aripiprazole", risperdal:"risperidone",zyprexa:"olanzapine", leponex:"clozapine", solian:"amisulpride", xeroquel:"quetiapine",
+               valium:"diazepam", seresta:"oxazepam", tranxene:"clorazepate", lysanxia:"prazepam", temesta:"lorazepam", xanax:"alprazolam", lexomil:"bromazepam",
+               atarax:"hydroxyzine", imovane:"zopiclone", stilnox:"zolpidem", noctamide:"lormetazepam", theralene:"alimemazine",
+               revia:"naltrexone", selincro:"nalmefene"
               },
         defaultsPres = {
             posos:{
-                diazepam:[1,1,1,1], aripiprazole:[1,0,0], loxapine:[1,1,1,1], risperidone:[0,0,0,1], olanzapine:[0,0,0,1], cyamemazine:[1,1,1,1],alimemazine:[0,0,0,1], lormetazepam:[0,0,0,1], hydroxyzine:[0,0,0,1]
+                diazepam:[1,1,1,1], temesta:[1,1,1,1],
+                aripiprazole:[1,0,0], risperidone:[0,0,1], olanzapine:[0,0,0,1], quetiapine:[0,0,0,1],
+                cyamemazine:[1,1,1,1], levomepromazine:[1,1,1,1], loxapine:[1,1,1,1],
+                alimemazine:[0,0,0,1], lormetazepam:[0,0,0,1], hydroxyzine:[0,0,0,1]
             },
             formes:{
                 loxapine:"buv", olanzapine:"dispers", cyamemazine:"buv"
             },
             dose:{
-                olanzapine:20,aripiprazole:10,loxapine:25,cyamemazine:25,risperidone:2,alimemazine:10,diazepam:10,lorazepam:1,lormetazepam:1, hydroxyzine:25
+                olanzapine:20,aripiprazole:10,loxapine:25,cyamemazine:25,risperidone:2,alimemazine:10,diazepam:10,lorazepam:1,lormetazepam:1, hydroxyzine:25,quetiapine:150
             }
         },
         formes = ["cp", "buv", "inj", "gel"],
-        frequence = {"coucher":[0,0,0,1], "matin":[1,0,0], "midi":[0,1,0], "soir": [0,0,1]}
+        frequences = {"coucher":[0,0,0,1], "matin":[1,0,0,0], "midi":[0,1,0,0], "soir": [0,0,1,0], "mms":[1,1,1,0], "mmsc":[1,1,1,1]}
     if($('#HEO_INPUT', SSSFrame.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
-        if(ev.keyCode==13){
+        if(ev.keyCode==13){ // on Enter keydown
             let pres = ev.target.value.split(" ")
             if ($("#preHeaderMarkup", SSSFrame.document.heoPane_prompt.document).is(':contains(Sélectionnez un item)') && typeof pres == "object" && pres.length > 1){
-                if (pres[0] == "mod") {pres.modif = pres.shift()}
+                console.log('bouh')
+                if (pres[0] == "mod" || pres[0] == "m") {pres.modif = pres.shift()}
                 pres.nom = DCI[pres[0]] || pres[0]
-                pres.dose = Number(pres[2]) || Number(pres[1]) || ""
+                pres.dose = Number(pres[2]) || Number(pres[1]) || defaultsPres.dose[pres.nom] || ""
                 let poso, posoSyste
                 try{
                     poso = pres.find(el=>el.search(/[\-\.].+[\-\.]/s)+1)
@@ -896,7 +916,8 @@ function addAutoPrescriptor(ev){
                     pres.poso = posoSyste.split('.').join('-').split("-").map(t=>Number(t))
                     pres.posoIndex = pres.findIndex(el=>el.search(/[\-\.].+[\-\.]/s)+1)
                 }catch (e){
-                    pres.poso = frequence[Object.keys(frequence).find(elm=>pres.find(el=>elm.toUpperCase()==el.toUpperCase()))]
+                    pres.poso = [0,0,0,0]
+                    Object.keys(frequences).filter(elm=>pres.find(el=>elm.toUpperCase()==el.toUpperCase())).forEach((el,i)=>{pres.poso = pres.poso.map((elm, j)=>elm+frequences[el][j])})
                     if (pres.poso == undefined){
                         pres.poso = defaultsPres.posos[pres.nom]
                     }
@@ -980,7 +1001,10 @@ function addAutoPrescriptor(ev){
                                         currPoso.freqName = "Matin Coucher"
                                         break
                                     case "0-0-1-1":
-                                        currPoso.freqName = "Matin Coucher"
+                                        currPoso.freqName = "Soir Coucher"
+                                        break;
+                                    case "0-1-0-1":
+                                        currPoso.freqName = "Midi Coucher"
                                         break
                                     default:
                                         break
@@ -991,6 +1015,8 @@ function addAutoPrescriptor(ev){
                         i++
                     }
                     ev.target.value=pres[0]+" "+pres[1]
+                    pres.currentPoso = 0
+                    console.log(pres)
                     SSSFrame.autoEnhancedPres = pres
                     SSSFrame.autoEnhancedPresWaiter = setInterval((presc)=>{
                         if (SSSFrame.output_Selector(presc[0] + " "+presc[1], true)){
