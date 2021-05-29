@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.46
+// @version      0.2.47
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -887,7 +887,7 @@ function addAutoPrescriptor(ev){
         defaultsPres = {
             posos:{
                 diazepam:[1,1,1,1], temesta:[1,1,1,1],
-                aripiprazole:[1,0,0], risperidone:[0,0,1], olanzapine:[0,0,0,1], quetiapine:[0,0,0,1],
+                aripiprazole:[1,0,0,0], risperidone:[0,0,1], olanzapine:[0,0,0,1], quetiapine:[0,0,0,1],
                 cyamemazine:[1,1,1,1], levomepromazine:[1,1,1,1], loxapine:[1,1,1,1],
                 alimemazine:[0,0,0,1], lormetazepam:[0,0,0,1], hydroxyzine:[0,0,0,1]
             },
@@ -918,7 +918,7 @@ function addAutoPrescriptor(ev){
                 }catch (e){
                     pres.poso = [0,0,0,0]
                     Object.keys(frequences).filter(elm=>pres.find(el=>elm.toUpperCase()==el.toUpperCase())).forEach((el,i)=>{pres.poso = pres.poso.map((elm, j)=>elm+frequences[el][j])})
-                    if (pres.poso == undefined){
+                    if (pres.poso == undefined || pres.reduce((a, b)=>a+b,0)){
                         pres.poso = defaultsPres.posos[pres.nom]
                     }
                 }
