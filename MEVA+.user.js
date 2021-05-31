@@ -245,7 +245,10 @@ button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background: green;c
             script.id = "SSSFrame_Script"
             script.innerHTML = `
 String.prototype.searchI = function(searchString) {
- return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+	if (this.toUpperCase){
+		return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase()
+			.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+	}
 }
 $.expr[":"].containsI = function (a, i, m) {
  return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;
