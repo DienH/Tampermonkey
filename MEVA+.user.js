@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.47
+// @version      0.2.48
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -695,12 +695,12 @@ function output_Selector(sel, checkExists = false){
 function autoPresConsignesRapides(consignes){
     if (!$ || !$.fn){var $ = (typeof unsafeWindow != "undefined" ? unsafeWindow.$ || unsafeWindow.parent.$ : window.$ || window.parent.$)}
     let currentConsignes = {
-        affaires:{consigne:"autorise", comment: ""},
-        appels:{consigne:"autorise", comment: ""},
-        deplacements:{consigne:"autorise", comment: ""},
-        tabagisme:{consigne:"autorise", comment: ""},
-        vetements:{consigne:"autorise", comment: ""},
-        visites:{consigne:"autorise", comment: ""}
+        affaires:{consigne:"", comment: ""},
+        appels:{consigne:"", comment: ""},
+        deplacements:{consigne:"", comment: ""},
+        tabagisme:{consigne:"", comment: ""},
+        vetements:{consigne:"", comment: ""},
+        visites:{consigne:"", comment: ""}
     }
     $('div.gwt-HTML:contains("Gestion")','#workbody').each((i,el)=>{
         let currConsigne = $(el).find('b').text(),
@@ -711,7 +711,7 @@ function autoPresConsignesRapides(consignes){
             commentConsigne = commentConsigne.split("  »")[0]
         }
         currentConsignes[currConsigne] = {
-            consigne:(currConsigneA[1].search("Restreint")+1 ? "restreint":(currConsigneA[1].search("Interdit")+1 ? "interdit":currConsigneA[1].search("Accompagné")+1 ? "accompagne":"autorise")),
+            consigne:(currConsigneA[1].search("Restreint")+1 ? "restreint":(currConsigneA[1].search("Interdit")+1 ? "interdit":currConsigneA[1].search("Accompagné")+1 ? "accompagne":(currConsigneA[1].search("Autorisé")+1 ? "autorise":""))),
             comment:commentConsigne}
     })
     if (consignes){
