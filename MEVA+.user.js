@@ -123,9 +123,9 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
     }else if (location.href.search("Hospitalisation.fwks")+1 || location.href.search("m-eva.fwks")+1){
         let SSSFrame = unsafeWindow, CS_AnestTitle = (`div.carousel_enabled_item:contains("Consultation d'anesthésie")`),
             SSSFrame_wait = setInterval(()=>{
-            if ($(CS_AnestTitle).length){
                 $(CS_AnestTitle).remove()
-            }
+                $(`div.carousel_enabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("Observations"), div.carousel_enabled_item:contains("Résultats de larobratoire")`)
+                    .prependTo($(`div.carousel_enabled_item:contains("HEO - Prescrire")`).parent())
             let $dateInput = $('input.GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error', SSSFrame.document).parent()
             if (!$dateInput.siblings('[title*=Aujourd]').length){
                 $dateInput.before(
