@@ -20,6 +20,7 @@
 
 
 (function() {
+    let SSSFrame = window.top.SSSFrame
     if (window.frameElement){
         switch(window.frameElement.id){
             case "mevaModulesEntry":
@@ -268,8 +269,11 @@ $.expr[":"].containsI = function (a, i, m) {
 // --------------------------- heoOutput (liste des traitements / consignes) ------------------------------
 
     } else if ((location.href.search('heoOutput.jsp')+1)){
-        let SSSFrame = window.parent, heoOutputFrame = SSSFrame.document.heoPane_output
+        let heoOutputFrame = SSSFrame.document.heoPane_output
         const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
+        $('#HEO_INPUT', SSSFrame.document).each((i,el)=>{
+            if (!el.keydown) {setTimeout(addAutoPrescriptor, 500, SSSFrame)}
+        })
         $('body', document).append($('<style>').text(`
 .presPsy-rapide {position: absolute;right: 0;color: green!important;}
 .presPsy-rapide:hover {text-decoration:underline;}
@@ -278,6 +282,7 @@ $.expr[":"].containsI = function (a, i, m) {
             let outputTitle = $('div.outlineTitle', document).text().trim()
             switch(outputTitle){
                 case "Prescriptions Usuelles de Psychiatrie Adulte":
+                    delete SSSFrame.prescriptionIsoState
                     //$('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', true)
                     $('a:contains("Retourner à la liste")', document).remove()
                     $('a:contains("Consignes")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Consignes rapides</a>').click(presOutputConsignesRapides))
@@ -347,12 +352,13 @@ $.expr[":"].containsI = function (a, i, m) {
 
 
     } else if (location.href.search("heoPrompt.jsp")+1){
-        let SSSFrame = window.parent, heoOutputFrame = SSSFrame.document.heoPane_output
+        let heoOutputFrame = SSSFrame.document.heoPane_output
         const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
         if (document.getElementById('preHeaderMarkup')){
             let promptTitle = document.getElementById('preHeaderMarkup').innerText, pres
             $.waitFor('.orderName', heoOutputFrame.document).then($el=>{
                 if ((pres = SSSFrame.autoEnhancedPres) && $el.filter('.orderName:containsI("'+pres.nom+'"):containsI("'+pres.forme+'")').length){
+                    delete SSSFrame.prescriptionIsoState
                     switch (promptTitle){
                         case "Dose par prise:":
                             $('#HEO_INPUT', SSSFrame.document).val(pres.posos[pres.currentPoso].dose)[0].dispatchEvent(ke);
@@ -376,38 +382,101 @@ $.expr[":"].containsI = function (a, i, m) {
                             break;
                     }
                 } else if ($el.filter('.orderName:contains("INFORMATION SUR LE PATIENT")').length){
+                    delete SSSFrame.prescriptionIsoState
                     $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{let a = new Date();elm.value=a.toLocaleDateString()+" "+a.toLocaleTimeString([], {timeStyle: 'short'})}, 250, el))
-                } else if ($el.filter('.orderName:contains("Isolement : Indication")').length){
+                } else if ($el.filter('.orderName:contains("Isolement : Indication")').add($el.filter('.orderName:contains("Contention : Indication")')).length){
                     switch (promptTitle){
                         case "Interventions alternatives tentées:":
-                            $('a[onclick]:contains("(_)"):not(:contains("5")), a[onclick]:contains("ENTREE")', document).click2()
-                            break
-                        case "Indication Isolement:":
-                            $('a[onclick]:contains("(_)"):contains("Prévention")', document).click2() //.log()
+                            if (typeof SSSFrame.prescriptionIsoState == "undefined" || SSSFrame.prescriptionIsoState < 0){
+                                $('a[onclick]:contains("(_)"):not(:contains("5")), a[onclick]:contains("ENTREE")', document).click2()
+                                typeof SSSFrame.prescriptionIsoState == "undefined" ? SSSFrame.prescriptionIsoState=-4 : SSSFrame.prescriptionIsoState++
+                            }
                             break
                         case "Absence de contre-indication à l'isolement:":
+                        case "Absence contre-indication à l'Isolement Contention:":
                             $('a[onclick]:contains("(x)"):contains("Absence de CI")', document).each(()=>$('a[onclick]:contains("ENTREE")', document).click2())
                             break
-                        case "Présence Soignants Renfort / Soins:":
                         case "Examen somatique réalisé :":
-                        case "Présence Soignants Repas:":
-                        case "Présence Soignants Soins Hygiène:":
-                        case "Oreiller Standard:":
-                            $('a[onclick]:contains("OUI")', document).click2() //.log()
+                            if (SSSFrame.prescriptionIsoState == 0){
+                                $('a[onclick]:contains("OUI")', document).click2() //.log()
+                                SSSFrame.prescriptionIsoState++;
+                            }
                             break
-                        case "Matelas:":
-                            $('a[onclick]:contains("STANDARD")', document).click2()
+                        case "Commentaire sur l'examen somatique réalisé:":
+                            if (SSSFrame.prescriptionIsoState == 1){
+                                $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value="RAS";elm.dispatchEvent(ke)}, 500, el))
+                                SSSFrame.prescriptionIsoState++;
+                            }
+                            break
+                        case "Présence Soignants Renfort / Soins:":
+                            if (SSSFrame.prescriptionIsoState == 2){
+                                $('a[onclick]:contains("OUI")', document).click2() //.log()
+                                SSSFrame.prescriptionIsoState++;
+                            }
+                            break
+                        case "Présence Soignants Repas:":
+                            if (SSSFrame.prescriptionIsoState == 3){
+                                $('a[onclick]:contains("OUI")', document).click2() //.log()
+                                SSSFrame.prescriptionIsoState++;
+                            }
+                            break
+                        case "Présence Soignants Soins Hygiène:":
+                            if (SSSFrame.prescriptionIsoState == 4){
+                                $('a[onclick]:contains("OUI")', document).click2() //.log()
+                                SSSFrame.prescriptionIsoState++;
+                            }
                             break
                         case "Objets Autorisés:":
+                            if (SSSFrame.prescriptionIsoState == 5){
+                                $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value="AUCUN";elm.dispatchEvent(ke)}, 500, el))
+                                SSSFrame.prescriptionIsoState++;
+                            }
+                            break
                         case "Vêtements Autorisés:":
+                            if (SSSFrame.prescriptionIsoState == 6){
+                                $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value="AUCUN";elm.dispatchEvent(ke)}, 500, el))
+                                SSSFrame.prescriptionIsoState++;
+                            }
+                            break
                         case "Mobilier Autorisé:":
-                            $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value="AUCUN"}, 750, el))
+                            if (SSSFrame.prescriptionIsoState == 7){
+                                $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value="AUCUN";elm.dispatchEvent(ke)}, 500, el))
+                                SSSFrame.prescriptionIsoState++;
+                            }
+                            break
+                        case "Oreiller Standard:":
+                            if (SSSFrame.prescriptionIsoState == 8){
+                                $('a[onclick]:contains("OUI")', document).click2() //.log()
+                                SSSFrame.prescriptionIsoState++;
+                            }
+                            break
+                        case "Matelas:":
+                            if (SSSFrame.prescriptionIsoState == 9){
+                                $('a[onclick]:contains("ADAPTÉ")', document).click2()
+                                SSSFrame.prescriptionIsoState++;
+                            }
                             break
                         case "Visites:":
-                            $('a[onclick]:contains("RESTREINT")', document).click2()
+                            if (SSSFrame.prescriptionIsoState == 10){
+                                $('a[onclick]:contains("RESTREINT")', document).click2()
+                                SSSFrame.prescriptionIsoState++;
+                            }
+                            break
+                        case "Sorties:":
+                            if (SSSFrame.prescriptionIsoState == 11){
+                                $('a[onclick]:contains("NON")', document).click2()
+                                SSSFrame.prescriptionIsoState++;
+                            }
+                            break
+                        case "Indication Isolement:":
+                            if (SSSFrame.prescriptionIsoState == 12){
+                                $('a[onclick]:contains("(_)"):contains("Prévention")', document).click2() //.log()
+                                SSSFrame.prescriptionIsoState++;
+                            }
                             break
                     }
                 } else if ($el.filter('.orderName:contains("Mise en Isolement")').length){
+                    delete SSSFrame.prescriptionIsoState
                     switch (promptTitle){
                         case "Mode d'Hospitalisation:":
                             $('a[onclick]:contains("(x)")', document).each(()=>$('a[onclick]:contains("ENTREE")', document).click2())
@@ -416,7 +485,12 @@ $.expr[":"].containsI = function (a, i, m) {
                             $('a[onclick]:contains("Patient"):contains("(_)")', document).click2()
                             break
                     }
+                    // ---------- Consignes auto -----------
+                    // ---------- Consignes auto -----------
+                    // ---------- Consignes auto -----------
+                    // ---------- Consignes auto -----------
                 } else if (SSSFrame.listeConsignes && $el.filter('div.orderName:contains(Gestion)').length){
+                    delete SSSFrame.prescriptionIsoState
                     let currConsigne, currConsigneA
                     switch(promptTitle){
                         case "Sélectionnez un item dans la liste":
@@ -493,7 +567,6 @@ $.expr[":"].containsI = function (a, i, m) {
 // --------------------------- Popup-document frame ------------------------------
 
     } else if (location.href.search("docs/dc.htm")+1){
-        let SSSFrame = window.parent
         switch ($('h1',document).text()){
             case "Arrêter/Suspendre/Reprendre":
                 if (SSSFrame.listeConsignes || typeof SSSFrame.listingPrescriptions == "undefined"){
@@ -513,7 +586,7 @@ $.expr[":"].containsI = function (a, i, m) {
 // --------------------------- Popup Content frame ------------------------------
 
     } else if ((location.href.search("popupContents.jsp")+1)){
-        let styleEl = document.createElement('style'), title, pres, SSSFrame = window.parent
+        let styleEl = document.createElement('style'), title, pres
         styleEl.innerHTML = `
 .outOf2DaysRange {background:coral;}
 .nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
@@ -880,7 +953,7 @@ function presOutputConsignesRapides(ev){
 }
 
 function addAutoPrescriptor(ev){
-    let SSSFrame = ev.view.document.name == "SSSFrame" ? ev.view : document.getElementById('SSSFrame').contentWindow, $ = SSSFrame.$
+    let SSSFrame = ev.name && ev.name == "SSSFrame" ? ev : (ev && ev.view && ev.view.document.name == "SSSFrame" ? ev.view : document.getElementById('SSSFrame').contentWindow), $ = SSSFrame.$
     let DCI = {loxapac:"loxapine", nozinan:"levomepromazine", tercian:"cyamemazine",
                abilify:"aripiprazole", risperdal:"risperidone",zyprexa:"olanzapine", leponex:"clozapine", solian:"amisulpride", xeroquel:"quetiapine",
                valium:"diazepam", seresta:"oxazepam", tranxene:"clorazepate", lysanxia:"prazepam", temesta:"lorazepam", xanax:"alprazolam", lexomil:"bromazepam",
@@ -895,7 +968,7 @@ function addAutoPrescriptor(ev){
                 alimemazine:[0,0,0,1], lormetazepam:[0,0,0,1], hydroxyzine:[0,0,0,1]
             },
             formes:{
-                loxapine:"buv", olanzapine:"dispers", cyamemazine:"buv"
+                loxapine:"buv", olanzapine:"dispers", cyamemazine:"buv", abilify:"cp"
             },
             dose:{
                 olanzapine:20,aripiprazole:10,loxapine:25,cyamemazine:25,risperidone:2,alimemazine:10,diazepam:10,lorazepam:1,lormetazepam:1, hydroxyzine:25,quetiapine:150
@@ -903,11 +976,12 @@ function addAutoPrescriptor(ev){
         },
         formes = ["cp", "buv", "inj", "gel"],
         frequences = {"coucher":[0,0,0,1], "matin":[1,0,0,0], "midi":[0,1,0,0], "soir": [0,0,1,0], "mms":[1,1,1,0], "mmsc":[1,1,1,1]}
-    if($('#HEO_INPUT', SSSFrame.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = (ev)=>{
+    console.log(SSSFrame)
+    if($('#HEO_INPUT', SSSFrame.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = function(ev){
+        console.log(ev.keyCode)
         if(ev.keyCode==13){ // on Enter keydown
             let pres = ev.target.value.split(" ")
             if ($("#preHeaderMarkup", SSSFrame.document.heoPane_prompt.document).is(':contains(Sélectionnez un item)') && typeof pres == "object" && pres.length > 1){
-                console.log('bouh')
                 if (pres[0] == "mod" || pres[0] == "m") {pres.modif = pres.shift()}
                 pres.nom = DCI[pres[0]] || pres[0]
                 pres.dose = Number(pres[2]) || Number(pres[1]) || defaultsPres.dose[pres.nom] || ""
@@ -921,7 +995,7 @@ function addAutoPrescriptor(ev){
                 }catch (e){
                     pres.poso = [0,0,0,0]
                     Object.keys(frequences).filter(elm=>pres.find(el=>elm.toUpperCase()==el.toUpperCase())).forEach((el,i)=>{pres.poso = pres.poso.map((elm, j)=>elm+frequences[el][j])})
-                    if (pres.poso == undefined || pres.reduce((a, b)=>a+b,0)){
+                    if (pres.poso == undefined || pres.reduce((a, b)=>a+b,0) == 0){
                         pres.poso = defaultsPres.posos[pres.nom]
                     }
                 }
@@ -1523,6 +1597,13 @@ NZb = function(a){let b = a;try{b = JSON.parse(a);b.groupsBy = [];b = JSON.strin
                 $(el).parents('tr').next().add($(el).parents('tr').find('td.pres-consignes-restreint')).removeClass('deplacements-restreints')
             })
         }
+    } else if ($(ev.target).filter('span.GD42JS-DP5:contains("Fermer")')||$(ev.target).filter('span.GD42JS-DP5:contains("Signer")')){
+        let SSSFrame = window.top.SSSFrame || window.top[0]
+        $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
+            $el.show()
+            $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
+            $('.full_bg', SSSFrame.document).hide()
+        })
     }/* else if ($(ev.target).filter('span.GD42JS-DP5:contains(Oups)')){
         console.log(ev.target, ev.target.parentElement.parentElement)
         if ($('div.outlineTitle',ev.view.document.heoPane_output.document).text().log().trim() == "Prescriptions Usuelles de Psychiatrie Adulte"){
