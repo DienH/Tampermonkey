@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.49
+// @version      0.2.50
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -668,7 +668,7 @@ body {background-color:#F5F5F5;}
                     break
                 default:
                     // prescription rapide de médoc
-                    if ((pres = window.parent.autoEnhancedPres) && $("p.Titre:containsI("+pres[0]+"):containsI("+pres[1]+")", document).length){
+                    if ((pres = window.parent.autoEnhancedPres) && (window.parent.autoEnhancedPres.posos[0]) && $("p.Titre:containsI("+pres[0]+"):containsI("+pres[1]+")", document).length){
                         $("#frequence>option[value='"+pres.posos[0].freqName.toUpperCase()+"']", document).each((i,el)=>{el.selected=true})
                         $("#PosoSimple", document)[0].click()
                         $("#DoseSimple", document).val(pres.posos[0].dose)
