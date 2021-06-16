@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.50
+// @version      0.2.51
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -124,6 +124,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
         let SSSFrame = unsafeWindow, CS_AnestTitle = (`div.carousel_enabled_item:contains("Consultation d'anesthésie")`),
             SSSFrame_wait = setInterval(()=>{
                 $(CS_AnestTitle).remove()
+                SSSFrame.dispatchEvent(new Event('resize'))
                 $(`div.carousel_enabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("Observations"), div.carousel_enabled_item:contains("Résultats de laboratoire")`)
                     .prependTo($(`div.carousel_enabled_item:contains("HEO - Prescrire")`).parent())
             let $dateInput = $('input.GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error', SSSFrame.document).parent()
@@ -987,7 +988,7 @@ function addAutoPrescriptor(ev){
                 olanzapine:20,aripiprazole:10,loxapine:25,cyamemazine:25,risperidone:2,alimemazine:10,diazepam:10,lorazepam:1,lormetazepam:1, hydroxyzine:25,quetiapine:150
             }
         },
-        formes = ["cp", "buv", "inj", "gel"],
+        formes = ["cp", "buv", "inj", "gel", "im"],
         frequences = {"coucher":[0,0,0,1], "matin":[1,0,0,0], "midi":[0,1,0,0], "soir": [0,0,1,0], "mms":[1,1,1,0], "mmsc":[1,1,1,1]}
     if($('#HEO_INPUT', SSSFrame.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = function(ev){
         if(ev.keyCode==13){ // on Enter keydown
@@ -1623,7 +1624,11 @@ NZb = function(a){let b = a;try{b = JSON.parse(a);b.groupsBy = [];b = JSON.strin
             $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
             $('.full_bg', SSSFrame.document).hide()
         })
-    }/* else if ($(ev.target).filter('span.GD42JS-DP5:contains(Oups)')){
+    } else if ($(ev.target).filter('span.GD42JS-DP5:contains(Oups)')){
+        let SSSFrame = window.top.SSSFrame || window.top[0]
+        delete SSSFrame.autoEnhancedPres
+    }
+    /*
         console.log(ev.target, ev.target.parentElement.parentElement)
         if ($('div.outlineTitle',ev.view.document.heoPane_output.document).text().log().trim() == "Prescriptions Usuelles de Psychiatrie Adulte"){
             $(ev.target).parents('button').attr("disabled", true)
