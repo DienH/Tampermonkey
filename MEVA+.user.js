@@ -954,7 +954,8 @@ function presLaboRapide(ev){
                 if ($(ev.currentTarget).is('[type=datetime]')){
                     SSSFrame.datePresPicker.show()
                     SSSFrame.hourPresPicker.hide()
-                    $(SSSFrame.hourPresPicker.container).addClass('labo-popup').add(SSSFrame.datePresPicker.picker).position({at: "right",my: "left", of:ev.target})
+                    $(SSSFrame.hourPresPicker.wrapper).css('zIndex', 1001)
+                    $(SSSFrame.hourPresPicker.container).addClass('labo-popup').add(SSSFrame.datePresPicker.picker).css({top:0,left:0}).position({at: "right",my: "left", of:ev.target})
                 }
             })
         },
