@@ -560,7 +560,7 @@ $.expr[":"].containsI = function (a, i, m) {
             if ((promptTitle == "Saisissez une date et heure de début") || (promptTitle.search("(avec une date et heure de fin optionnelle)")+1) ||
                 promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?" ||
                 promptTitle == "Quand la prescription doit-elle être reprise ?" || promptTitle == "Date de Dernière Prise:" ||
-               promptTitle == "Quand la prescription doit-elle être suspendue ?"){
+                promptTitle == "Quand la prescription doit-elle être suspendue ?"){
                 document.head.append(hourCSS)
                 document.head.append(hourScript)
                 document.head.append(dateScript)
@@ -901,37 +901,44 @@ function presLaboRapide(ev){
  <tbody>
   <tr>
    <td><input type="checkbox" id="labo-nfs"><label for="labo-nfs">NFS</label></td>
-   <td><input type="text" name="date_labo-nfs"></td>
+   <td><input type="datetime" name="date_labo-nfs"></td>
    <td><input type="checkbox" id="labo-li"><label for="labo-li">Lithémie</label></td>
-   <td><input type="text" name="date_labo-li"></td>
+   <td><input type="datetime" name="date_labo-li"></td>
   </tr>
   <tr>
    <td><input type="checkbox" id="labo-bs"><label for="labo-bs">Iono+Ca+Urée+Créat</label></td>
-   <td><input type="text" name="date_labo-bs"></td>
+   <td><input type="datetime" name="date_labo-bs"></td>
    <td><input type="checkbox" id="labo-cloza"><label for="labo-cloza">Clozapinémie</label></td>
-   <td><input type="text" name="date_labo-cloza"></td>
+   <td><input type="datetime" name="date_labo-cloza"></td>
   </tr>
   <tr>
    <td><input type="checkbox" id="labo-crp"><label for="labo-crp">CRP</label></td>
-   <td><input type="text" name="date_labo-crp"></td>
+   <td><input type="datetime" name="date_labo-crp"></td>
    <td><input type="checkbox" id="labo-valpro"><label for="labo-valpro">Valproatémie</label></td>
-   <td><input type="text" name="date_labo-valpro"></td>
+   <td><input type="datetime" name="date_labo-valpro"></td>
   </tr>
   <tr>
    <td><input type="checkbox" id="labo-bh"><label for="labo-bh">Bilan hépatique</label></td>
-   <td><input type="text" name="date_labo-bh"></td>
+   <td><input type="datetime" name="date_labo-bh"></td>
   </tr>
   <tr>
    <td><input type="checkbox" id="labo-tsh"><label for="labo-tsh">TSH</label></td>
-   <td><input type="text" name="date_labo-tsh"></td>
+   <td><input type="datetime" name="date_labo-tsh"></td>
   </tr>
   <tr>
    <td><input type="checkbox" id="labo-bc"><label for="labo-bc">Bilan coagulation</label></td>
-   <td><input type="text" name="date_labo-bc"></td>
+   <td><input type="datetime" name="date_labo-bc"></td>
   </tr>
  </tbody>
- <tfoot>
-  <tr><td colspan=4><input type="datetime-local" step=600 name="date_labo-general"></td></tr>
+ <tfoot style="margin-top:5px;">
+  <tr>
+   <td colspan=4>
+    Date et heure de prescription par défaut :
+    <input checked type="radio" name="date_labo-general" id="date_labo-now"><label for="date_labo-now">Maintenant</label>
+    <input type="radio" name="date_labo-general" id="date_labo-demain"><label for="date_labo-demain">Demain matin</label>
+    <input type="radio" name="date_labo-general" id="date_labo-date"><label for="date_labo-date">Date :</label><input type="datetime" step=600 name="date_labo-general">
+   </td>
+  </tr>
  </tfoot>
 </table>`).dialog({
         modal:true,
@@ -943,6 +950,18 @@ function presLaboRapide(ev){
         resize:"auto",
         autoResize:true,
         open:function(ev, ui){
+            $('#LABO-POPUP', SSSFrame.document).on('click', 'input', ev=>{
+                if ($(ev.currentTarget).is('[type=datetime]')){
+                    SSSFrame.datePresPicker.show()
+                    SSSFrame.hourPresPicker.hide()
+                    $(SSSFrame.hourPresPicker.container).addClass('labo-popup').add(SSSFrame.datePresPicker.picker).position({at: "right",my: "left", of:ev.target})
+                }
+            })
+        },
+        close:(ev,ui)=>{
+            $('#LABO-POPUP', SSSFrame).off('click')
+            SSSFrame.datePresPicker.hide()
+            SSSFrame.datePresPicker.hide()
         },
         buttons: [
             {
@@ -1341,6 +1360,7 @@ function dateHourPres(ev){
     styleEl.innerHTML = `
 .nj-picker .nj-item {padding:0.2em!important;}
 .nj-picker-container {font-size: small!important;max-width: 300px!important;min-width: 150px!important;right: 100px; bottom:3px; overflow:hidden; position: fixed;}
+.nj-picker-container.labo-popup {bottom:initial;right:initial;}
 .nj-picker .nj-hours-wrapper, .nj-picker .nj-minutes-wrapper {gap: 0.25em!important;}
 .nj-picker .nj-minutes-wrapper {grid-template-columns: repeat(1,1fr)!important;}
 .nj-picker .nj-minutes-container, .nj-picker .nj-hours-container {padding: .5em;display: table-cell;position: static;}
@@ -1368,6 +1388,9 @@ var datePresPicker = new Litepicker({
  startDate:Date.now(),
  minDate: today.setDate(today.getDate()-2),
  selectForward: true,
+ numberOfMonths:HEO_input ? 1:2,
+ moveByOneMonth:true,
+ numberOfColumns:HEO_input ? 1:2,
  onHide: ()=>{if(HEO_input) {HEO_input.value = textDateEl.value}else{}; hourPresPicker.show();},
  onShow: ()=>{$(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 0, overflow:"hidden"})}
 });
@@ -1415,8 +1438,10 @@ hourPresPicker.on('save', data=>{
   HEO_input.dispatchEvent(ke);
  }
 })
-if (HEO_ipnut){datePresPicker.show()}
-$(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 0, overflow:"hidden"})
+if (HEO_input){
+ datePresPicker.show()
+ $(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 0, overflow:"hidden"})
+}
 `
         document.head.append(dateHourScriptInit)
     } else {
