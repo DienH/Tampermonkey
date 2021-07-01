@@ -125,9 +125,9 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
             SSSFrame_wait = setInterval(()=>{
                 $(CS_AnestTitle).remove()
                 SSSFrame.dispatchEvent(new Event('resize'))
-                $(`div.carousel_disabled-item:contains("HEO - Prescrire"), div.carousel_enabled-item:contains("Observations"), div.carousel_enabled-item:contains("Résultats de laboratoire"),`+
-                `div.carousel_enabled-item:contains("HEO - Prescrire"), div.carousel_disabled-item:contains("Observations"), div.carousel_disabled-item:contains("Résultats de laboratoire")`)
-                    .prependTo($(`div.carousel_enabled_item:contains("HEO - Prescrire"), div.carousel_disabled_item:contains("HEO - Prescrire")`).parent())
+                $('div.carousel_enabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("Observations"), div.carousel_enabled_item:contains("Résultats de laboratoire")'+
+                  'div.carousel_disabled_item:contains("HEO - Prescrire"), div.carousel_disabled_item:contains("Observations"), div.carousel_disabled_item:contains("Résultats de laboratoire")')
+                    .prependTo($('div.carousel_disabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("HEO - Prescrire")').parent())
             let $dateInput = $('input.GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error', SSSFrame.document).parent()
             if (!$dateInput.siblings('[title*=Aujourd]').length){
                 $dateInput.before(
@@ -174,9 +174,9 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <span title="Reprendre" action="RESUME"><img src="/heoclient-application-web/images/control_play_blue.png" class="gwt-Image"></span>
   <span title="Annuler arrêt & modifications" action="RESET_ORDER"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
 </div>
-`).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver)
+`).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '*, .GD42JS-DOYB.GD42JS-DK-B tr', monitorPresMouseOver)
                 let IPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP : ")', SSSFrame.document).text().split(" : ")[1]
-                if ((typeof SSSFrame.listingPrescriptions == "undefined" || (false && SSSFrame.listingPrescriptions.IPP != IPP) ) && $('div.GD42JS-DKYB.GD42JS-DK-B').length){
+                if ((typeof SSSFrame.listingPrescriptions == "undefined" || (SSSFrame.listingPrescriptions.IPP != IPP) ) && $('#workbody').length){
                     delete SSSFrame.listingPrescriptions
                     delete SSSFrame.listingConsignes
                     $('#CONSIGNES-POPUP', SSSFrame.document).dialog('destroy').remove()
@@ -235,6 +235,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 .ui-widget-content .ui-state-default.ui-button-validate {background:#090;color:#fee;}
 div.ui-dialog[aria-describedby="CONSIGNES-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY//8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb/5ef24osbIzDq79BnaYoSuvk8GYITafQKJaBWh1WrHl8JinLp9wBF4fqiZPZ33wAfP8GUa+i93oK18gCOp2BsFQHW1xMp/Fh4QjEzc3lYQlLhaL5ITakKvP8AWq6gk85CjyVhbBYAeW9Qq/Ne2nC7ufEmJpNcN5OjvcI2k/MW2KszsAZUZejRONTHHnv43yFaOGZCZnIicSAYAaQK1LkF80zYinYoQfRIDLCuEQgBr1aB7R2m24vm7Cw5Aw4RLRyFkV0HdiQGloEik8MM1FdW0XrI48DpJPZwKAIjk2P/QIIWDKMlzNHvD1zmyVM/sL6B02d+HN29j4PpaTIKM61Geo29KkJjq7fcjwaGWXl45x49nvcA6QxOvD4c3nLiy7Wpv0Pay8vCaSAII5WBthJEkxeG3G443NxXcpP+5AVoviV8c97G/tVJYWgL1bMoHC89R9PFj3W74XBw+9en6Fj4TxzxvPC/Uw2G2MEXjV//kEpgRFM89AAAAABJRU5ErkJggg==");
 background-position:initial;}
+#LABO-POPUP table input {vertical-align:-2px;margin-right:5px;}
 .GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody div.GOAX34LORB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBodyLineSelected:hover {color:white!important}
 #contextMenu_patients {position:fixed!important;}
 #contextMenu_patients.ui-menu .ui-menu-item-wrapper {padding:8px;}
@@ -275,6 +276,8 @@ $.expr[":"].containsI = function (a, i, m) {
 
 
 
+
+
 // --------------------------- heoOutput (liste des traitements / consignes) ------------------------------
 // --------------------------- heoOutput (liste des traitements / consignes) ------------------------------
 // --------------------------- heoOutput (liste des traitements / consignes) ------------------------------
@@ -283,7 +286,7 @@ $.expr[":"].containsI = function (a, i, m) {
     } else if ((location.href.search('heoOutput.jsp')+1)){
         let heoOutputFrame = SSSFrame.document.heoPane_output
         const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
-        $('#HEO_INPUT', SSSFrame.document).each((i,el)=>{
+        let $HEO_INPUT = $('#HEO_INPUT', SSSFrame.document).each((i,el)=>{
             if (!el.keydown) {setTimeout(addAutoPrescriptor, 500, SSSFrame)}
         })
         $('body', document).append($('<style>').text(`
@@ -291,7 +294,7 @@ $.expr[":"].containsI = function (a, i, m) {
 .presPsy-rapide:hover {text-decoration:underline;}
 `)).append($('<script>').text(presOutputConsignesRapides.toString()))
         $.waitFor('form[name="Command"]', document).then(el=>{
-            let outputTitle = $('div.outlineTitle', document).text().trim()
+            let outputTitle = $('div.outlineTitle', document).text().trim(), orderName
             switch(outputTitle){
                 case "Prescriptions Usuelles de Psychiatrie Adulte":
                     delete SSSFrame.prescriptionIsoState
@@ -341,13 +344,19 @@ $.expr[":"].containsI = function (a, i, m) {
                     break
                 default:
                     $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', false)
+                    orderName = $('div.orderName', document).text().trim()
                     if (outputTitle == ""){
                         if ($('body>*:not(form):not(script):not(style)', document).text().length == 0){
-                            $('#HEO_INPUT', SSSFrame.document).val('Prescriptions usuelles de psychiatrie adulte')[0].dispatchEvent(ke);
+                            $HEO_INPUT.val('Prescriptions usuelles de psychiatrie adulte')[0].dispatchEvent(ke);
                         } else {
                             $('a[onclick]:has(div.orderDisplayNum:contains("1.")):has(div.orderableList:contains("Prescriptions Usuelles de Psychiatrie Adulte"))', document).click2()
                             if (SSSFrame.autoEnhancedPres){
                                 SSSFrame.output_Selector(SSSFrame.autoEnhancedPres.nom+' '+SSSFrame.autoEnhancedPres.forme)
+                            } else if (SSSFrame.listePresLabo){
+                                SSSFrame.output_Selector(SSSFrame.listePresLabo.current)
+                                if (orderName && SSSFrame.listePresLabo.last && orderName.searchI(SSSFrame.listePresLabo.last)+1){
+                                    $HEO_INPUT[0].dispatchEvent(ke);
+                                }
                             }
                         }
                     }
@@ -364,7 +373,8 @@ $.expr[":"].containsI = function (a, i, m) {
 
 
     } else if (location.href.search("heoPrompt.jsp")+1){
-        let heoOutputFrame = SSSFrame.document.heoPane_output
+        let heoOutputFrame = SSSFrame.document.heoPane_output,
+            $HEO_INPUT = $('#HEO_INPUT', SSSFrame.document)
         const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
         if (document.getElementById('preHeaderMarkup')){
             let promptTitle = document.getElementById('preHeaderMarkup').innerText, pres
@@ -373,12 +383,12 @@ $.expr[":"].containsI = function (a, i, m) {
                     delete SSSFrame.prescriptionIsoState
                     switch (promptTitle){
                         case "Dose par prise:":
-                            $('#HEO_INPUT', SSSFrame.document).val(pres.posos[0].dose)[0].dispatchEvent(ke);
+                            $HEO_INPUT.val(pres.posos[0].dose)[0].dispatchEvent(ke);
                             //$('[id="preMultiChoiceMarkup"]:contains("'+pres.posos[0].dose+'")', document).click2() //.each((i,el)=>el.click())
                             break;
                         case "Fréquence:":
-                            $('#HEO_INPUT', SSSFrame.document).val(pres.posos[0].freqName)[0].dispatchEvent(ke)
-                            //$('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout((elm, kb)=>{elm.value=pres.posos[0].freqName;elm.dispatchEvent(ke);}, 750, el, ke)).val()[0] //
+                            $HEO_INPUT.val(pres.posos[0].freqName)[0].dispatchEvent(ke)
+                            //$HEO_INPUT.each((i,el)=>setTimeout((elm, kb)=>{elm.value=pres.posos[0].freqName;elm.dispatchEvent(ke);}, 750, el, ke)).val()[0] //
                             break;
                         case "Commentaires:":
                             SSSFrame.autoEnhancedPres.posos.shift()
@@ -386,11 +396,11 @@ $.expr[":"].containsI = function (a, i, m) {
                                 delete SSSFrame.autoEnhancedPres
                             }else {
                             }
-                            $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout((elm)=>elm.dispatchEvent(ke), 250, el))
+                            $HEO_INPUT.each((i,el)=>setTimeout((elm)=>elm.dispatchEvent(ke), 250, el))
                             break;
                         case "Saisissez une date et heure de début":
                         case "Durée: (avec une date et heure de fin optionnelle)":
-                            $('#HEO_INPUT', SSSFrame.document)[0].dispatchEvent(ke)
+                            $HEO_INPUT[0].dispatchEvent(ke)
                             break;
                         case "Médicament Hors Livret, continuer :":
                             $('a[onclick]:contains("OK")', document).click2()
@@ -404,7 +414,7 @@ $.expr[":"].containsI = function (a, i, m) {
                     }
                 } else if ($el.filter('.orderName:contains("INFORMATION SUR LE PATIENT")').length){
                     delete SSSFrame.prescriptionIsoState
-                    $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{let a = new Date();elm.value=a.toLocaleDateString()+" "+a.toLocaleTimeString([], {timeStyle: 'short'})}, 250, el))
+                    $HEO_INPUT.each((i,el)=>setTimeout(elm=>{let a = new Date();elm.value=a.toLocaleDateString()+" "+a.toLocaleTimeString([], {timeStyle: 'short'})}, 250, el))
                 } else if ($el.filter('.orderName:contains("Isolement : Indication")').add($el.filter('.orderName:contains("Contention : Indication")')).length){
                     switch (promptTitle){
                         case "Interventions alternatives tentées:":
@@ -425,7 +435,7 @@ $.expr[":"].containsI = function (a, i, m) {
                             break
                         case "Commentaire sur l'examen somatique réalisé:":
                             if (SSSFrame.prescriptionIsoState == 1){
-                                $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value="RAS";elm.dispatchEvent(ke)}, 500, el))
+                                $HEO_INPUT.each((i,el)=>setTimeout(elm=>{elm.value="RAS";elm.dispatchEvent(ke)}, 500, el))
                                 SSSFrame.prescriptionIsoState++;
                             }
                             break
@@ -449,19 +459,19 @@ $.expr[":"].containsI = function (a, i, m) {
                             break
                         case "Objets Autorisés:":
                             if (SSSFrame.prescriptionIsoState == 5){
-                                $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value="AUCUN";elm.dispatchEvent(ke)}, 500, el))
+                                $HEO_INPUT.each((i,el)=>setTimeout(elm=>{elm.value="AUCUN";elm.dispatchEvent(ke)}, 500, el))
                                 SSSFrame.prescriptionIsoState++;
                             }
                             break
                         case "Vêtements Autorisés:":
                             if (SSSFrame.prescriptionIsoState == 6){
-                                $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value="AUCUN";elm.dispatchEvent(ke)}, 500, el))
+                                $HEO_INPUT.each((i,el)=>setTimeout(elm=>{elm.value="AUCUN";elm.dispatchEvent(ke)}, 500, el))
                                 SSSFrame.prescriptionIsoState++;
                             }
                             break
                         case "Mobilier Autorisé:":
                             if (SSSFrame.prescriptionIsoState == 7){
-                                $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value="AUCUN";elm.dispatchEvent(ke)}, 500, el))
+                                $HEO_INPUT.each((i,el)=>setTimeout(elm=>{elm.value="AUCUN";elm.dispatchEvent(ke)}, 500, el))
                                 SSSFrame.prescriptionIsoState++;
                             }
                             break
@@ -509,13 +519,64 @@ $.expr[":"].containsI = function (a, i, m) {
                 } else if (SSSFrame.nouvellesConsignes && $el.filter('.orderName:contains("Soins sans consentement")').length){
                     switch (promptTitle){
                         case "Commentaires:":
-                            $('#HEO_INPUT', SSSFrame.document).each((i,el)=>setTimeout(elm=>{elm.value=SSSFrame.nouvellesConsignes.mode_hospit.comment;elm.dispatchEvent(ke)}, 500, el))
+                            $HEO_INPUT.each((i,el)=>setTimeout(elm=>{elm.value=SSSFrame.nouvellesConsignes.mode_hospit.comment;elm.dispatchEvent(ke)}, 500, el))
                             break
                         case "Durée: (avec une date et heure de fin optionnelle)":
                             SSSFrame.nouvellesConsignes.mode_hospit.done=true
                             $('a[onclick]:contains("ENTREE")', document).click2()
                             break
                     }
+
+
+                    // ---------- Pres Labo auto -----------
+                    // ---------- Pres Labo auto -----------
+                    // ---------- Pres Labo auto -----------
+                    // ---------- Pres Labo auto -----------
+                } else if (SSSFrame.listePresLabo && $el.is('div.orderName:containsI('+SSSFrame.listePresLabo.current+')')){
+                    switch(promptTitle){
+                        case "Fréquence:":
+                            $('a[onclick]:contains("ENTREE")', document).click2()
+                            break;
+                        case "Saisissez une date et heure de début":
+                            $HEO_INPUT.val(SSSFrame.listePresLabo.labo[SSSFrame.listePresLabo.current] || SSSFrame.listePresLabo.date).each((i,el)=>{
+                                if (SSSFrame.listePresLabo.current != "Lithium Sanguin" && SSSFrame.listePresLabo.current != "Dosage Clozapine" && SSSFrame.listePresLabo.current != "Dosage Acide Valpro"){
+                                    SSSFrame.listePresLabo.last = SSSFrame.listePresLabo.current
+                                    SSSFrame.listePresLabo.current = Object.keys(SSSFrame.listePresLabo.labo)[++SSSFrame.listePresLabo.currentN]
+                                    if (!SSSFrame.listePresLabo.current){
+                                        delete SSSFrame.listePresLabo
+                                    }
+                                }
+                                el.dispatchEvent(ke);
+                            })
+                            break;
+                        case "Commentaires:":
+                            $HEO_INPUT.each((i,el)=>{
+                                if (SSSFrame.listePresLabo.current == "Dosage Clozapine" || SSSFrame.listePresLabo.current == "Dosage Acide Valpro"){
+                                    SSSFrame.listePresLabo.last = SSSFrame.listePresLabo.current
+                                    SSSFrame.listePresLabo.current = Object.keys(SSSFrame.listePresLabo.labo)[++SSSFrame.listePresLabo.currentN]
+                                    if (!SSSFrame.listePresLabo.current){
+                                        delete SSSFrame.listePresLabo
+                                    }
+                                }
+                                el.dispatchEvent(ke);
+                            })
+                            break;
+                        case "Nature du liquide:":
+                            $HEO_INPUT.each((i,el)=>{
+                                SSSFrame.listePresLabo.last = SSSFrame.listePresLabo.current
+                                SSSFrame.listePresLabo.current = Object.keys(SSSFrame.listePresLabo.labo)[++SSSFrame.listePresLabo.currentN]
+                                if (!SSSFrame.listePresLabo.current){
+                                    delete SSSFrame.listePresLabo
+                                }
+                                el.dispatchEvent(ke);
+                            })
+                            break;
+                        default:
+                            $HEO_INPUT[0].dispatchEvent(ke);
+                            break;
+                    }
+
+
                     // ---------- Consignes auto -----------
                     // ---------- Consignes auto -----------
                     // ---------- Consignes auto -----------
@@ -552,7 +613,7 @@ $.expr[":"].containsI = function (a, i, m) {
                             currConsigneA = $('div.orderName', heoOutputFrame.document).text().trim().split(" : ")
                             currConsigne = currConsigneA[0].split(" ")[2].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
                             SSSFrame.nouvellesConsignes[currConsigne].done=true
-                            $('#HEO_INPUT', SSSFrame.document).val(SSSFrame.nouvellesConsignes[currConsigne].comment)[0].dispatchEvent(ke);
+                            $HEO_INPUT.val(SSSFrame.nouvellesConsignes[currConsigne].comment)[0].dispatchEvent(ke);
                             break
                     }
                 }
@@ -566,12 +627,12 @@ $.expr[":"].containsI = function (a, i, m) {
                 document.head.append(dateScript)
                 setTimeout(dateHourPres, 500)
             } else if (promptTitle == 'Sélectionnez le motif de non prise en compte de cette alerte ou veuillez le saisir en texte libre') {
-                $('#HEO_INPUT', SSSFrame.document).val('b')[0].dispatchEvent(ke);
+                $HEO_INPUT.val('b')[0].dispatchEvent(ke);
             } else if (promptTitle == 'Priorité: (de votre prescription)') {
                 setTimeout(()=>{$('#HEO_INPUT', SSSFrame.document).val('PLANIFIE') //[0].dispatchEvent(ke);
                                }, 500)
             } else if (promptTitle == 'OK pour confirmer cette prescription ?') {
-                $('#HEO_INPUT', SSSFrame.document)[0].dispatchEvent(ke);
+                $HEO_INPUT[0].dispatchEvent(ke);
             } else if (promptTitle == "Médicament Hors Livret, continuer :"){
                 $('a[onclick]:contains("(_) OK")', document).click2()
                 $('a[onclick]:contains("(x)")', document).each(()=>$('a[onclick]:contains("ENTREE")', document).click2())
@@ -579,15 +640,22 @@ $.expr[":"].containsI = function (a, i, m) {
 
                 var listePrescriptionsEquivalent = {"tdm":"Demande d'Examen Tomodensitométrique",
                                                    "scanner":"Demande d'Examen Tomodensitométrique",
-                                                   "irm":"Demande d'IRM"}
-
-                $("a[onclick*='@THERAPEUTICSUBSTITUTION='", document).each((i,el)=>{
+                                                   "irm":"Demande d'IRM",
+                                                   "radio":"Demande de Radio conventionnelle",
+                                                   "nfs":"Numération Formule Sanguine",
+                                                   "BHEP":"BHEP : ASAT ALAT",
+                                                   "crp":"CRP (Sang)",
+                                                   "bs":"BS (Iono,CA,Uree,Creat,Glucose)",
+                                                   "tshu":"TSH (Sang)"}
+                if(!$("a[onclick*='@THERAPEUTICSUBSTITUTION='", document).each((i,el)=>{
                     let presSearch = el.innerText.split('"')[1], presAction = listePrescriptionsEquivalent[presSearch]
                     if (presAction){
                         SSSFrame.output_Selector(presAction)
-                    }
-                })
-                //listePrescriptionsEquivalent
+                    }})
+                   .length && SSSFrame.listePresLabo)
+                {
+                    $HEO_INPUT.val(SSSFrame.listePresLabo.current)[0].dispatchEvent(ke);
+                }
             }
         }
 
@@ -601,10 +669,10 @@ $.expr[":"].containsI = function (a, i, m) {
         switch ($('h1',document).text()){
             case "Arrêter/Suspendre/Reprendre":
                 if (SSSFrame.nouvellesConsignes || typeof SSSFrame.listingPrescriptions == "undefined"){
-                    $('button:contains("Arrêter ces prescriptions")', document).click2()
                     if (typeof SSSFrame.listingPrescriptions == "undefined"){
                         $('#HEO_POPUP', SSSFrame.document).addClass('force_hidden')
                     }
+                    $('button:contains("Arrêter ces prescriptions")', document).click2()
                 }
                 break
         }
@@ -618,7 +686,8 @@ $.expr[":"].containsI = function (a, i, m) {
 // --------------------------- Fenêtre Popup ------------------------------
 
     } else if ((location.href.search("popupContents.jsp")+1)){
-        let styleEl = document.createElement('style'), title, pres
+        let styleEl = document.createElement('style'), title, pres,
+            $HEO_POPUP = $('#HEO_POPUP', SSSFrame.document)
         styleEl.innerHTML = `
 .outOf2DaysRange {background:coral;}
 .nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
@@ -665,17 +734,17 @@ body {background-color:#F5F5F5;}
                             SSSFrame.nouvellesConsignes.mode_hospit.done=true
                         }
                         SSSFrame.consignesWaiter = SSSFrame.setInterval(()=>{
-                            if (!$('#HEO_POPUP', SSSFrame.document).is(':visible')){
+                            if (!$HEO_POPUP.is(':visible')){
                                 SSSFrame.autoPresConsignesRapides(SSSFrame.nouvellesConsignes)
                             }
                         },750)
                         if ($('input:checked', document).length){
                             $('#playbackOrders', document).click2().log()
                         } else {
-                            $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2().log()
+                            $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
                         }
                     } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
-                        $('#HEO_POPUP', SSSFrame.document).hide()
+                        $HEO_POPUP.hide()
                         SSSFrame.listingPrescriptions = {IPP:$('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP :")', SSSFrame.document).text().split(" : ")[1]}
                         $('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
                             let posoPres = $(el).parent().next(),
@@ -691,9 +760,10 @@ body {background-color:#F5F5F5;}
                             }
                             $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
                         })
-                        $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
-                            $el.show()
-                            $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
+                        //$.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
+                        $.waitFor('#HEO_POPUP:hidden', SSSFrame.document).then($el=>{
+                            $el.show().removeClass('force_hidden')
+                            $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
                             $('.full_bg', SSSFrame.document).hide()
                         })
                     } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
@@ -751,7 +821,7 @@ body {background-color:#F5F5F5;}
                 break
             case "Information":
                 if (document.body.innerText.search('date de début est située dans le passé')+1){
-                    $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DP5:contains("OK")', SSSFrame.document).click2()
+                    $('#HEO_POPUP #ZonePopupBoutons span.GD42JS-DO5:contains("OK")', SSSFrame.document).click2()
                 } else if (document.body.innerText.search('Les prescriptions en mémoire')+1){
                     $('input[name=OK]', document).click2()
                 }
@@ -889,7 +959,7 @@ function presLaboRapide(ev){
     }
     $('#LABO-POPUP', SSSFrame.document).dialog('destroy').remove()
     $('<div id="LABO-POPUP"></div>', SSSFrame.document).append(`
-<table>
+<table style="margin:auto;">
  <thead>
   <tr>
    <th style="width:200px">Labo :</th>
@@ -901,42 +971,44 @@ function presLaboRapide(ev){
  <tbody>
   <tr>
    <td><input type="checkbox" id="labo-nfs"><label for="labo-nfs">NFS</label></td>
-   <td><input type="datetime" name="date_labo-nfs"></td>
+   <td><input type="datetime" id="date_labo-nfs"></td>
    <td><input type="checkbox" id="labo-li"><label for="labo-li">Lithémie</label></td>
-   <td><input type="datetime" name="date_labo-li"></td>
+   <td><input type="datetime" id="date_labo-li"></td>
   </tr>
   <tr>
    <td><input type="checkbox" id="labo-bs"><label for="labo-bs">Iono+Ca+Urée+Créat</label></td>
-   <td><input type="datetime" name="date_labo-bs"></td>
+   <td><input type="datetime" id="date_labo-bs"></td>
    <td><input type="checkbox" id="labo-cloza"><label for="labo-cloza">Clozapinémie</label></td>
-   <td><input type="datetime" name="date_labo-cloza"></td>
+   <td><input type="datetime" id="date_labo-cloza"></td>
   </tr>
   <tr>
    <td><input type="checkbox" id="labo-crp"><label for="labo-crp">CRP</label></td>
-   <td><input type="datetime" name="date_labo-crp"></td>
+   <td><input type="datetime" id="date_labo-crp"></td>
    <td><input type="checkbox" id="labo-valpro"><label for="labo-valpro">Valproatémie</label></td>
-   <td><input type="datetime" name="date_labo-valpro"></td>
+   <td><input type="datetime" id="date_labo-valpro"></td>
   </tr>
   <tr>
    <td><input type="checkbox" id="labo-bh"><label for="labo-bh">Bilan hépatique</label></td>
-   <td><input type="datetime" name="date_labo-bh"></td>
+   <td><input type="datetime" id="date_labo-bh"></td>
   </tr>
   <tr>
    <td><input type="checkbox" id="labo-tsh"><label for="labo-tsh">TSH</label></td>
-   <td><input type="datetime" name="date_labo-tsh"></td>
+   <td><input type="datetime" id="date_labo-tsh"></td>
   </tr>
   <tr>
    <td><input type="checkbox" id="labo-bc"><label for="labo-bc">Bilan coagulation</label></td>
-   <td><input type="datetime" name="date_labo-bc"></td>
+   <td><input type="datetime" id="date_labo-bc"></td>
   </tr>
  </tbody>
- <tfoot style="margin-top:5px;">
+ <tfoot style="margin-top:15px;border-top:1px solid black">
   <tr>
    <td colspan=4>
     Date et heure de prescription par défaut :
-    <input checked type="radio" name="date_labo-general" id="date_labo-now"><label for="date_labo-now">Maintenant</label>
-    <input type="radio" name="date_labo-general" id="date_labo-demain"><label for="date_labo-demain">Demain matin</label>
-    <input type="radio" name="date_labo-general" id="date_labo-date"><label for="date_labo-date">Date :</label><input type="datetime" step=600 name="date_labo-general">
+    <input checked type="radio" name="date_labo-general" id="date_labo-now" value=""><label for="date_labo-now">Maintenant</label>
+    <input type="radio" name="date_labo-general" id="date_labo-demain" value="`+
+                                                               (new Date((new Date()).setDate((new Date()).getDate()+((new Date()).getHours() > 6 ? 1 : 0)))).toLocaleDateString()+ // ajout de la date de demain s'il est plus de 08h
+                                                               ` 08:00"><label for="date_labo-demain">Demain matin</label>
+    <input type="radio" name="date_labo-general" id="date_labo-date" value=""><label for="date_labo-date">Date :</label><input type="datetime" step=600 name="date_labo-general" id="date_labo-autre">
    </td>
   </tr>
  </tfoot>
@@ -945,31 +1017,65 @@ function presLaboRapide(ev){
         title:"Prescription rapide de bilan",
         minHeight:250,
         minWidth:680,
-        width:800,
+        width:$(SSSFrame.datePresPicker.picker).width()+298,
         height:"auto",
         resize:"auto",
         autoResize:true,
         open:function(ev, ui){
+            $('#LABO-POPUP input', SSSFrame.document).attr('autocomplete', 'off')
             $('#LABO-POPUP', SSSFrame.document).on('click', 'input', ev=>{
                 if ($(ev.currentTarget).is('[type=datetime]')){
                     SSSFrame.datePresPicker.show()
-                    SSSFrame.hourPresPicker.hide()
-                    $(SSSFrame.hourPresPicker.wrapper).css('zIndex', 1001)
-                    $(SSSFrame.hourPresPicker.container).addClass('labo-popup').add(SSSFrame.datePresPicker.picker).css({top:0,left:0}).position({at: "right",my: "left", of:ev.target})
+                    if (!SSSFrame.hourPresPicker.pickerVisible){
+                        SSSFrame.hourPresPicker.show()
+                    }
+                    $(SSSFrame.hourPresPicker.wrapper).css({zIndex: 1001, width:0, height:0})
+                    let labo_popup_pos = $("#LABO-POPUP").parent().position()
+                    labo_popup_pos.top += $("#LABO-POPUP").parent().outerHeight()
+                    labo_popup_pos.left += $("#LABO-POPUP").parent().outerWidth()-300
+                    $(SSSFrame.hourPresPicker.container).addClass('labo-popup').css(labo_popup_pos)
+                    $(SSSFrame.datePresPicker.picker).css({top:0,left:0}).position({at:"left bottom", my:"left top", of:$("#LABO-POPUP").parent()})
+                    SSSFrame.hourPresPicker.labo_input = SSSFrame.datePresPicker.labo_input = ev.currentTarget
+                    $(ev.currentTarget).parent().prev().find('input[type=checkbox]').add($(ev.currentTarget).siblings().filter('input[type=radio][id=date_labo-date]')).prop("checked", true)
+                } else if ($(ev.currentTarget).is('[type=radio]:not([id=date_labo-date])')){
+                    $('#date_labo-autre', SSSFrame.document).val("")
                 }
             })
         },
         close:(ev,ui)=>{
-            $('#LABO-POPUP', SSSFrame).off('click')
-            SSSFrame.datePresPicker.hide()
-            SSSFrame.datePresPicker.hide()
+            $('#LABO-POPUP', SSSFrame.document).off('click')
+            SSSFrame.datePresPicker.setDate(new Date((new Date()).setDate((new Date()).getDate()+((new Date()).getHours() > 6 ? 1 : 0))))
+            SSSFrame.hourPresPicker.hours[8].click()
+            setTimeout(()=>{
+                SSSFrame.datePresPicker.hide()
+                SSSFrame.hourPresPicker.hide()
+            },10)
         },
         buttons: [
             {
                 text: "Valider",
                 class: "ui-button ui-button-validate",
                 click: function() {
-                    let equivalenceLabo = {bc:"Bilan de coagulation", bh:"BHEP", nfs:"numération formule sanguine", cloza:"Dosage Clozapine", li:"dosage lithium"}
+                    let equivalenceLabo = {bs:"BS (Iono,CA,Uree,Creat,Glucose)", bc:"Bilan de coagulation", bh:"BHEP : ASAT ALAT", nfs:"numération formule sanguine", tsh:"TSH (Sang)", crp:"CRP (Sang)",
+                                           cloza:"Dosage Clozapine", li:"Lithium Sanguin", valpro:"Dosage Acide Valpro"},
+                        listePresLabo = {labo:{}}
+                    $('#LABO-POPUP table input', SSSFrame.document).each((i,el)=>{
+                        if ($(el).is('[type=checkbox]:checked')){
+                            let currentLabo = $(el).attr('id').split('-')[1]
+                            listePresLabo.labo[equivalenceLabo[currentLabo] || currentLabo]=$('#date_labo-'+currentLabo).val()
+                        } else if ($(el).is('[name="date_labo-general"][type=radio]:checked')) {
+                            listePresLabo.date = $(el).val() || $('#date_labo-autre').val() || ''
+                        }
+                    })
+                    let pres
+                    if ((pres = Object.keys(listePresLabo.labo)).length){
+                        listePresLabo.current = pres[0]
+                        listePresLabo.currentN = 0
+                        SSSFrame.listePresLabo = listePresLabo
+                        const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
+                        $('#HEO_INPUT', SSSFrame.document).val(pres[0])[0].dispatchEvent(ke)
+                    }
+                    $( this ).dialog( "close" );
                 }
             },
             {
@@ -1375,25 +1481,45 @@ function dateHourPres(ev){
         let dateHourScriptInit = document.createElement('script')
         dateHourScriptInit.innerHTML = `
 if (!$) {var $ = $ || window.parent.jQuery}
-var today = new Date(), textHourEl = document.createElement('input'), textDateEl = document.createElement('input'), HEO_input = window.parent.document.getElementById('HEO_INPUT')
-textDateEl.type = textHourEl.type = "text"
-textDateEl.name = textHourEl.name = "dateHourPres"
-textDateEl.style.display = textHourEl.style.display = "none"
-document.body.append(textHourEl)
-document.body.append(textDateEl)
+var today = new Date(), textHourEl, textDateEl, HEO_input = window.parent.document.getElementById('HEO_INPUT')
+if (!$('#dateHourPres-date').length){
+ textHourEl = document.createElement('input')
+ textDateEl = document.createElement('input')
+ textDateEl.type = textHourEl.type = "text"
+ textDateEl.id = textDateEl.name = "dateHourPres-date"
+ textHourEl.id = textHourEl.name = "dateHourPres-time"
+ textDateEl.style.display = textHourEl.style.display = "none"
+ document.body.append(textDateEl)
+ document.body.append(textHourEl)
+}
 var datePresPicker = new Litepicker({
  element: textDateEl,
  format: "DD/MM/YYYY",
  lang:"fr-FR",
  autoApply: true,
- startDate:Date.now(),
- minDate: today.setDate(today.getDate()-2),
+ startDate:(new Date()).setDate(today.getDate()+1),
+ minDate: (new Date()).setDate(today.getDate()-2),
  selectForward: true,
  numberOfMonths:HEO_input ? 1:2,
  moveByOneMonth:true,
  numberOfColumns:HEO_input ? 1:2,
- onHide: ()=>{if(HEO_input) {HEO_input.value = textDateEl.value}else{}; hourPresPicker.show();},
- onShow: ()=>{$(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 0, overflow:"hidden"})}
+ onSelect: ()=>{
+                if(HEO_input) {
+                 HEO_input.value = textDateEl.value;hourPresPicker.show();
+                }else{
+                 datePresPicker.labo_input.value = textDateEl.value + " " + hourPresPicker.getValue('fullResult')
+                 setTimeout(()=>{datePresPicker.show(),10})
+                }
+            },
+ onHide:()=>{if (!HEO_input){hourPresPicker.hideTimeout = setTimeout(()=>{hourPresPicker.hide()}, 100)}},
+ onShow: ()=>{
+              clearTimeout(hourPresPicker.hideTimeout)
+              $(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 0, overflow:"hidden", inset:"initial"})
+              if (!HEO_input){
+               $(datePresPicker.picker).position({at:"left bottom", my:"left top", of:$("#LABO-POPUP").parent()})
+               $(hourPresPicker.container).position({at:"right bottom", my:"right top", of:$("#LABO-POPUP").parent()})
+              }
+          }
 });
 var hourPresPicker = new NJTimePicker({
     targetEl: textHourEl,
@@ -1421,15 +1547,34 @@ hourPresPicker.hours.element.onclick = (ev)=> {
  if (ev.target.classList.contains('selected') || (hourPresPicker.hours.lastValue != hourPresPicker.hours.currentValue))
  {
   hourPresPicker.hours.lastValue = hourPresPicker.hours.currentValue
-  if(HEO_input){HEO_input.value = textDateEl.value + " " + hourPresPicker.getValue('fullResult')}
+  if(HEO_input){
+   HEO_input.value = textDateEl.value + " " + hourPresPicker.getValue('fullResult')
+  } else {
+   hourPresPicker.labo_input.value = textDateEl.value + " " + hourPresPicker.getValue('fullResult')
+  }
  }
 }
 hourPresPicker.buttons.save.innerText = "Valider"
-hourPresPicker.buttons.clear.innerText = "Retour"
+hourPresPicker.buttons.clear.innerText = HEO_input ? "Retour" : "Effacer"
 hourPresPicker.buttons.clear.onclick = ()=>{
- hourPresPicker.hide();
- datePresPicker.show()}
+ if(HEO_input){
+  hourPresPicker.hide();
+  datePresPicker.show()
+ } else {
+  hourPresPicker.labo_input.value = ""
+  $(hourPresPicker.labo_input).parent().prev().find('input[type=checkbox]').prop("checked", false)
+  if (hourPresPicker.labo_input.name == "date_labo-general"){
+   $(hourPresPicker.labo_input).siblings().filter('input[type=radio][id=date_labo-now]').prop('checked', true)
+  }
+ }
+}
 hourPresPicker.buttons.close.style.display = "none"
+hourPresPicker.on('show', ev=>{
+ if(!HEO_input){
+  if (hourPresPicker.hideTimeout) clearTimeout(hourPresPicker.hideTimeout)
+  $(hourPresPicker.container).position({at:"right bottom", my:"right top", of:$("#LABO-POPUP").parent()})
+ }
+})
 hourPresPicker.on('save', data=>{
  if (HEO_input){
   HEO_input.value = textDateEl.value + " " + hourPresPicker.getValue('fullResult')
@@ -1437,6 +1582,8 @@ hourPresPicker.on('save', data=>{
     bubbles: true, cancelable: true, keyCode: 13
   });
   HEO_input.dispatchEvent(ke);
+ } else {
+  hourPresPicker.labo_input.value = textDateEl.value + " " + hourPresPicker.getValue('fullResult')
  }
 })
 if (HEO_input){
@@ -1681,6 +1828,7 @@ document.body.datePicker = datePicker
 function monitorPresMouseOver(ev){
     if (!$ || !$.fn) {var $ = unsafeWindow.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
+    console.log('bohu')
     if (ev.type == "mouseover"){
         if(!$(ev.currentTarget).hasClass('currentHover_pres') && ev.view.listingPrescriptions && !$(ev.currentTarget).has('.heoSubHeader').length){
             $('tr.currentHover_pres').removeClass('currentHover_pres')
@@ -1801,7 +1949,7 @@ function monitorClick(ev){
         }
         $('#hoverMenu_pres').hide()
     } else if (ev.target.classList.contains('GD42JS-DLOB')){
-        $('a.GD42JS-DKWB', ev.view.document).click2()
+        $('a.GD42JS-DFXB', ev.view.document).click2()
     } else if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
         ev.target.parentElement.nextElementSibling.click()
         ev.target.lastValue = ev.target.value
@@ -1879,17 +2027,17 @@ function monitorClick(ev){
                 $(ev.target).parents('tr').removeClass('consigne-restreint')
             }
         }
-    } else if ($(ev.target).filter('span.GD42JS-DP5:contains("Fermer")')||$(ev.target).filter('span.GD42JS-DP5:contains("Signer")')){
+    } else if ($(ev.target).filter('span.GD42JS-DO5:contains("Fermer")')||$(ev.target).filter('span.GD42JS-DO5:contains("Signer")')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
             $el.show()
             $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
             $('.full_bg', SSSFrame.document).hide()
         })
-    } else if ($(ev.target).filter('span.GD42JS-DP5:contains(Oups)')){
+    } else if ($(ev.target).filter('span.GD42JS-DO5:contains(Oups)')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
-    } else if ($(ev.target).filter('span.GD42JS-DP5:contains(Outlines)')){
+    } else if ($(ev.target).filter('span.GD42JS-DO5:contains(Outlines)')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
         delete SSSFrame.nouvellesConsignes
