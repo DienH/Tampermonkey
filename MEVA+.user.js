@@ -174,7 +174,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <span title="Reprendre" action="RESUME"><img src="/heoclient-application-web/images/control_play_blue.png" class="gwt-Image"></span>
   <span title="Annuler arrêt & modifications" action="RESET_ORDER"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
 </div>
-`).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '*, .GD42JS-DOYB.GD42JS-DK-B tr', monitorPresMouseOver)
+`).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DOYB.GD42JS-DK-B tr', monitorPresMouseOver)
                 let IPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP : ")', SSSFrame.document).text().split(" : ")[1]
                 if ((typeof SSSFrame.listingPrescriptions == "undefined" || (SSSFrame.listingPrescriptions.IPP != IPP) ) && $('#workbody').length){
                     delete SSSFrame.listingPrescriptions
@@ -1828,7 +1828,6 @@ document.body.datePicker = datePicker
 function monitorPresMouseOver(ev){
     if (!$ || !$.fn) {var $ = unsafeWindow.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
-    console.log('bohu')
     if (ev.type == "mouseover"){
         if(!$(ev.currentTarget).hasClass('currentHover_pres') && ev.view.listingPrescriptions && !$(ev.currentTarget).has('.heoSubHeader').length){
             $('tr.currentHover_pres').removeClass('currentHover_pres')
