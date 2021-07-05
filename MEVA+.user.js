@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.52
+// @version      0.2.53
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -1482,7 +1482,7 @@ function dateHourPres(ev){
         dateHourScriptInit.innerHTML = `
 if (!$) {var $ = $ || window.parent.jQuery}
 var today = new Date(), textHourEl, textDateEl, HEO_input = window.parent.document.getElementById('HEO_INPUT')
-if (!$('#dateHourPres-date').length){
+if (!$('#dateHourPres-date', document).length){
  textHourEl = document.createElement('input')
  textDateEl = document.createElement('input')
  textDateEl.type = textHourEl.type = "text"
@@ -1491,6 +1491,9 @@ if (!$('#dateHourPres-date').length){
  textDateEl.style.display = textHourEl.style.display = "none"
  document.body.append(textDateEl)
  document.body.append(textHourEl)
+} else {
+ textHourEl = $('#dateHourPres-time')[0]
+ textDateEl = $('#dateHourPres-date')[0]
 }
 var datePresPicker = new Litepicker({
  element: textDateEl,
@@ -1522,7 +1525,7 @@ var datePresPicker = new Litepicker({
           }
 });
 var hourPresPicker = new NJTimePicker({
-    targetEl: textHourEl,
+    targetEl: 'dateHourPres-time',
     //disabledHours: [0, 1, 2, 3, 4, 5, 23],
     minutes: [0, 15, 30, 45],
     texts: {
@@ -2040,6 +2043,9 @@ function monitorClick(ev){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
         delete SSSFrame.nouvellesConsignes
+    } else if ($(ev.target).filter('div.GD42JS-DPOB')){
+        let SSSFrame = window.top.SSSFrame || window.top[0]
+        $('.GD42JS-DHYB', SSSFrame.document).removeClass('force_hidden')
     }
     /*
         console.log(ev.target, ev.target.parentElement.parentElement)
