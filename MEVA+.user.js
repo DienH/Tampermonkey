@@ -174,7 +174,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <span title="Reprendre" action="RESUME"><img src="/heoclient-application-web/images/control_play_blue.png" class="gwt-Image"></span>
   <span title="Annuler arrêt & modifications" action="RESET_ORDER"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
 </div>
-`).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DOYB.GD42JS-DK-B tr', monitorPresMouseOver)
+`).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DOYB>.GD42JS-DK-B tr', monitorPresMouseOver)
                 let IPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP : ")', SSSFrame.document).text().split(" : ")[1]
                 if ((typeof SSSFrame.listingPrescriptions == "undefined" || (SSSFrame.listingPrescriptions.IPP != IPP) ) && $('#workbody').length){
                     delete SSSFrame.listingPrescriptions
@@ -208,7 +208,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 
         if (!document.getElementById('SSSFrame_MevaStyle')){
             $('<style id="SSSFrame_MevaStyle">', document).html(`
-#HEO_POPUP.GD42JS-DKXB .dialogMiddleCenter {background:#F5F5F5;}
+#HEO_POPUP .dialogMiddleCenter {background:#F5F5F5;}
 #HEO_POPUP.force_hidden {visibility:hidden!important}
 #CONSIGNES-POPUP table, #CONSIGNES-POPUP td, #CONSIGNES-POPUP th {border: 1px solid black;border-collapse: collapse;font-size:14px;}
 #CONSIGNES-POPUP table {width:100%;}
@@ -758,12 +758,11 @@ body {background-color:#F5F5F5;}
                                 comment:(posoPres.length>2 ? posoPres[2].trim():""),
                                 début:start
                             }
-                            $('#HEO_POPUP a.GD42JS-DKWB', SSSFrame.document).click2()
+                            $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
                         })
                         //$.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
-                        $.waitFor('#HEO_POPUP:hidden', SSSFrame.document).then($el=>{
-                            $el.show().removeClass('force_hidden')
-                            $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
+                        $.waitFor('#HEO_POPUP.force_hidden:hidden', SSSFrame.document).then($el=>{
+                            $el.removeClass('force_hidden')
                             $('.full_bg', SSSFrame.document).hide()
                         })
                     } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
@@ -1309,6 +1308,7 @@ function addAutoPrescriptor(ev){
         formes = ["cp", "buv", "inj", "gel", "im"],
         frequences = {"coucher":[0,0,0,1], "matin":[1,0,0,0], "midi":[0,1,0,0], "soir": [0,0,1,0], "mms":[1,1,1,0], "mmsc":[1,1,1,1]}
     if($('#HEO_INPUT', SSSFrame.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = function(ev){
+        //console.log(ev)
         if(ev.keyCode==13){ // on Enter keydown
             let pres = ev.target.value.split(" ")
             if ($("#preHeaderMarkup", SSSFrame.document.heoPane_prompt.document).is(':contains(Sélectionnez un item)') && typeof pres == "object" && pres.length > 1){
@@ -1834,10 +1834,10 @@ function monitorPresMouseOver(ev){
     if (ev.type == "mouseover"){
         if(!$(ev.currentTarget).hasClass('currentHover_pres') && ev.view.listingPrescriptions && !$(ev.currentTarget).has('.heoSubHeader').length){
             $('tr.currentHover_pres').removeClass('currentHover_pres')
-            $('#hoverMenu_pres', ev.view.document).attr('class', "").show().position({at: "center",my:"left center", of:ev, using:(pos,elPos)=>{
+            $('#hoverMenu_pres', ev.view.document).attr('class', "").show().position({at: "right center",my:"right center", of:ev.target}) //, using:(pos,elPos)=>{
                 //console.log(pos,elPos)
-                elPos.element.element.css({top:($(elPos.target.element[0].currentTarget).offset().top+2), left:pos.left+2})
-            }})
+                //elPos.element.element.css({top:($(elPos.target.element[0].currentTarget).offset().top+2), left:pos.left+2})
+            //}})
             $(ev.currentTarget).addClass('currentHover_pres')
             if ($(ev.currentTarget).has('span.heoDiscontinuedOrder').length){$('#hoverMenu_pres', ev.view.document).addClass('stopped')}
             if ($(ev.currentTarget).has('span.heldOrderMarkup').length){$('#hoverMenu_pres', ev.view.document).addClass('suspended')}
@@ -1950,8 +1950,9 @@ function monitorClick(ev){
             ev.view.document.pcFrame.location=act
         }
         $('#hoverMenu_pres').hide()
-    } else if (ev.target.classList.contains('GD42JS-DLOB')){
+    } else if (ev.target.classList.contains('GD42JS-DPOB') || ev.target.classList.contains('GD42JS-DLOB')){
         $('a.GD42JS-DFXB', ev.view.document).click2()
+        $('#HEO_POPUP', ev.view.document).removeClass('force_hidden')
     } else if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
         ev.target.parentElement.nextElementSibling.click()
         ev.target.lastValue = ev.target.value
@@ -1992,7 +1993,7 @@ function monitorClick(ev){
         addAutoPrescriptor(ev)
     } else if (ev.target.innerText == "AHARRY"){
         ev.view.document.querySelector("input[name='mevaLockSessionWindowPwField']").value=Meva.password
-        ev.view.document.querySelector("span.GDKHHE1MCB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
+        ev.view.document.querySelector("span.GG-W0PSBMCB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
     } else if (ev.target.classList.contains('stackItemMiddleCenterInner') && !ev.target.classList.contains('CleanGroupsButton') && ev.target.innerText == "Groupé par"){
         ev.target.classList.add('CleanGroupsButton')
         $('label:contains("Plannings"):eq(0)', ev.view.document).parent().after($('<div><button id="CleanGroupsByButton" style="margin-left:50px;background:#528fff;">Effacer</button></div>'))
@@ -2029,21 +2030,22 @@ function monitorClick(ev){
                 $(ev.target).parents('tr').removeClass('consigne-restreint')
             }
         }
-    } else if ($(ev.target).filter('span.GD42JS-DO5:contains("Fermer")')||$(ev.target).filter('span.GD42JS-DO5:contains("Signer")')){
+    } else if ($(ev.target).is('span.GD42JS-DO5:contains("Fermer")')||$(ev.target).is('span.GD42JS-DO5:contains("Signer")')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
-        $.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
+        $.waitFor('div.GD42JS-DPOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
             $el.show()
             $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
             $('.full_bg', SSSFrame.document).hide()
         })
-    } else if ($(ev.target).filter('span.GD42JS-DO5:contains(Oups)')){
+    } else if ($(ev.target).is('span.GD42JS-DO5:contains(Oups)')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
-    } else if ($(ev.target).filter('span.GD42JS-DO5:contains(Outlines)')){
+    } else if ($(ev.target).is('span.GD42JS-DO5:contains(Outlines)')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
         delete SSSFrame.nouvellesConsignes
-    } else if ($(ev.target).filter('div.GD42JS-DPOB')){
+    } else if ($(ev.target).is('div.GD42JS-DPOB').length){
+        console.log('bouh')
         let SSSFrame = window.top.SSSFrame || window.top[0]
         $('.GD42JS-DHYB', SSSFrame.document).removeClass('force_hidden')
     }
