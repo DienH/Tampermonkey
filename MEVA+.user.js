@@ -1951,8 +1951,9 @@ function monitorClick(ev){
         }
         $('#hoverMenu_pres').hide()
     } else if (ev.target.classList.contains('GD42JS-DPOB') || ev.target.classList.contains('GD42JS-DLOB')){
-        $('a.GD42JS-DFXB', ev.view.document).click2()
-        $('#HEO_POPUP', ev.view.document).removeClass('force_hidden')
+        if (!$('#HEO_POPUP.force_hidden', ev.view.document).removeClass('force_hidden').length){
+            $('a.GD42JS-DFXB', ev.view.document).click2()
+        }
     } else if (ev.target.classList.contains('GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error')){
         ev.target.parentElement.nextElementSibling.click()
         ev.target.lastValue = ev.target.value
