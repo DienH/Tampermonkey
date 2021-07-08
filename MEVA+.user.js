@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.53
+// @version      0.2.54
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -252,6 +252,20 @@ background-position:initial;}
 /* #hoverMenu_pres.suspended span[title="Reprendre"], #hoverMenu_pres.suspended span[title="Arrêt immédiat"], #hoverMenu_pres.modified span[title="Annuler arrêt & modifications"], #hoverMenu_pres.stopped span[title="Annuler arrêt & modifications"] {display:inline-block} */
 button.ui-button.ui-button-validate.ui-corner-all.ui-widget+button {background: #bb0000;color: white;}
 button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background: green;color: white;}
+#m_eva_Hospitalisation_ClinicalContextPortlet_main>tbody>tr>td>div>div>table {width:auto!important;}
+#m_eva_Hospitalisation_ClinicalContextPortlet_main>tbody>tr>td>div>div>div {display:flex}
+#m_eva_Hospitalisation_ClinicalContextPortlet_main>tbody>tr>td>div>div>div>div:nth-of-type(8) {display:flex!important;width:50px!important;}
+#m_eva_Hospitalisation_ClinicalContextPortlet_main .GOAX34LMDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-HasValueWidget {width:570px!important;}
+@media (min-width: 1679px){
+ #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LOCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel-grid>tbody>tr:nth-of-type(3) {position:absolute;top:50px;right:15px;}
+ #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LFCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel {height:80px!important;}
+ .GG-W0PSBPTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel>tbody>tr>td {width:auto!important;}
+ .GG-W0PSBPTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel>tbody>tr>td>div {width:980px!important;}
+ .GG-W0PSBBUB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel_bouton_precedent, .GG-W0PSBDUB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel_bouton_suivant {display:none;}
+}
+@media (min-height: 900px){
+ .GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody, .GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer {height:auto!important;}
+}
 `).appendTo('body')
         }
         if (!SSSFrame.document.getElementById('SSSFrame_Script')){
