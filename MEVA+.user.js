@@ -747,8 +747,11 @@ body {background-color:#F5F5F5;}
                             $('tr[id="Nursing"][name="Soins sans consentement"] input', document).click2()
                             SSSFrame.nouvellesConsignes.mode_hospit.done=true
                         }
-                        SSSFrame.consignesWaiter = SSSFrame.setInterval(()=>{
+                        SSSFrame.autoPresConsignesRapides(SSSFrame.nouvellesConsignes)
+/*                         SSSFrame.consignesWaiter = SSSFrame.setInterval(()=>{
+                            console.log('bouh')
                             if (!$HEO_POPUP.is(':visible')){
+                                console.log('bah')
                                 SSSFrame.autoPresConsignesRapides(SSSFrame.nouvellesConsignes)
                             }
                         },750)
@@ -756,7 +759,7 @@ body {background-color:#F5F5F5;}
                             $('#playbackOrders', document).click2().log()
                         } else {
                             $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
-                        }
+                        } */
                     } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
                         $HEO_POPUP.hide()
                         SSSFrame.listingPrescriptions = {IPP:$('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP :")', SSSFrame.document).text().split(" : ")[1]}
@@ -920,38 +923,42 @@ function output_Selector(sel, checkExists = false){
 
 function autoPresConsignesRapides(consignes){
     if (!$ || !$.fn){var $ = (typeof unsafeWindow != "undefined" ? unsafeWindow.$ || unsafeWindow.parent.$ : window.$ || window.parent.$)}
-    let currentConsignes = {
-        affaires:{consigne:"0", comment: ""},
-        appels:{consigne:"0", comment: ""},
-        deplacements:{consigne:"0", comment: ""},
-        tabagisme:{consigne:"0", comment: ""},
-        vetements:{consigne:"0", comment: ""},
-        visites:{consigne:"0", comment: ""},
-        mode_hospit:{consigne:"SL", comment:""}
-    }
-    $('div.gwt-HTML:contains("Gestion")','#workbody').each((i,el)=>{
-        let currConsigne = $(el).find('b').text(),
-            currConsigneA = currConsigne.split(" : "),
-            commentConsigne = $(el).textContent().split(" - ").find(el=>(el.search(' »')+1 && !(el.search('Planifi')+1))) || ""
-        currConsigne = currConsigneA[0].split(" ")[2].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        if(commentConsigne){
-            commentConsigne = commentConsigne.split("  »")[0]
-        }
-        currentConsignes[currConsigne] = {
-            consigne:(currConsigneA[1].search("Restreint")+1 ? "restreint":(currConsigneA[1].search("Interdit")+1 ? "interdit":currConsigneA[1].search("Accompagné")+1 ? "accompagne":(currConsigneA[1].search("Autorisé")+1 ? "autorise":""))),
-            comment:commentConsigne}
-    })
-    $('div.gwt-HTML:contains("Soins sans consentement")','#workbody').each((i,el)=>{
-        currentConsignes.mode_hospit.consigne = "SSC"
-        currentConsignes.mode_hospit.comment = $(el).textContent().split(" - ").find(el=>(el.search(' »')+1 && !(el.search('Planifi')+1))) || ""
-    })
     if (consignes){
-       if(!consignes.phase){
+        consignes.phase = 1
+        $.waitFor('#HEO_POPUP:hidden', document).then($el=>{
+            window.output_Selector(1)
+        })
+/*        if(!consignes.phase){
             consignes.phase = 1
        } else {
             consignes.phase = 1
-        }
+        } */
     } else {
+        let currentConsignes = {
+            affaires:{consigne:"0", comment: ""},
+            appels:{consigne:"0", comment: ""},
+            deplacements:{consigne:"0", comment: ""},
+            tabagisme:{consigne:"0", comment: ""},
+            vetements:{consigne:"0", comment: ""},
+            visites:{consigne:"0", comment: ""},
+            mode_hospit:{consigne:"SL", comment:""}
+        }
+        $('div.gwt-HTML:contains("Gestion")','#workbody').each((i,el)=>{
+            let currConsigne = $(el).find('b').text(),
+                currConsigneA = currConsigne.split(" : "),
+                commentConsigne = $(el).textContent().split(" - ").find(el=>(el.search(' »')+1 && !(el.search('Planifi')+1))) || ""
+            currConsigne = currConsigneA[0].split(" ")[2].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            if(commentConsigne){
+                commentConsigne = commentConsigne.split("  »")[0]
+            }
+            currentConsignes[currConsigne] = {
+                consigne:(currConsigneA[1].search("Restreint")+1 ? "restreint":(currConsigneA[1].search("Interdit")+1 ? "interdit":currConsigneA[1].search("Accompagné")+1 ? "accompagne":(currConsigneA[1].search("Autorisé")+1 ? "autorise":""))),
+                comment:commentConsigne}
+        })
+        $('div.gwt-HTML:contains("Soins sans consentement")','#workbody').each((i,el)=>{
+            currentConsignes.mode_hospit.consigne = "SSC"
+            currentConsignes.mode_hospit.comment = $(el).textContent().split(" - ").find(el=>(el.search(' »')+1 && !(el.search('Planifi')+1))) || ""
+        })
         return currentConsignes
     }
 }
@@ -1321,7 +1328,12 @@ function addAutoPrescriptor(ev){
         },
         formes = ["cp", "buv", "inj", "gel", "im"],
         frequences = {"coucher":[0,0,0,1], "matin":[1,0,0,0], "midi":[0,1,0,0], "soir": [0,0,1,0], "mms":[1,1,1,0], "mmsc":[1,1,1,1]}
-    if($('#HEO_INPUT', SSSFrame.document).each((i,el)=>{if (!el.keydown){el.keydown = el.onkeydown}; el.onkeydown = function(ev){
+    if($('#HEO_INPUT', SSSFrame.document).each((i,el)=>{
+        if (!el.keydown){
+            el.keydown = el.onkeydown
+        }
+        el.onkeydown = "";
+        $(el).on('keydown', function(ev){
         //console.log(ev)
         if(ev.keyCode==13){ // on Enter keydown
             let pres = ev.target.value.split(" ")
@@ -1461,7 +1473,7 @@ function addAutoPrescriptor(ev){
             }
             ev.target.keydown(ev)
         }
-    }}).length == 0){setTimeout(addAutoPrescriptor, 500, ev)}
+    })}).length == 0){setTimeout(addAutoPrescriptor, 500, ev)}
 }
 
 
