@@ -754,12 +754,12 @@ body {background-color:#F5F5F5;}
                                 console.log('bah')
                                 SSSFrame.autoPresConsignesRapides(SSSFrame.nouvellesConsignes)
                             }
-                        },750)
+                        },750) */
                         if ($('input:checked', document).length){
                             $('#playbackOrders', document).click2().log()
                         } else {
                             $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
-                        } */
+                        }
                     } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
                         $HEO_POPUP.hide()
                         SSSFrame.listingPrescriptions = {IPP:$('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP :")', SSSFrame.document).text().split(" : ")[1]}
