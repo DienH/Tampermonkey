@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.55
+// @version      0.2.56
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -1337,7 +1337,7 @@ function addAutoPrescriptor(ev){
         //console.log(ev)
         if(ev.keyCode==13){ // on Enter keydown
             let pres = ev.target.value.split(" ")
-            if ($("#preHeaderMarkup", SSSFrame.document.heoPane_prompt.document).is(':contains(Sélectionnez un item)') && typeof pres == "object" && pres.length > 1){
+            if ($("#preHeaderMarkup", SSSFrame.document.heoPane_prompt.document).is(':contains(Sélectionnez un item)') && typeof pres == "object" && pres.length > 1 && pres[1] != ""){
                 if (pres[0] == "mod" || pres[0] == "m") {pres.modif = pres.shift()}
                 pres.nom = DCI[pres[0]] || pres[0]
                 if (Number(pres[2])){
@@ -2068,14 +2068,11 @@ function monitorClick(ev){
     } else if ($(ev.target).is('span.GD42JS-DO5:contains(Oups)')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
+        delete SSSFrame.nouvellesConsignes
     } else if ($(ev.target).is('span.GD42JS-DO5:contains(Outlines)')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
         delete SSSFrame.nouvellesConsignes
-    } else if ($(ev.target).is('div.GD42JS-DPOB').length){
-        console.log('bouh')
-        let SSSFrame = window.top.SSSFrame || window.top[0]
-        $('.GD42JS-DHYB', SSSFrame.document).removeClass('force_hidden')
     }
     /*
         console.log(ev.target, ev.target.parentElement.parentElement)
