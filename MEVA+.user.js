@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.57
+// @version      0.2.58
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -121,7 +121,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
             SSSFrame_wait = setInterval(()=>{
                 $(CS_AnestTitle).remove()
                 SSSFrame.dispatchEvent(new Event('resize'))
-                $('div.carousel_enabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("Observations"), div.carousel_enabled_item:contains("Résultats de laboratoire")'+
+                $('div.carousel_enabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("Observations"), div.carousel_enabled_item:contains("Résultats de laboratoire"),'+
                   'div.carousel_disabled_item:contains("HEO - Prescrire"), div.carousel_disabled_item:contains("Observations"), div.carousel_disabled_item:contains("Résultats de laboratoire")')
                     .prependTo($('div.carousel_disabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("HEO - Prescrire")').parent())
             let $dateInput = $('input.GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error', SSSFrame.document).parent()
@@ -198,6 +198,8 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                         $('#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_content', document).height(listepatientsHeight)
                     $('.GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer').height(listepatientsHeight-138)
                     $('.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody').height(listepatientsHeight-163)
+                    let unitSelectorWidth = $(window).width()-630
+                    $('.gwt-TabPanelBottom .GOAX34LLDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth:visible:eq(0)').width(unitSelectorWidth > 205 ? unitSelectorWidth : 205)
                 })
                 document.head.append(hourCSS)
                 document.head.append(hourScript)
@@ -965,7 +967,7 @@ function autoPresConsignesRapides(consignes){
         })
         $('div.gwt-HTML:contains("Soins sans consentement")','#workbody').each((i,el)=>{
             currentConsignes.mode_hospit.consigne = "SSC"
-            currentConsignes.mode_hospit.comment = $(el).textContent().split(" - ").find(el=>(el.search(' »')+1 && !(el.search('Planifi')+1))) || ""
+            currentConsignes.mode_hospit.comment = $(el).textContent().split(" - ").find(el=>(el.search(' »')+1 && !(el.search('Planifi')+1))).split("  »")[0] || ""
         })
         return currentConsignes
     }
@@ -1229,6 +1231,9 @@ function presOutputConsignesRapides(ev){
                     Object.keys(currConsignes).forEach(el=>{
                         $('#CONSIGNES-POPUP input[name='+el+'][consigne='+currConsignes[el].consigne+']', SSSFrame.document).click2()
                         $('#CONSIGNES-POPUP div[contenteditable][name='+el+'-com]').text(currConsignes[el].comment)
+                        if (el == "mode_hospit" && currConsignes[el].consigne == "SSC"){
+                            $("#Type-SSC option[value="+currConsignes[el].comment+"]").prop('selected', true)
+                        }
                     })
                 },
                 buttons: [
@@ -1313,7 +1318,13 @@ function presOutputConsignesRapides(ev){
 // --------------------------- Prescription rapide ------------------------------
 
 function addAutoPrescriptor(ev){
+    // gestion de prescription rapide de traitement
+    // sous la forme "MOLECULE DOSE FREQUENCE" (ex "olanzapine 15 coucher" ou "diazepam 5 1-1-1-2")
+    // ou "MOLECULE POSOLOGIE" (ex diazepam 10-5-5-10)
+    // ou "MOLECULE DOSE" pour des traitements prédéfinis ("olanzapine 10" équivaut à "olanzapine 10 coucher")
     let SSSFrame = ev.name && ev.name == "SSSFrame" ? ev : (ev && ev.view && ev.view.document.name == "SSSFrame" ? ev.view : document.getElementById('SSSFrame').contentWindow), $ = SSSFrame.$
+
+    // liste équivalance DCI
     let DCI = {loxapac:"loxapine", nozinan:"levomepromazine", tercian:"cyamemazine",
                abilify:"aripiprazole", risperdal:"risperidone",zyprexa:"olanzapine", leponex:"clozapine", solian:"amisulpride", xeroquel:"quetiapine",
                valium:"diazepam", seresta:"oxazepam", tranxene:"clorazepate", lysanxia:"prazepam", temesta:"lorazepam", xanax:"alprazolam", lexomil:"bromazepam",
@@ -1341,147 +1352,254 @@ function addAutoPrescriptor(ev){
             el.keydown = el.onkeydown
         }
         el.onkeydown = "";
+
+        // suggestion et autocompletion de prescription
+        $(el).autocomplete({
+            source:[
+                {label:"chlorpromazine"}, {label:"Largactil", value:"chlorpromazine"},
+                {label:"cyamemazine"}, {label:"Tercian", value:"cyamemazine"},
+                {label:"levomepromazine"}, {label:"Nozinan", value:"levomepromazine"},
+                {label:"fluphenazine"}, {label:"Modecate", value:"fluphenazine"},
+                {label:"perphenazine"}, {label:"Trilafon", value:"perphenazine"},
+                {label:"pipotiazine"}, {label:"Piportil", value:"pipotiazine"},
+                {label:"pipamperone"}, {label:"Dipiperon", value:"pipamperone"},
+                {label:"pimozide"}, {label:"Orap", value:"pimozide"},
+                {label:"penfluridol"}, {label:"Semap", value:"penfluridol"},
+                {label:"tiapride"}, {label:"Tiapridal", value:"tiapride"},
+                {label:"zuclopenthixol"}, {label:"Clopixol", value:"zuclopenthixol"},
+                {label:"flupentixol"}, {label:"Fluanxol", value:"flupentixol"},
+                {label:"haloperidol"}, {label:"Haldol", value:"haloperidol"},
+                {label:"loxapine"}, {label:"Loxapac", value:"loxapine"},
+                {label:"clozapine"}, {label:"Leponex", value:"clozapine"},
+                {label:"olanzapine"}, {label:"Zyprexa", value:"olanzapine"},
+                {label:"risperidone"}, {label:"Risperdal", value:"risperidone"},
+                {label:"quetiapine"}, {label:"Xeroquel", value:"quetiapine"},
+                {label:"ziprasidone"},
+                {label:"amisulpride"}, {label:"Solian", value:"amisulpride"},
+                {label:"sulpiride"}, {label:"Dogmatil", value:"sulpiride"},
+                {label:"paliperidone"}, {label:"Xeplion", value:"paliperidone"},
+                {label:"aripiprazole"}, {label:"Abilify", value:"aripiprazole"},
+                {label:"metoclopramide"}, {label:"Primpera", value:"metoclopramide"},
+                {label:"metopimazine"}, {label:"Vogalene", value:"metopimazine"},
+                {label:"alimemazine"}, {label:"Theralène", value:"alimemazine"},
+
+                {label:"fluoxetine"}, {label:"Prozac", value:"fluoxetine"},
+                {label:"paroxetine"}, {label:"Deroxat", value:"paroxetine"},
+                {label:"sertraline"}, {label:"Zoloft", value:"sertraline"},
+                {label:"citalopram"}, {label:"Seropram", value:"citalopram"},
+                {label:"escitalopram"}, {label:"Seroplex", value:"escitalopram"},
+                {label:"fluvoxamine"}, {label:"Floxyfral", value:"fluvoxamine"},
+                {label:"duloxetine"}, {label:"Cymbalta", value:"duloxetine"},
+                {label:"mirtazapine"}, {label:"Norset", value:"mirtazapine"},
+                {label:"bupropion"}, {label:"Wellbutrin", value:"bupropion"}, {label:"Zyban", value:"bupropion"},
+                {label:"vortioxetine"}, {label:"Brintellix", value:"vortioxetine"},
+                {label:"minalcipran"}, {label:"Ixel", value:"minalcipran"},
+                {label:"clomipramine"}, {label:"Anafranil", value:"clomipramine"},
+                {label:"trazodone"}, {label:"Trittico", value:"trazodone"},
+                {label:"amitriptyline"}, {label:"Laroxyl", value:"amitriptyline"},
+                {label:"desipramine"},
+                {label:"tranylcypromine"}, {label:"Parnate", value:"tranylcypromine"},
+                {label:"trimipramine"}, {label:"Surmontil", value:"trimipramine"},
+                {label:"imipramine"},
+                {label:"maprotiline"}, {label:"Ludiomil", value:"maprotiline"},
+                {label:"mianserine"}, {label:"Athymil", value:"mianserine"},
+                {label:"tianeptine"}, {label:"Stablon", value:"tianeptine"},
+
+                {label:"clotiazepam"}, {label:"Veratran", value:"clotiazepam"},
+                {label:"oxazepam"}, {label:"Seresta", value:"oxazepam"},
+                {label:"alprazolam"}, {label:"Xanax", value:"alprazolam"},
+                {label:"lorazepam"}, {label:"Temesta", value:"lorazepam"},
+                {label:"bromazepam"}, {label:"Lexomil", value:"bromazepam"},
+                {label:"diazepam"}, {label:"Valium", value:"diazepam"},
+                {label:"clorazepate"}, {label:"Tranxène", value:"clorazepate"},
+                {label:"clobazam"}, {label:"Urbanyl", value:"clobazam"},
+                {label:"prazepam"}, {label:"Lysanxia", value:"prazepam"},
+                {label:"nitrazepam"}, {label:"Mogadon", value:"nitrazepam"},
+                {label:"lormetazepam"}, {label:"Noctamide", value:"lormetazepam"},
+                {label:"flunitrazepam"}, {label:"Rohypnol", value:"flunitrazepam"},
+                {label:"temazepam"}, {label:"Normison", value:"temazepam"},
+                {label:"loprazolam"}, {label:"Havlane", value:"loprazolam"},
+                {label:"estazolam"}, {label:"Nuctalon", value:"estazolam"},
+                {label:"zolpidem"}, {label:"Stilnox", value:"zolpidem"},
+                {label:"zopiclone"}, {label:"Imovane", value:"zopiclone"},
+                {label:"clonazepam"}, {label:"Rivotril", value:"clonazepam"},
+
+                {label:"paracetamol"}, {label:"doliprane", value:"paracetamol"},
+                {label:""}, {label:"", value:""}
+            ],
+            position: { my : "left top-40", at: "left bottom" },
+            minLength:3
+        })
+
         $(el).on('keydown', function(ev){
-        //console.log(ev)
-        if(ev.keyCode==13){ // on Enter keydown
-            let pres = ev.target.value.split(" ")
-            if ($("#preHeaderMarkup", SSSFrame.document.heoPane_prompt.document).is(':contains(Sélectionnez un item)') && typeof pres == "object" && pres.length > 1 && pres[1] != ""){
-                if (pres[0] == "mod" || pres[0] == "m") {pres.modif = pres.shift()}
-                pres.nom = DCI[pres[0]] || pres[0]
-                if (Number(pres[2])){
-                    pres.dose = Number(pres[2])
-                    pres.doseIndex = 2
-                } else if (Number(pres[1])){
-                    pres.dose = Number(pres[1])
-                    pres.doseIndex = 1
+            //console.log(ev)
+            let INPUT = ev.target
+            if(ev.keyCode==13){ // on Enter keydown
+                let command = INPUT.value.trim()
+                //initialisation de l'historique de commandes
+                if (!INPUT.history){
+                    INPUT.history = []
+                    INPUT.history.current=-1
+                }
+                // ajouter la commande à l'historique
+                INPUT.history.unshift(INPUT.history.findIndex(el=>el==command) +1 ? INPUT.history.splice(INPUT.history.findIndex(el=>el==command), 1).join('') : command)
+                if (INPUT.history.length > 20){
+                    INPUT.history.pop()
+                }
+
+                let pres = command.split(" ")
+                if ($("#preHeaderMarkup", SSSFrame.document.heoPane_prompt.document).is(':contains(Sélectionnez un item)') && typeof pres == "object" && pres.length > 1){
+                    if (pres[0] == "mod" || pres[0] == "m") {pres.modif = pres.shift()}
+                    pres.nom = DCI[pres[0]] || pres[0]
+                    if (Number(pres[2])){
+                        pres.dose = Number(pres[2])
+                        pres.doseIndex = 2
+                    } else if (Number(pres[1])){
+                        pres.dose = Number(pres[1])
+                        pres.doseIndex = 1
+                    } else {
+                        pres.dose = defaultsPres.dose[pres.nom] || ""
+                        pres.doseIndex = 0
+                    }
+                    let poso, posoSyste
+                    try{
+                        poso = pres.find(el=>el.search(/[\-\.].+[\-\.]/s)+1)
+                        posoSyste = poso.split('+')[0]
+                        try{pres.posoSb = poso.split('+')[1]}catch(e){}
+                        pres.poso = posoSyste.split('.').join('-').split("-").map(t=>Number(t))
+                        pres.posoIndex = pres.findIndex(el=>el.search(/[\-\.].+[\-\.]/s)+1)
+                    }catch (e){
+                        pres.poso = [0,0,0,0]
+                        Object.keys(frequences).filter(elm=>pres.find(el=>elm.toUpperCase()==el.toUpperCase())).forEach((el,i)=>{pres.poso = pres.poso.map((elm, j)=>elm+frequences[el][j] ? 1:0)})
+                        if (Number(pres.poso.join('')) == 0){
+                            pres.poso = defaultsPres.posos[pres.nom]
+                        }
+                    }
+                    pres.forme = formes.find(el=>pres.find(elm=>elm==el)) || defaultsPres.formes[pres.nom] || "cp"
+                    pres[0]=pres.nom
+                    pres[1]=pres.forme
+                    if(pres.poso && (pres.poso.length >= 3 && pres.poso.length <= 4) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2]) && (!pres.poso[3] || pres.poso[3] && !isNaN(pres.poso[3]))){
+                        if (pres.dose && pres.doseIndex){
+                            pres.poso=pres.poso.map(t=>t*pres.dose)
+                            if(pres.posoSb) pres.posoSb=pres.posoSb.map(t=>t*pres.dose)
+                        }
+                        let i = 0
+                        pres.posos=[]
+                        while (!isNaN(pres.poso[i])){
+                            let j = 0, addPoso = true
+                            for (let j=0;j<pres.poso.length;j++){
+                                if (!pres.poso[i] || (pres.posos[j] && pres.posos[j].freq[i])){
+                                    addPoso = false
+                                    break;
+                                }
+                            }
+                            if (addPoso){
+                                let currPoso = {dose:pres.poso[i],freq:pres.poso.map(el=>((el == pres.poso[i] ? 1 : 0)))}
+                                if (pres.poso.length == 3){
+                                    switch (currPoso.freq.join('-')){
+                                        case "1-0-0":
+                                            currPoso.freqName = "Matin"
+                                            break
+                                        case "0-1-0":
+                                            currPoso.freqName = "Midi"
+                                            break
+                                        case "0-0-1":
+                                            currPoso.freqName = "Soir"
+                                            break
+                                        case "1-1-0":
+                                            currPoso.freqName = "Matin Midi"
+                                            break
+                                        case "1-0-1":
+                                            currPoso.freqName = "Matin Soir"
+                                            break
+                                        case "0-1-1":
+                                            currPoso.freqName = "Midi Soir"
+                                            break
+                                        case "1-1-1":
+                                            currPoso.freqName = "Matin Midi Soir"
+                                            break;
+                                        default:
+                                            break
+                                    }
+                                } else if (pres.poso.length == 4){
+                                    switch (currPoso.freq.join('-')){
+                                        case "1-1-1-1":
+                                            currPoso.freqName = "MMS Coucher"
+                                            break
+                                        case "0-0-0-1":
+                                            currPoso.freqName = "Coucher"
+                                            break
+                                        case "1-1-1-0":
+                                            currPoso.freqName = "Matin Midi Soir"
+                                            break;
+                                        case "1-0-0-0":
+                                            currPoso.freqName = "Matin"
+                                            break
+                                        case "0-1-0-0":
+                                            currPoso.freqName = "Midi"
+                                            break
+                                        case "0-0-1-0":
+                                            currPoso.freqName = "Soir"
+                                            break
+                                        case "1-1-0-0":
+                                            currPoso.freqName = "Matin Midi"
+                                            break
+                                        case "1-0-1-0":
+                                            currPoso.freqName = "Matin Soir"
+                                            break
+                                        case "0-1-1-0":
+                                            currPoso.freqName = "Midi Soir"
+                                            break
+                                        case "1-0-0-1":
+                                            currPoso.freqName = "Matin Coucher"
+                                            break
+                                        case "0-0-1-1":
+                                            currPoso.freqName = "Soir Coucher"
+                                            break;
+                                        case "0-1-0-1":
+                                            currPoso.freqName = "Midi Coucher"
+                                            break
+                                        default:
+                                            break
+                                    }
+                                }
+                                pres.posos.push(currPoso)
+                            } else { addPoso = true}
+                            i++
+                        }
+                        INPUT.value=pres[0]+" "+pres[1]
+                        console.log(pres)
+                        SSSFrame.autoEnhancedPres = pres
+                        SSSFrame.autoEnhancedPresWaiter = setInterval((presc)=>{
+                            if (SSSFrame.output_Selector(presc[0] + " "+presc[1], true)){
+                                SSSFrame.output_Selector(presc[0] + " "+presc[1])
+                                clearInterval(SSSFrame.autoEnhancedPresWaiter)
+                            }
+                        },250, pres)
+                        //setTimeout((ev)=>
+                        INPUT.keydown(ev)
+                        //, 250, ev)
+                        return false
+                    }
+                }
+                INPUT.history.current = -1
+                INPUT.keydown(ev)
+            } else if (ev.keyCode == 38){
+                if(INPUT.history.current < INPUT.history.length-1){
+                    INPUT.value = INPUT.history[++INPUT.history.current]
                 } else {
-                    pres.dose = defaultsPres.dose[pres.nom] || ""
-                    pres.doseIndex = 0
+                    INPUT.value = ""
+                    INPUT.history.current = -1
                 }
-                let poso, posoSyste
-                try{
-                    poso = pres.find(el=>el.search(/[\-\.].+[\-\.]/s)+1)
-                    posoSyste = poso.split('+')[0]
-                    try{pres.posoSb = poso.split('+')[1]}catch(e){}
-                    pres.poso = posoSyste.split('.').join('-').split("-").map(t=>Number(t))
-                    pres.posoIndex = pres.findIndex(el=>el.search(/[\-\.].+[\-\.]/s)+1)
-                }catch (e){
-                    pres.poso = [0,0,0,0]
-                    Object.keys(frequences).filter(elm=>pres.find(el=>elm.toUpperCase()==el.toUpperCase())).forEach((el,i)=>{pres.poso = pres.poso.map((elm, j)=>elm+frequences[el][j] ? 1:0)})
-                    if (Number(pres.poso.join('')) == 0){
-                        pres.poso = defaultsPres.posos[pres.nom]
-                    }
-                }
-                pres.forme = formes.find(el=>pres.find(elm=>elm==el)) || defaultsPres.formes[pres.nom] || "cp"
-                pres[0]=pres.nom
-                pres[1]=pres.forme
-                if(pres.poso && (pres.poso.length >= 3 && pres.poso.length <= 4) && !isNaN(pres.poso[0]) && !isNaN(pres.poso[1]) && !isNaN(pres.poso[2]) && (!pres.poso[3] || pres.poso[3] && !isNaN(pres.poso[3]))){
-                    if (pres.dose && pres.doseIndex){
-                        pres.poso=pres.poso.map(t=>t*pres.dose)
-                        if(pres.posoSb) pres.posoSb=pres.posoSb.map(t=>t*pres.dose)
-                    }
-                    let i = 0
-                    pres.posos=[]
-                    while (!isNaN(pres.poso[i])){
-                        let j = 0, addPoso = true
-                        for (let j=0;j<pres.poso.length;j++){
-                            if (!pres.poso[i] || (pres.posos[j] && pres.posos[j].freq[i])){
-                                addPoso = false
-                                break;
-                            }
-                        }
-                        if (addPoso){
-                            let currPoso = {dose:pres.poso[i],freq:pres.poso.map(el=>((el == pres.poso[i] ? 1 : 0)))}
-                            if (pres.poso.length == 3){
-                                switch (currPoso.freq.join('-')){
-                                    case "1-0-0":
-                                        currPoso.freqName = "Matin"
-                                        break
-                                    case "0-1-0":
-                                        currPoso.freqName = "Midi"
-                                        break
-                                    case "0-0-1":
-                                        currPoso.freqName = "Soir"
-                                        break
-                                    case "1-1-0":
-                                        currPoso.freqName = "Matin Midi"
-                                        break
-                                    case "1-0-1":
-                                        currPoso.freqName = "Matin Soir"
-                                        break
-                                    case "0-1-1":
-                                        currPoso.freqName = "Midi Soir"
-                                        break
-                                    case "1-1-1":
-                                        currPoso.freqName = "Matin Midi Soir"
-                                        break;
-                                    default:
-                                        break
-                                }
-                            } else if (pres.poso.length == 4){
-                                switch (currPoso.freq.join('-')){
-                                    case "1-1-1-1":
-                                        currPoso.freqName = "MMS Coucher"
-                                        break
-                                    case "0-0-0-1":
-                                        currPoso.freqName = "Coucher"
-                                        break
-                                    case "1-1-1-0":
-                                        currPoso.freqName = "Matin Midi Soir"
-                                        break;
-                                    case "1-0-0-0":
-                                        currPoso.freqName = "Matin"
-                                        break
-                                    case "0-1-0-0":
-                                        currPoso.freqName = "Midi"
-                                        break
-                                    case "0-0-1-0":
-                                        currPoso.freqName = "Soir"
-                                        break
-                                    case "1-1-0-0":
-                                        currPoso.freqName = "Matin Midi"
-                                        break
-                                    case "1-0-1-0":
-                                        currPoso.freqName = "Matin Soir"
-                                        break
-                                    case "0-1-1-0":
-                                        currPoso.freqName = "Midi Soir"
-                                        break
-                                    case "1-0-0-1":
-                                        currPoso.freqName = "Matin Coucher"
-                                        break
-                                    case "0-0-1-1":
-                                        currPoso.freqName = "Soir Coucher"
-                                        break;
-                                    case "0-1-0-1":
-                                        currPoso.freqName = "Midi Coucher"
-                                        break
-                                    default:
-                                        break
-                                }
-                            }
-                            pres.posos.push(currPoso)
-                        } else { addPoso = true}
-                        i++
-                    }
-                    ev.target.value=pres[0]+" "+pres[1]
-                    console.log(pres)
-                    SSSFrame.autoEnhancedPres = pres
-                    SSSFrame.autoEnhancedPresWaiter = setInterval((presc)=>{
-                        if (SSSFrame.output_Selector(presc[0] + " "+presc[1], true)){
-                            SSSFrame.output_Selector(presc[0] + " "+presc[1])
-                            clearInterval(SSSFrame.autoEnhancedPresWaiter)
-                        }
-                    },250, pres)
-                    //setTimeout((ev)=>
-                    ev.target.keydown(ev)
-                    //, 250, ev)
-                    return false
+            } else if (ev.keyCode == 40){
+                if (INPUT.history.current > 0) {
+                    INPUT.value = INPUT.history[--INPUT.history.current]
+                } else {
+                    INPUT.value = ""
                 }
             }
-            ev.target.keydown(ev)
-        }
-    })}).length == 0){setTimeout(addAutoPrescriptor, 500, ev)}
+        })
+    }).length == 0){setTimeout(addAutoPrescriptor, 500, ev)}
 }
 
 
