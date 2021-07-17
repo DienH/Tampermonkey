@@ -79,15 +79,11 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 
     if (location.pathname == "/m-eva/"){
         /*
-        $('#SSSFrame').load((ev)=>{
-            let SSSFrame = ev.target.contentWindow.name == "SSSFrame" ? ev.target.contentWindow : document.getElementById('SSSFrame').contentWindow
-
-            $(SSSFrame).resize((ev)=>{
-                let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
-                setTimeout(()=>{
-                    $(`.GDKHHE1PTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel  div.carousel_enabled_item:contains("Consultation d'anesthésie")`, SSSFrame.document).remove()
-                }, 500)
-            })
+        document.querySelector('#SSSFrame').contentWindow.addEventListener('resize', (ev)=>{
+            let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
+            let listepatientsHeight = $('#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_content', document).height()
+            $('.GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer').height(listepatientsHeight-140)
+            $('.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody').height(listepatientsHeight-163)
         })
         */
         window.frameWait = setInterval(()=>{
@@ -196,6 +192,13 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                         '?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
                     open(labo_url)
                 }})
+                $(SSSFrame).resize((ev)=>{
+                    let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
+                    let listepatientsHeight = $(SSSFrame).height()-122
+                        $('#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_content', document).height(listepatientsHeight)
+                    $('.GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer').height(listepatientsHeight-138)
+                    $('.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody').height(listepatientsHeight-163)
+                })
                 document.head.append(hourCSS)
                 document.head.append(hourScript)
                 document.head.append(dateScript)
@@ -259,15 +262,17 @@ button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background: green;c
 #m_eva_Hospitalisation_ClinicalContextPortlet_main>tbody>tr>td>div>div>div {display:flex}
 #m_eva_Hospitalisation_ClinicalContextPortlet_main>tbody>tr>td>div>div>div>div:nth-of-type(8) {display:flex!important;width:50px!important;}
 #m_eva_Hospitalisation_ClinicalContextPortlet_main .GOAX34LMDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-HasValueWidget {width:570px!important;}
-@media (min-width: 1679px){
+#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_content {overflow-y:hidden!important;}
+.GOAX34LBNB-fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-TabPanel .gwt-TabPanelBottom {border-radius:8px;margin:0 1px;padding:5px!important;}
+@media (min-width: 1679px){}
  #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LOCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel-grid>tbody>tr:nth-of-type(3) {position:absolute;top:50px;right:15px;}
- #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LFCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel {height:80px!important;}
+ #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LFCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel {height:60px!important;}
  .GG-W0PSBPTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel>tbody>tr>td {width:auto!important;}
  .GG-W0PSBPTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel>tbody>tr>td>div {width:980px!important;}
  .GG-W0PSBBUB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel_bouton_precedent, .GG-W0PSBDUB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel_bouton_suivant {display:none;}
-}
+
 @media (min-height: 900px){
- .GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody, .GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer {height:auto!important;}
+ //.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody, .GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer {height:auto!important;}
 }
 `).appendTo('body')
         }
@@ -1860,6 +1865,7 @@ document.body.datePicker = datePicker
 function monitorPresMouseOver(ev){
     if (!$ || !$.fn) {var $ = unsafeWindow.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
+    console.log(ev.target)
     if (ev.type == "mouseover"){
         if(!$(ev.currentTarget).hasClass('currentHover_pres') && ev.view.listingPrescriptions && !$(ev.currentTarget).has('.heoSubHeader').length){
             $('tr.currentHover_pres').removeClass('currentHover_pres')
@@ -2021,6 +2027,11 @@ function monitorClick(ev){
         })
     } else if (ev.target.title == "HEO - Prescrire"){
         addAutoPrescriptor(ev)
+        let SSSFrame = window.top.SSSFrame || window.top[0]
+        delete SSSFrame.autoEnhancedPres
+        delete SSSFrame.nouvellesConsignes
+        delete SSSFrame.listingConsignes
+        delete SSSFrame.listePresLabo
     } else if (ev.target.innerText == "AHARRY"){
         ev.view.document.querySelector("input[name='mevaLockSessionWindowPwField']").value=Meva.password
         ev.view.document.querySelector("span.GG-W0PSBMCB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
