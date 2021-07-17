@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.56
+// @version      0.2.57
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -179,6 +179,9 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 if ((typeof SSSFrame.listingPrescriptions == "undefined" || (SSSFrame.listingPrescriptions.IPP != IPP) ) && $('#workbody').length){
                     delete SSSFrame.listingPrescriptions
                     delete SSSFrame.listingConsignes
+                    delete SSSFrame.nouvellesConsignes
+                    delete SSSFrame.autoEnhancedPres
+                    delete SSSFrame.listePresLabo
                     $('#CONSIGNES-POPUP', SSSFrame.document).dialog('destroy').remove()
                     $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
                     $('div.GD42JS-DLOB', SSSFrame.document).hide()
@@ -533,10 +536,10 @@ $.expr[":"].containsI = function (a, i, m) {
                 } else if (SSSFrame.nouvellesConsignes && $el.filter('.orderName:contains("Soins sans consentement")').length){
                     switch (promptTitle){
                         case "Commentaires:":
+                            SSSFrame.nouvellesConsignes.mode_hospit.done=true
                             $HEO_INPUT.each((i,el)=>setTimeout(elm=>{elm.value=SSSFrame.nouvellesConsignes.mode_hospit.comment;elm.dispatchEvent(ke)}, 500, el))
                             break
                         case "Durée: (avec une date et heure de fin optionnelle)":
-                            SSSFrame.nouvellesConsignes.mode_hospit.done=true
                             $('a[onclick]:contains("ENTREE")', document).click2()
                             break
                     }
@@ -2065,23 +2068,13 @@ function monitorClick(ev){
             $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
             $('.full_bg', SSSFrame.document).hide()
         })
-    } else if ($(ev.target).is('span.GD42JS-DO5:contains(Oups)')){
+    } else if ($(ev.target).is('span.GD42JS-DO5:contains(Oups)') || $(ev.target).is('span.GD42JS-DO5:contains(Outlines)')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
         delete SSSFrame.nouvellesConsignes
-    } else if ($(ev.target).is('span.GD42JS-DO5:contains(Outlines)')){
-        let SSSFrame = window.top.SSSFrame || window.top[0]
-        delete SSSFrame.autoEnhancedPres
-        delete SSSFrame.nouvellesConsignes
+        delete SSSFrame.listingConsignes
+        delete SSSFrame.listePresLabo
     }
-    /*
-        console.log(ev.target, ev.target.parentElement.parentElement)
-        if ($('div.outlineTitle',ev.view.document.heoPane_output.document).text().log().trim() == "Prescriptions Usuelles de Psychiatrie Adulte"){
-            $(ev.target).parents('button').attr("disabled", true)
-        } else {
-            $(ev.target).parents('button').attr("disabled", false)
-        }
-    }*/
 }
 
 function clickLogin(ev){
