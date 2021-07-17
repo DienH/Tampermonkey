@@ -1423,6 +1423,8 @@ function addAutoPrescriptor(ev){
                 {label:"zolpidem"}, {label:"Stilnox", value:"zolpidem"},
                 {label:"zopiclone"}, {label:"Imovane", value:"zopiclone"},
                 {label:"clonazepam"}, {label:"Rivotril", value:"clonazepam"},
+                {label:"midazolam"}, {label:"Hypnovel", value:"midazolam"},
+                {label:"macrogol"}, {label:"Movicol", value:"macrogol"},
 
                 {label:"paracetamol"}, {label:"doliprane", value:"paracetamol"},
                 {label:""}, {label:"", value:""}
