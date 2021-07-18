@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.58
+// @version      0.2.59
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -16,7 +16,22 @@
 // @grant        GM_getResourceText
 // ==/UserScript==
 
-//
+
+/*
+// copier du texte avec formatage
+function copyToClip(str) {
+  function listener(e) {
+    e.clipboardData.setData("text/html", str);
+    e.clipboardData.setData("text/plain", str);
+    e.preventDefault();
+  }
+  document.addEventListener("copy", listener);
+  document.execCommand("copy");
+  document.removeEventListener("copy", listener);
+};
+*/
+
+
 
 
 (function() {
@@ -112,10 +127,21 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 }
             }
         },500)
+        // Recharger automatiquement MEVA lorsque la session n'est pas complètement quittée
+        // Recharger automatiquement MEVA lorsque la session n'est pas complètement quittée
+        // Recharger automatiquement MEVA lorsque la session n'est pas complètement quittée
     } else if (location.href.search("errorLoadContext.jsp")+1){
         $('a[target*=_top]:contains(Recharger)', document).click2()
     }else if (location.href.search("quitteSession")+1){
         $.waitFor('div.gwt-Label:contains(Cliquez ici)', document).then(el=>el.click2())
+
+
+
+
+        // SSSFrame = fen$etre principale de MEVA
+        // SSSFrame = fen$etre principale de MEVA
+        // SSSFrame = fen$etre principale de MEVA
+        // SSSFrame = fen$etre principale de MEVA
     }else if (location.href.search("Hospitalisation.fwks")+1 || location.href.search("m-eva.fwks")+1){
         let SSSFrame = unsafeWindow, CS_AnestTitle = (`div.carousel_enabled_item:contains("Consultation d'anesthésie")`),
             SSSFrame_wait = setInterval(()=>{
@@ -124,6 +150,8 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 $('div.carousel_enabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("Observations"), div.carousel_enabled_item:contains("Résultats de laboratoire"),'+
                   'div.carousel_disabled_item:contains("HEO - Prescrire"), div.carousel_disabled_item:contains("Observations"), div.carousel_disabled_item:contains("Résultats de laboratoire")')
                     .prependTo($('div.carousel_disabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("HEO - Prescrire")').parent())
+
+                // Ajout d'un icone pour sélectionner le jour actuel pour la liste des patients
             let $dateInput = $('input.GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error', SSSFrame.document).parent()
             if (!$dateInput.siblings('[title*=Aujourd]').length){
                 $dateInput.before(
@@ -147,6 +175,8 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                       `style="width: 18px;transform: translateY(3px);cursor:pointer;" class="gwt-Image">`)).up().up().css('width',190)
                 SSSFrame.dispatchEvent(new Event('resize'))
             }
+
+                // Menu contextuel par patient
             if (!$('#contextMenu_patients', SSSFrame.document).length){
                 $('body', SSSFrame.document).append($(`
 <ul id="contextMenu_patients">
@@ -155,11 +185,12 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <li><div><img src="/m-eva-resourcestatic/icons/produits/web/pancarte_medicale_32.png" class="gwt-Image">Synthèse</div></li>
   <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/labo_32.png" class="gwt-Image">Résultats de labo</div></li>
   <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image">PACS</div></li>
-  <li><div><img src="" class="gwt-Image icon-ordonnance">Ordonnance</div></li>
-  <li><div><img src="" class="gwt-Image icon-documents">Documents</div></li>
+  <li><div><img src="" class="gwt-Image small-gwt-Image icon-ordonnance">Ordonnance</div></li>
+  <li><div><img src="" class="gwt-Image small-gwt-Image icon-documents">Documents</div></li>
 </ul>
 `).menu().hide())
             }
+                // Menu flottant pour les prescriptions
             if(!$('#hoverMenu_pres', SSSFrame.document).length){
                 $('#workbody', SSSFrame.document).append($(`
 <div id="hoverMenu_pres">
@@ -171,6 +202,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <span title="Annuler arrêt & modifications" action="RESET_ORDER"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
 </div>
 `).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DOYB>.GD42JS-DK-B tr', monitorPresMouseOver)
+
                 let IPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP : ")', SSSFrame.document).text().split(" : ")[1]
                 if ((typeof SSSFrame.listingPrescriptions == "undefined" || (SSSFrame.listingPrescriptions.IPP != IPP) ) && $('#workbody').length){
                     delete SSSFrame.listingPrescriptions
@@ -180,7 +212,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                     delete SSSFrame.listePresLabo
                     $('#CONSIGNES-POPUP', SSSFrame.document).dialog('destroy').remove()
                     $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
-                    $('div.GD42JS-DLOB', SSSFrame.document).hide()
+                    //$('div.GD42JS-DLOB', SSSFrame.document).hide() // cacher la fenêtre popup MEVA à l'initialisation de la page
                     //$('body', SSSFrame.document).append('<div class="full_bg"><span>Préparation de la liste de prescription</span></div>')
                     //  .append('<style>.full_bg{position:fixed;top:0;left:0;width:100%;height:100%;background:black;opacity:0.2;</style>}')
                 }
@@ -248,9 +280,9 @@ background-position:initial;}
 #contextMenu_patients {position:fixed!important;}
 #contextMenu_patients.ui-menu .ui-menu-item-wrapper {padding:8px;}
 #contextMenu_patients.ui-menu .ui-menu-item {padding:0;}
-#contextMenu_patients .gwt-Image {width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;}
-#contextMenu_patients .gwt-Image.icon-documents {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAMxSURBVDhPdZLrT1N3GMc7txcmlhcmUxPj2y1LTMxeLBpJTP8CE0tGdJE4EyVLUGMr4WaBjgrCzKCOoiBooUaglhZaioXTUnrh9OZpexwtp/eW0QsdUEmIGpeFfXcoJsaAT/K8+SXPJ9/Lj6PvKev1qCs9zLTAwMwIBsOEsC0xV10VN9eWJaw1Z/6arz2e8zccAofzBWevmVVcou0jV+DTCRDzjiLhUyLm6t+K2Dr/CVtaNxmjKB+xNslDIbJEDOz7cPZxkjYRnbQ1wquvQ2SRQjKVwkp+BYXCKjYKebxeW8bGenp98+07Q279zSUAnypZsjfSec8dZJwtoG1yjI8/h2ZiAnNWK3x+Gn6aBhMKY2l5GauFTdkuQGKunl5xtSBLNiFirAY53QOVZhzE7Bwo+k+4KR9eBRmEonGkVzd2A+LmOjrr/BXpeRGihABWXRv6ngxCPfkCdg8Fu5sCtRDEYiyJVP6zADEyLCBmEsKm70Dv4FPojBa4AyE4/AE46ACoxQjCmcJeFhrovFtStJAw18CobkG7VAa5UoMZ0lNcC/UKrmAEgfTabsCSbSfEnKP5A0CCNhYwMKrBlN0NncUBg4OC2bsAf2r1cwAJcs5mxIxCGJRNEN/rQj+rwOD0Yoo9nvUFQTJJeFNr3XtYqKdzbAuZ7RZmboJQidF+/w+oXhB4GU7AxcSK64kuwewPyTicA0fYsxJ2dz4VC/Bvh1hswSiAcYzN4H43hrVTIBfCcAbCoJgomOXcf3KleuyHU6cufHfixLfl5eVfFgFJa4Mp69hpIW66BULTirYHA3g2Y8eUN44JVwimYAauaBrdfQPvleqJtHcxMk1HUiL5sP4bToZsOf23R2LOkKJ/k2yIWkXtlvB281ZX/xDkKh0qKq/jp6vX8IugDk2SuxhVa6E32QqqSaJD/JvsaFHFGik+mp0X3YvPVr/WPqqkz52v+F06pHysmDQ5Oh4psvV3pe8qhQ0rl69WEd2yPmLgscI9olRrpdKe74uA7UlZft4fJW78aBq63Mjlcr/m8Xhf1bc/PNg1ojv+QGk4e7uz92RpaWkJ+87l8/mH+RcvHuPxeNz/AX7dZzZ5DoFPAAAAAElFTkSuQmCC)}
-#contextMenu_patients .gwt-Image.icon-ordonnance {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIbSURBVDhPY6AqEF/3yExszaMasXUP6sTWPqoVW/PQheH/f0aoNE7AKGkdKidjEWImWTw7T7xt40IYFqtcXCVtHWYhaxWuzFBfzwRVjwrk7UMlpCxD9ktZhLzHhaUtgs9L2YSrQbWgAgnzcE2gomfSliH/cWKLkE+SVsG2UC2oAGYAEP+Qsgx+AnTNLSD9C4h/AjX+lrYM/kuMAU+BinYCFU8GOvcG0NZV0hZBc6UsgvcCxe4D+R8JugCo8AtQ4Wugzd9AtgNd8gPuAsuQR1Kx1S7ia++IMdT/Rw1MJBfcBOLNQPZxoAGXgPQpoAvuAA16LJXaNUds1Z1TwGg9I7LmsRcDA1LUIgXiWaDibSD/Am09A8SHgezrUpahJ8Rnn9kgtvbhfzBec3+V1qorbFDtSAaAFAP9DLIRGA5/gPzfQPqvtFXoNdF559aLrXnwEYxX318jk9wrBE8XSGFwRNIiJBmo8RzQoNVAGhKIViHbxaYfqwNqXgi0vVt8/qU8KeuImUD5dAbjNFa4AUB/Pwcacg/olTeggATa/gUo/kPaMvSK2Nzz24HO/yu69sFdscXXVkjbRq0EGn5ZwjJInkHMJkgJqPAOUCPWRAT00jPx7u0LRdc+/A404Jv49GOLpKzDZgHlGiVsQkQZjIHOAOaDQKAh9UAXNKBjoGtqpYJLnUXXPYwHZrJU8dRuc6BXc0D5BxgCBDMaAcDAAABTEhAox93HNQAAAABJRU5ErkJggg==)}
+.gwt-Image.small-gwt-Image {width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;}
+.icon-documents {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAMxSURBVDhPdZLrT1N3GMc7txcmlhcmUxPj2y1LTMxeLBpJTP8CE0tGdJE4EyVLUGMr4WaBjgrCzKCOoiBooUaglhZaioXTUnrh9OZpexwtp/eW0QsdUEmIGpeFfXcoJsaAT/K8+SXPJ9/Lj6PvKev1qCs9zLTAwMwIBsOEsC0xV10VN9eWJaw1Z/6arz2e8zccAofzBWevmVVcou0jV+DTCRDzjiLhUyLm6t+K2Dr/CVtaNxmjKB+xNslDIbJEDOz7cPZxkjYRnbQ1wquvQ2SRQjKVwkp+BYXCKjYKebxeW8bGenp98+07Q279zSUAnypZsjfSec8dZJwtoG1yjI8/h2ZiAnNWK3x+Gn6aBhMKY2l5GauFTdkuQGKunl5xtSBLNiFirAY53QOVZhzE7Bwo+k+4KR9eBRmEonGkVzd2A+LmOjrr/BXpeRGihABWXRv6ngxCPfkCdg8Fu5sCtRDEYiyJVP6zADEyLCBmEsKm70Dv4FPojBa4AyE4/AE46ACoxQjCmcJeFhrovFtStJAw18CobkG7VAa5UoMZ0lNcC/UKrmAEgfTabsCSbSfEnKP5A0CCNhYwMKrBlN0NncUBg4OC2bsAf2r1cwAJcs5mxIxCGJRNEN/rQj+rwOD0Yoo9nvUFQTJJeFNr3XtYqKdzbAuZ7RZmboJQidF+/w+oXhB4GU7AxcSK64kuwewPyTicA0fYsxJ2dz4VC/Bvh1hswSiAcYzN4H43hrVTIBfCcAbCoJgomOXcf3KleuyHU6cufHfixLfl5eVfFgFJa4Mp69hpIW66BULTirYHA3g2Y8eUN44JVwimYAauaBrdfQPvleqJtHcxMk1HUiL5sP4bToZsOf23R2LOkKJ/k2yIWkXtlvB281ZX/xDkKh0qKq/jp6vX8IugDk2SuxhVa6E32QqqSaJD/JvsaFHFGik+mp0X3YvPVr/WPqqkz52v+F06pHysmDQ5Oh4psvV3pe8qhQ0rl69WEd2yPmLgscI9olRrpdKe74uA7UlZft4fJW78aBq63Mjlcr/m8Xhf1bc/PNg1ojv+QGk4e7uz92RpaWkJ+87l8/mH+RcvHuPxeNz/AX7dZzZ5DoFPAAAAAElFTkSuQmCC)}
+.icon-ordonnance {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIbSURBVDhPY6AqEF/3yExszaMasXUP6sTWPqoVW/PQheH/f0aoNE7AKGkdKidjEWImWTw7T7xt40IYFqtcXCVtHWYhaxWuzFBfzwRVjwrk7UMlpCxD9ktZhLzHhaUtgs9L2YSrQbWgAgnzcE2gomfSliH/cWKLkE+SVsG2UC2oAGYAEP+Qsgx+AnTNLSD9C4h/AjX+lrYM/kuMAU+BinYCFU8GOvcG0NZV0hZBc6UsgvcCxe4D+R8JugCo8AtQ4Wugzd9AtgNd8gPuAsuQR1Kx1S7ia++IMdT/Rw1MJBfcBOLNQPZxoAGXgPQpoAvuAA16LJXaNUds1Z1TwGg9I7LmsRcDA1LUIgXiWaDibSD/Am09A8SHgezrUpahJ8Rnn9kgtvbhfzBec3+V1qorbFDtSAaAFAP9DLIRGA5/gPzfQPqvtFXoNdF559aLrXnwEYxX318jk9wrBE8XSGFwRNIiJBmo8RzQoNVAGhKIViHbxaYfqwNqXgi0vVt8/qU8KeuImUD5dAbjNFa4AUB/Pwcacg/olTeggATa/gUo/kPaMvSK2Nzz24HO/yu69sFdscXXVkjbRq0EGn5ZwjJInkHMJkgJqPAOUCPWRAT00jPx7u0LRdc+/A404Jv49GOLpKzDZgHlGiVsQkQZjIHOAOaDQKAh9UAXNKBjoGtqpYJLnUXXPYwHZrJU8dRuc6BXc0D5BxgCBDMaAcDAAABTEhAox93HNQAAAABJRU5ErkJggg==)}
 #hoverMenu_pres {position:fixed;background:white;border:solid 1px grey;border-radius:3px;padding: 2px 5px;z-index:10;opacity:0.5}
 #hoverMenu_pres:hover {opacity:1}
 #hoverMenu_pres span {cursor:pointer;}
@@ -1985,7 +2017,7 @@ document.body.datePicker = datePicker
 function monitorPresMouseOver(ev){
     if (!$ || !$.fn) {var $ = unsafeWindow.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
-    console.log(ev.target)
+    //console.log(ev.target)
     if (ev.type == "mouseover"){
         if(!$(ev.currentTarget).hasClass('currentHover_pres') && ev.view.listingPrescriptions && !$(ev.currentTarget).has('.heoSubHeader').length){
             $('tr.currentHover_pres').removeClass('currentHover_pres')
@@ -1997,6 +2029,59 @@ function monitorPresMouseOver(ev){
             if ($(ev.currentTarget).has('span.heoDiscontinuedOrder').length){$('#hoverMenu_pres', ev.view.document).addClass('stopped')}
             if ($(ev.currentTarget).has('span.heldOrderMarkup').length){$('#hoverMenu_pres', ev.view.document).addClass('suspended')}
             if ($(ev.currentTarget).has('span.heoModifiedOrder').length){$('#hoverMenu_pres', ev.view.document).addClass('modified')}
+        }
+
+        // mise en forme de l'ordonnance
+        if (!$('#liste_ordonnance', ev.view.document).length){
+            $('#liste_ordonnance').remove()
+            $('.GD42JS-DL-B:contains(Médicaments)').append('<div id="liste_ordonnance"><a><img src="" class="gwt-Image small-gwt-Image icon-ordonnance">Liste Ordonnance</a></div>')
+                .find('#liste_ordonnance a').click(ev=>{
+                let galeniques = ['INJ', 'CP DISPERS', 'CP', 'PDRE PR SOL BUV', 'POUDRE PR SOL BUV', 'BUV', 'GEL OPHTA', 'GEL', 'COLLYRE', 'PATCH', 'POM OPHTA', 'POMMADE', 'CREME', 'INHAL'],
+                    str = "",
+                    $liste_medocs_table = $(ev.target).parents('.GD42JS-DL-B').next('.GD42JS-DK-B').find('tbody tr'),
+                    liste_medocs = {}
+                $liste_medocs_table.each((i,el)=>{
+                    if(!$(el).has('span.heoSubHeader').length){
+                        let $ligne = $('td:last>.gwt-HTML', el).clone().find('subseq').remove().end()
+                        let medoc = $ligne.find('b').text(),
+                            galenique = galeniques.find(gal=>medoc.search(" "+gal)+1),
+                            nom_medoc = medoc.substr(0, medoc.search(" "+galenique)) || medoc,
+                            ligne_poso = $ligne.textContent().split(' »')[0],
+                            dose = ligne_poso.split(' - ')[0].trim(),
+                            frequence = ligne_poso.split(' - ')[1].trim()|| "matin"
+                        galenique = medoc.substr(medoc.search(" "+galenique)+1)
+                        if (galenique == nom_medoc) galenique = ""
+                        if (liste_medocs[nom_medoc]){
+                            if (liste_medocs[nom_medoc][galenique]){
+                                if (liste_medocs[nom_medoc][galenique][dose]){
+                                    liste_medocs[nom_medoc][galenique][dose] += " "+frequence
+                                } else {
+                                    liste_medocs[nom_medoc][galenique][dose] = frequence
+                                }
+                            } else {
+                                liste_medocs[nom_medoc][galenique] = {}
+                                liste_medocs[nom_medoc][galenique][dose] = frequence
+                            }
+                        } else {
+                            liste_medocs[nom_medoc] = {}
+                            liste_medocs[nom_medoc][galenique] = {}
+                            liste_medocs[nom_medoc][galenique][dose] = frequence
+                        }
+                        //str += "<b>"+medoc+"</b>"
+                        //str += $ligne.textContent()
+                    }
+                })
+                console.log(liste_medocs)
+                //console.log($liste_medocs_table)
+                function listener(e) {
+                    e.clipboardData.setData("text/html", str);
+                    e.clipboardData.setData("text/plain", str);
+                    e.preventDefault();
+                }
+                document.addEventListener("copy", listener);
+                document.execCommand("copy");
+                document.removeEventListener("copy", listener);
+            })
         }
     } else {
         if (!$(ev.toElement).parents('tr').hasClass('currentHover_pres') && (!$(ev.toElement).parents('#hoverMenu_pres').add(ev.toElement).is("#hoverMenu_pres"))){
