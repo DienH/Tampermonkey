@@ -765,6 +765,8 @@ body {background-color:#F5F5F5;}
                 case "Examen RAdiologie":
                 case "Examen Tomodensitométrique":
                 case "Echodoppler Veineux":
+                case "Echodoppler Arteriel":
+                case "Examen Echographique":
                     $('#autonomie_Chaise, #examen, #RV_service, #PC1, #scanant_non, #prem_non, #grossesse_non, #testgrossesse_non, #ci_non, #vv_non, #pac_non', document).click2()
                     $('#Telephone, #TelService', document).val(GM_getValue('service').phone)
                     break;
