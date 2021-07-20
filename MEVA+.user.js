@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.59
+// @version      0.2.60
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -764,8 +764,9 @@ body {background-color:#F5F5F5;}
                 case "Examen IRM CHU":
                 case "Examen RAdiologie":
                 case "Examen Tomodensitométrique":
+                case "Echodoppler Veineux":
                     $('#autonomie_Chaise, #examen, #RV_service, #PC1, #scanant_non, #prem_non, #grossesse_non, #testgrossesse_non, #ci_non, #vv_non, #pac_non', document).click2()
-                    $('#Telephone', document).val(GM_getValue('service').phone)
+                    $('#Telephone, #TelService', document).val(GM_getValue('service').phone)
                     break;
                 case "":
                         //log(SSSFrame.nouvellesConsignes)
