@@ -224,26 +224,34 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                         '?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
                     open(labo_url)
                 }})
-                $(SSSFrame).resize((ev)=>{
-                    let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
-                    if (!ev.isTrusted){
-                        if (!SSSFrame.resizeMotired) {
-                            if ((SSSFrame.oldWidth && $(SSSFrame).width() != SSSFrame.oldWidth) || (SSSFrame.oldHeight && $(SSSFrame).height() != SSSFrame.oldHeight)){
+
+                if(!SSSFrame.resizeMotired){
+                    $(SSSFrame).resize((ev)=>{
+                        let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
+                        if (!ev.isTrusted){
+                            //if ((!SSSFrame.oldWidth && !SSSFrame.oldHeight ) || (SSSFrame.oldWidth && $(SSSFrame).width() != SSSFrame.oldWidth) || (SSSFrame.oldHeight && $(SSSFrame).height() != SSSFrame.oldHeight)){
                                 let listepatientsHeight = $(SSSFrame).height()-122
                                 $('#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_content', document).height(listepatientsHeight)
-                                $('.GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer').height(listepatientsHeight-138)
-                                $('.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody').height(listepatientsHeight-163)
+                                if (!$('#liste_patients-custom_height_1').height(listepatientsHeight-138).length){
+                                    $('.GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer').height(listepatientsHeight-138).attr('id', 'liste_patients-custom_height_1')
+                                }
+                                if (!$('#liste_patients-custom_height_2').height(listepatientsHeight-163).length){
+                                    $('.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody').height(listepatientsHeight-163).attr('id', 'liste_patients-custom_height_2')
+                                }
                                 let unitSelectorWidth = $(window).width()-630
-                                $('.gwt-TabPanelBottom .GOAX34LLDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth:visible:eq(0)').width(unitSelectorWidth > 205 ? unitSelectorWidth : 205)
+                                if (!$('#liste_patients-custom_width_1').width(unitSelectorWidth > 205 ? unitSelectorWidth : 205).length){
+                                    $('.gwt-TabPanelBottom .GOAX34LLDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth:visible:eq(0)')
+                                        .width(unitSelectorWidth > 205 ? unitSelectorWidth : 205)
+                                    .attr('id', 'liste_patients-custom_width_1' )
+                                }
                                 SSSFrame.oldHeight = $(SSSFrame).height()
                                 SSSFrame.oldWidth = $(SSSFrame).width()
-                            }
-                            SSSFrame.resizeMotired = true
+                           // }
+                        } else {
                         }
-                    } else {
-                        SSSFrame.resizeMotired = false
-                    }
-                })
+                    })
+                    SSSFrame.resizeMotired = true
+                }
                 document.head.append(hourCSS)
                 document.head.append(hourScript)
                 document.head.append(dateScript)
