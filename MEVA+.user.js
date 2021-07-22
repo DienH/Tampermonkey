@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.60
+// @version      0.2.61
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -226,12 +226,23 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 }})
                 $(SSSFrame).resize((ev)=>{
                     let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
-                    let listepatientsHeight = $(SSSFrame).height()-122
-                        $('#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_content', document).height(listepatientsHeight)
-                    $('.GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer').height(listepatientsHeight-138)
-                    $('.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody').height(listepatientsHeight-163)
-                    let unitSelectorWidth = $(window).width()-630
-                    $('.gwt-TabPanelBottom .GOAX34LLDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth:visible:eq(0)').width(unitSelectorWidth > 205 ? unitSelectorWidth : 205)
+                    if (!ev.isTrusted){
+                        if (!SSSFrame.resizeMotired) {
+                            if ((SSSFrame.oldWidth && $(SSSFrame).width() != SSSFrame.oldWidth) || (SSSFrame.oldHeight && $(SSSFrame).height() != SSSFrame.oldHeight)){
+                                let listepatientsHeight = $(SSSFrame).height()-122
+                                $('#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_content', document).height(listepatientsHeight)
+                                $('.GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer').height(listepatientsHeight-138)
+                                $('.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody').height(listepatientsHeight-163)
+                                let unitSelectorWidth = $(window).width()-630
+                                $('.gwt-TabPanelBottom .GOAX34LLDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth:visible:eq(0)').width(unitSelectorWidth > 205 ? unitSelectorWidth : 205)
+                                SSSFrame.oldHeight = $(SSSFrame).height()
+                                SSSFrame.oldWidth = $(SSSFrame).width()
+                            }
+                            SSSFrame.resizeMotired = true
+                        }
+                    } else {
+                        SSSFrame.resizeMotired = false
+                    }
                 })
                 document.head.append(hourCSS)
                 document.head.append(hourScript)
@@ -767,6 +778,7 @@ body {background-color:#F5F5F5;}
                 case "Echodoppler Veineux":
                 case "Echodoppler Arteriel":
                 case "Examen Echographique":
+                case "EEG":
                     $('#autonomie_Chaise, #examen, #RV_service, #PC1, #scanant_non, #prem_non, #grossesse_non, #testgrossesse_non, #ci_non, #vv_non, #pac_non', document).click2()
                     $('#Telephone, #TelService', document).val(GM_getValue('service').phone)
                     break;
