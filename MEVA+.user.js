@@ -6,6 +6,7 @@
 // @author       Me
 // @match        http*://meva/*
 // @include      http*://serv-cyberlab.chu-clermontferrand.fr/cyberlab/*
+// @updateURL    https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.update
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
 // @require      https://code.jquery.com/jquery.min.js
 // require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js
