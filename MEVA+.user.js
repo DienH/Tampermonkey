@@ -859,7 +859,11 @@ body {background-color:#F5F5F5;}
             }
         } else {
             if($(':contains(Avertissement Prescription Dupliquée)', document).length){
+            log(SSSFrame.listePresLabo)
                 if (SSSFrame.listePresLabo && SSSFrame.listePresLabo.current && $(':contains('+SSSFrame.listePresLabo.current+')', document).length){
+                    SSSFrame.listePresLabo.last = SSSFrame.listePresLabo.current
+                    SSSFrame.listePresLabo.current = Object.keys(SSSFrame.listePresLabo.labo)[++SSSFrame.listePresLabo.currentN]
+                    $('input[value="Annuler"]', document).click2()
                 }
             }
         }
