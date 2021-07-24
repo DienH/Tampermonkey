@@ -231,23 +231,16 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                         let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
                         if (!ev.isTrusted){
                             //if ((!SSSFrame.oldWidth && !SSSFrame.oldHeight ) || (SSSFrame.oldWidth && $(SSSFrame).width() != SSSFrame.oldWidth) || (SSSFrame.oldHeight && $(SSSFrame).height() != SSSFrame.oldHeight)){
-                                let listepatientsHeight = $(SSSFrame).height()-122
-                                $('#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_content', document).height(listepatientsHeight)
-                                if (!$('#liste_patients-custom_height_1').height(listepatientsHeight-138).length){
-                                    $('.GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer').height(listepatientsHeight-138).attr('id', 'liste_patients-custom_height_1')
-                                }
-                                if (!$('#liste_patients-custom_height_2').height(listepatientsHeight-163).length){
-                                    $('.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody').height(listepatientsHeight-163).attr('id', 'liste_patients-custom_height_2')
-                                }
-                                let unitSelectorWidth = $(window).width()-630
-                                if (!$('#liste_patients-custom_width_1').width(unitSelectorWidth > 205 ? unitSelectorWidth : 205).length){
-                                    $('.gwt-TabPanelBottom .GOAX34LLDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth:visible:eq(0)')
-                                        .width(unitSelectorWidth > 205 ? unitSelectorWidth : 205)
-                                    .attr('id', 'liste_patients-custom_width_1' )
-                                }
-                                SSSFrame.oldHeight = $(SSSFrame).height()
-                                SSSFrame.oldWidth = $(SSSFrame).width()
-                           // }
+                            let listepatientsHeight = $(SSSFrame).height()-122
+                            $('#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_content').height(listepatientsHeight)
+                            $('.GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer:visible:eq(0)').height(listepatientsHeight-138)
+                            $('.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody:visible:eq(0)').height(listepatientsHeight-163)
+                            let unitSelectorWidth = $(window).width()-630
+                            $('.gwt-TabPanelBottom .GOAX34LLDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth:visible:eq(0)')
+                                .width(unitSelectorWidth > 205 ? unitSelectorWidth : 205)
+                            //SSSFrame.oldHeight = $(SSSFrame).height()
+                            //SSSFrame.oldWidth = $(SSSFrame).width()
+                            // }
                         } else {
                         }
                     })
@@ -429,6 +422,7 @@ $.expr[":"].containsI = function (a, i, m) {
                             if (SSSFrame.autoEnhancedPres){
                                 SSSFrame.output_Selector(SSSFrame.autoEnhancedPres.nom+' '+SSSFrame.autoEnhancedPres.forme)
                             } else if (SSSFrame.listePresLabo){
+                                console.log(SSSFrame.listePresLabo.current)
                                 SSSFrame.output_Selector(SSSFrame.listePresLabo.current)
                                 if (orderName && SSSFrame.listePresLabo.last && orderName.searchI(SSSFrame.listePresLabo.last)+1){
                                     $HEO_INPUT[0].dispatchEvent(ke);
@@ -862,6 +856,11 @@ body {background-color:#F5F5F5;}
                         $('#btPrescrire', document).click2()
                     }
                     break;
+            }
+        } else {
+            if($(':contains(Avertissement Prescription Dupliquée)', document).length){
+                if (SSSFrame.listePresLabo && SSSFrame.listePresLabo.current && $(':contains('+SSSFrame.listePresLabo.current+')', document).length){
+                }
             }
         }
         if ($('#modif_action', document).length){
