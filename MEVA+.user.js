@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.61
+// @version      0.2.62
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -83,7 +83,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
         .append($('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>'))
     }
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
-    if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""})}
+    if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""});GM_setValue('service', {phone:""})}
     let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link'), title = ""
     dateScript.src = "https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"
     hourScript.src = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.js"
