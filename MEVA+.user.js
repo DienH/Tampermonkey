@@ -17,8 +17,9 @@
 // @grant        GM_getResourceText
 // ==/UserScript==
 
+
 // lien pdf Article 80
-let article80 = "https://form.jotform.com/212164047946053"
+//let article80 = "https://form.jotform.com/212164047946053"
 
 /*
 // copier du texte avec formatage
@@ -85,7 +86,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
         .append($('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>'))
     }
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
-    if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:""});GM_setValue('service', {phone:""})}
+    if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:"", nom:"", prenom:""});GM_setValue('service', {phone:""})}
     let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link'), title = ""
     dateScript.src = "https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"
     hourScript.src = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.js"
@@ -183,13 +184,14 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
             if (!$('#contextMenu_patients', SSSFrame.document).length){
                 $('body', SSSFrame.document).append($(`
 <ul id="contextMenu_patients">
-  <li><div><img src="/heoclient-application-web/icon/heo_blue_32.png" class="gwt-Image">Prescriptions</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/acte_32.png" class="gwt-Image">Observations</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/web/pancarte_medicale_32.png" class="gwt-Image">Synthèse</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/labo_32.png" class="gwt-Image">Résultats de labo</div></li>
-  <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image">PACS</div></li>
+  <li><div><img src="/heoclient-application-web/icon/heo_blue_32.png" class="gwt-Image small-gwt-Image">Prescriptions</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/acte_32.png" class="gwt-Image small-gwt-Image">Observations</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/web/pancarte_medicale_32.png" class="gwt-Image small-gwt-Image">Synthèse</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/labo_32.png" class="gwt-Image small-gwt-Image">Résultats de labo</div></li>
+  <li><div><img src="/m-eva-resourcestatic/icons/produits/application.png" class="gwt-Image small-gwt-Image">PACS</div></li>
   <li><div><img src="" class="gwt-Image small-gwt-Image icon-ordonnance">Ordonnance</div></li>
   <li><div><img src="" class="gwt-Image small-gwt-Image icon-documents">Documents</div></li>
+  <li><div><img style="width: 24px;margin: -6px -3px 0px -5px;" src="https://www.petit-ambulances.com/wp-content/uploads/2018/02/FIAT-DUCATO.png" class="gwt-Image small-gwt-Image icon-transport">Article 80</div></li>
 </ul>
 `).menu().hide())
             }
@@ -2192,6 +2194,14 @@ function monitorClick(ev){
                 labo_url = 'https://serv-cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
                     '?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
 
+            } else if (action == "Article 80"){
+                let prescripteur = GM_getValue("Meva");
+                let [nom, prenom] = $(".GOAX34LIJB-fr-mckesson-framework-gwt-widgets-client-resources-ListFamilyCss-fw-ListBox-display").text().split(') ')
+                nom = nom.split(' (')[0]
+                let ddn = prenom.split(' (')[1].split(')').join('')
+                prenom = " "+prenom.split(' (')[0].capitalize()
+                open("https://form.jotform.com/212164047946053?nomPrenom[first]="+prescripteur.nom+"&nomPrenom[last]="+prescripteur.prenom+"&nomPatient="+nom+prenom+"&dateNaissance="+ddn)
+                return
             }
             $('div.carousel_enabled_item:contains('+action+')').click2()
         }
