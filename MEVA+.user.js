@@ -2200,7 +2200,9 @@ function monitorClick(ev){
                 nom = nom.split(' (')[0]
                 let ddn = prenom.split(' (')[1].split(')').join('')
                 prenom = " "+prenom.split(' (')[0].capitalize()
-                open("https://form.jotform.com/212164047946053?nomPrenom[first]="+prescripteur.nom+"&nomPrenom[last]="+prescripteur.prenom+"&nomPatient="+nom+prenom+"&dateNaissance="+ddn)
+                let [ddnJJ, ddnMM, ddnYYYY] = ddn.split('/')
+                open("https://form.jotform.com/212164047946053?nomPrenom[first]="+prescripteur.nom+"&nomPrenom[last]="+prescripteur.prenom+"&nomPatient="+nom+prenom+
+                     "&dateNaissance[day]="+ddnJJ+"&dateNaissance[month]="+ddnMM+"&dateNaissance[year]="+ddnYYYY)
                 return
             }
             $('div.carousel_enabled_item:contains('+action+')').click2()
