@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.62
+// @version      0.2.63
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -17,6 +17,8 @@
 // @grant        GM_getResourceText
 // ==/UserScript==
 
+// lien pdf Article 80
+let article80 = "https://form.jotform.com/212164047946053"
 
 /*
 // copier du texte avec formatage
