@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.63
+// @version      0.2.64
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -2205,7 +2205,7 @@ function monitorClick(ev){
                 let ddn = prenom.split(' (')[1].split(')').join('')
                 prenom = " "+prenom.split(' (')[0].capitalize()
                 let [ddnJJ, ddnMM, ddnYYYY] = ddn.split('/')
-                open("https://form.jotform.com/212164047946053?nomPrenom[first]="+prescripteur.nom+"&nomPrenom[last]="+prescripteur.prenom+"&nomPatient="+nom+prenom+
+                open("https://form.jotform.com/212164047946053?nomPrenom[first]="+prescripteur.prenom+"&nomPrenom[last]="+prescripteur.nom+"&nomPatient="+nom+prenom+
                      "&dateNaissance[day]="+ddnJJ+"&dateNaissance[month]="+ddnMM+"&dateNaissance[year]="+ddnYYYY)
                 return
             }
