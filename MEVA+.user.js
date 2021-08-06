@@ -2196,6 +2196,10 @@ function monitorClick(ev){
 
             } else if (action == "Article 80"){
                 let prescripteur = GM_getValue("Meva");
+                if (!prescripteur.nom){
+                    prescripteur.nom=""
+                    prescripteur.prenom=""
+                }
                 let [nom, prenom] = $(".GOAX34LIJB-fr-mckesson-framework-gwt-widgets-client-resources-ListFamilyCss-fw-ListBox-display").text().split(') ')
                 nom = nom.split(' (')[0]
                 let ddn = prenom.split(' (')[1].split(')').join('')
