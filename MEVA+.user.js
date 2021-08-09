@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.64
+// @version      0.2.65
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -149,6 +149,13 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
     }else if (location.href.search("Hospitalisation.fwks")+1 || location.href.search("m-eva.fwks")+1){
         let SSSFrame = unsafeWindow, CS_AnestTitle = (`div.carousel_enabled_item:contains("Consultation d'anesthésie")`),
             SSSFrame_wait = setInterval(()=>{
+                let patientIPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains(IPP)').text().split(' : ')[1]
+                if (patientIPP != SSSFrame.patientIPP){
+                    let patientBD = $('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient').text().split(" (")[2].split(')')[0].split('/').reverse().join(''),
+                        labo_url = 'https://serv-cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
+                        '?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
+                    SSSFrame.labo_url = labo_url
+                }
                 $(CS_AnestTitle).remove()
                 SSSFrame.dispatchEvent(new Event('resize'))
                 $('div.carousel_enabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("Observations"), div.carousel_enabled_item:contains("Résultats de laboratoire"),'+
@@ -223,14 +230,10 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 }
             }
                 $(`div.carousel_enabled_item:contains("Résultats"):not(.modified)`).addClass('modified').each((i,el)=>{el.onclick=ev=>{
-                    let patientIPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains(IPP)').text().split(' : ')[1],
-                        patientBD = $('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient').text().split(" (")[2].split(')')[0].split('/').reverse().join(''),
-                        labo_url = 'https://serv-cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
-                        '?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
-                    open(labo_url)
+                    open(SSSFrame.labo_url)
                 }})
 
-                if(!SSSFrame.resizeMotired){
+                if(!SSSFrame.resizeMonitored){
                     $(SSSFrame).resize((ev)=>{
                         let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
                         if (!ev.isTrusted){
@@ -248,7 +251,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                         } else {
                         }
                     })
-                    SSSFrame.resizeMotired = true
+                    SSSFrame.resizeMonitored = true
                 }
                 document.head.append(hourCSS)
                 document.head.append(hourScript)
@@ -788,6 +791,9 @@ body {background-color:#F5F5F5;}
                 case "EEG":
                     $('#autonomie_Chaise, #examen, #RV_service, #PC1, #scanant_non, #prem_non, #grossesse_non, #testgrossesse_non, #ci_non, #vv_non, #pac_non', document).click2()
                     $('#Telephone, #TelService', document).val(GM_getValue('service').phone)
+                    $('#saisiecreat, #saisieclair', document).each((i,el)=>{
+                        $(el.previousSibling).wrap('<a title="Résultats de labo" class="lien-labo"></a>').parent().click(()=>open(SSSFrame.labo_url))
+                    })
                     break;
                 case "":
                         //log(SSSFrame.nouvellesConsignes)
