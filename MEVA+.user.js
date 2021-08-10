@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.65
+// @version      0.2.66
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -769,6 +769,7 @@ $.expr[":"].containsI = function (a, i, m) {
 .outOf2DaysRange {background:coral;}
 .nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
 body {background-color:#F5F5F5;}
+a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
 `
         document.head.append(styleEl)
 
@@ -792,7 +793,7 @@ body {background-color:#F5F5F5;}
                     $('#autonomie_Chaise, #examen, #RV_service, #PC1, #scanant_non, #prem_non, #grossesse_non, #testgrossesse_non, #ci_non, #vv_non, #pac_non', document).click2()
                     $('#Telephone, #TelService', document).val(GM_getValue('service').phone)
                     $('#saisiecreat, #saisieclair', document).each((i,el)=>{
-                        $(el.previousSibling).wrap('<a title="Résultats de labo" class="lien-labo"></a>').parent().click(()=>open(SSSFrame.labo_url))
+                        $(el.previousSibling).wrap('<a title="Résultats de labo" class="lien-labo"></a>').parent().text((i,t)=>t.trim()).click(()=>open(SSSFrame.labo_url))
                     })
                     break;
                 case "":
@@ -2281,8 +2282,10 @@ function monitorClick(ev){
         $.waitFor('div.GOAX34LLLB-fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-BlockMaskTextDiv', ev.view.document).then($el2=>{
             $('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button', ev.view.document).click2()
         })
-    } else if (ev.target.title == "HEO - Prescrire"){
-        addAutoPrescriptor(ev)
+    } else if (ev.target.title == "HEO - Prescrire" || $(ev.target).is('.GD42JS-DFXB')){
+        if(!$(ev.target).is('.GD42JS-DFXB')){
+            addAutoPrescriptor(ev)
+        }
         let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
         delete SSSFrame.nouvellesConsignes
