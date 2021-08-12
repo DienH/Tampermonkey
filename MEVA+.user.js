@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.66
+// @version      0.2.67
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -14,7 +14,10 @@
 // @grant        unsafeWindow
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_openInTab
 // @grant        GM_getResourceText
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
 // ==/UserScript==
 
 
@@ -65,6 +68,19 @@ function copyToClip(str) {
         let $
         if (!$ || !$.fn) {$ = µ.jQuery || window.jQuery };
         $('tr[onclick]:first').click()
+        let creat = $('>td.clickable:first', $('.DTFC_scrollBody>table>tbody>tr').eq($('.DTFC_LeftBodyWrapper>table>tbody>tr:contains(Créatinine)').index('.DTFC_LeftBodyWrapper>table>tbody>tr'))).text().trim(),
+            CKDEPI = $('>td.clickable:first', $('.DTFC_scrollBody>table>tbody>tr').eq($('.DTFC_LeftBodyWrapper>table>tbody>tr:contains(Formule CKDEPI)').index('.DTFC_LeftBodyWrapper>table>tbody>tr'))).text().trim(),
+            IPP = $('.patientInformationLine td:contains(IPP):last').text().split('[IPP: ')[1].split(',')[0]
+        console.log(creat, CKDEPI)
+        if (creat && CKDEPI){
+            GM_setValue("labo", {IPP:IPP,creat:creat, CKDEPI, CKDEPI, autoclose:false})
+            var listener = GM_addValueChangeListener("labo", function(name, oldValue, newValue, remote){
+                if (newValue.autoclose){
+                    window.close()
+                    GM_removeValueChangeListener(listener)
+                }
+            })
+        }
         return true
     }
     if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.parent.jQuery || window.jQuery };
@@ -770,6 +786,7 @@ $.expr[":"].containsI = function (a, i, m) {
 .nj-picker .outOf2DaysRange.nj-item:hover {background:antiquewhite;}
 body {background-color:#F5F5F5;}
 a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
+.titreIform {background-color:green!important;}
 `
         document.head.append(styleEl)
 
@@ -793,7 +810,16 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                     $('#autonomie_Chaise, #examen, #RV_service, #PC1, #scanant_non, #prem_non, #grossesse_non, #testgrossesse_non, #ci_non, #vv_non, #pac_non', document).click2()
                     $('#Telephone, #TelService', document).val(GM_getValue('service').phone)
                     $('#saisiecreat, #saisieclair', document).each((i,el)=>{
-                        $(el.previousSibling).wrap('<a title="Résultats de labo" class="lien-labo"></a>').parent().text((i,t)=>t.trim()).click(()=>open(SSSFrame.labo_url))
+                        $(el.previousSibling).wrap('<a title="Résultats de labo" class="lien-labo"></a>').parent().text((i,t)=>t.trim()).click(()=>{
+                            GM_openInTab(SSSFrame.labo_url, true)
+                            var labo_listener = GM_addValueChangeListener("labo", function(name, old_value, new_value, remote) {
+                                console.log(new_value)
+                                GM_setValue("labo", {autoclose:true})
+                                $('#saisiecreat', document).val(new_value.creat)
+                                $('#saisieclair', document).val(new_value.CKDEPI)
+                                GM_removeValueChangeListener(labo_listener)
+                            })
+                        })
                     })
                     break;
                 case "":
