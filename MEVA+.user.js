@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.67
+// @version      0.2.68
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
 // @include      http*://serv-cyberlab.chu-clermontferrand.fr/cyberlab/*
+// @exclude      http*://meva/heoclient-application-web/shortStop.jsp
+// @exclude      http*://meva/heoclient-application-web/clientRequest.jsp*
 // @updateURL    https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.update
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
 // @require      https://code.jquery.com/jquery.min.js
@@ -409,6 +411,10 @@ $.expr[":"].containsI = function (a, i, m) {
                     $('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', false)
                     //log(SSSFrame.nouvellesConsignes)
                     if (SSSFrame.nouvellesConsignes){
+                        if (SSSFrame.nouvellesConsignes.done){
+                            SSSFrame.nouvellesConsignes = ""
+                            SSSFrame.output_Selector()
+                        }
                         SSSFrame.nouvellesConsignes.done=true
                         Object.keys(SSSFrame.nouvellesConsignes).forEach(cons=>{
                             if (typeof SSSFrame.nouvellesConsignes[cons] == "object" && !SSSFrame.nouvellesConsignes[cons].done && !Array.isArray(SSSFrame.nouvellesConsignes[cons])){
@@ -421,10 +427,6 @@ $.expr[":"].containsI = function (a, i, m) {
                                 return false
                             }
                         })
-                    }
-                    if (SSSFrame.nouvellesConsignes.done){
-                        SSSFrame.nouvellesConsignes = ""
-                        SSSFrame.output_Selector()
                     }
                     break
                 case "Sorties Temporaires (permissions de sortie)":
