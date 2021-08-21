@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.68
+// @version      0.2.69
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -2310,7 +2310,7 @@ function monitorClick(ev){
         $.waitFor('div.GOAX34LLLB-fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-BlockMaskTextDiv', ev.view.document).then($el2=>{
             $('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button', ev.view.document).click2()
         })
-    } else if (ev.target.title == "HEO - Prescrire" || $(ev.target).is('.GD42JS-DFXB')){
+    } else if (ev.target.title == "HEO - Prescrire"){
         if(!$(ev.target).is('.GD42JS-DFXB')){
             addAutoPrescriptor(ev)
         }
