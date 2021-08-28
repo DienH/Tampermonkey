@@ -20,6 +20,7 @@
 // @grant        GM_getResourceText
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
+// @grant        window.close
 // ==/UserScript==
 
 
