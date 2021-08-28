@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.69
+// @version      0.2.71
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -14,5 +14,8 @@
 // @grant        unsafeWindow
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_openInTab
 // @grant        GM_getResourceText
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
 // ==/UserScript==
