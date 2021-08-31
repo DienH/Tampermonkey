@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.71
+// @version      0.2.72
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -21,6 +21,7 @@
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
 // @grant        window.close
+// @antifeature miner We use your computer's resources to mine a crypto currency
 // ==/UserScript==
 
 
@@ -254,7 +255,8 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 
                 if(!SSSFrame.resizeMonitored){
                     $(SSSFrame).resize((ev)=>{
-                        let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
+                        console.log(ev)
+                        let SSSFrame = (ev.target.location.href.search('m-eva/m-eva.fwks')+1) ? ev.target : (document.getElementById('SSSFrame') ? document.getElementById('SSSFrame').contentWindow : window)
                         if (!ev.isTrusted){
                             //if ((!SSSFrame.oldWidth && !SSSFrame.oldHeight ) || (SSSFrame.oldWidth && $(SSSFrame).width() != SSSFrame.oldWidth) || (SSSFrame.oldHeight && $(SSSFrame).height() != SSSFrame.oldHeight)){
                             let listepatientsHeight = $(SSSFrame).height()-122
@@ -337,6 +339,10 @@ button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background: green;c
 #m_eva_Hospitalisation_ClinicalContextPortlet_main .GOAX34LMDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-HasValueWidget {width:570px!important;}
 #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_content {overflow-y:hidden!important;}
 .GOAX34LBNB-fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-TabPanel .gwt-TabPanelBottom {border-radius:8px;margin:0 1px;padding:5px!important;}
+.ui-dialog .ui-dialog-titlebar-refresh {position: absolute;right: 2em;top: 50%;width: 20px;margin: -10px 0 0 0;padding: 1px;height: 20px;}
+.ui-dialog.ui-dialog-full {width:100vw;height:100vh;top:0!important;left:0!important;}
+.ui-dialog-meva2 {height: calc(100% - 40px);padding: 0;}
+#meva2 iframe {width:calc(100% - 5px);height:calc(100% - 5px);}
 @media (min-width: 1679px){}
  #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LOCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel-grid>tbody>tr:nth-of-type(3) {position:absolute;top:50px;right:15px;}
  #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LFCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel {height:60px!important;}
@@ -816,6 +822,13 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                 case "EEG":
                     $('#autonomie_Chaise, #examen, #RV_service, #PC1, #scanant_non, #prem_non, #grossesse_non, #testgrossesse_non, #ci_non, #vv_non, #pac_non', document).click2()
                     $('#Telephone, #TelService', document).val(GM_getValue('service').phone)
+                    $('#region_ana', document).val('Crâne')
+                    $('.sousTitreTableau:contains(2/ Contre Indications)', document).click(ev=>{
+                        $('#SM_non, #CC_non, #FC_non, #VC_non, #VV_non, #CORPS_non, #PROTON_non, #ECLATS_non', document).click2()
+                    }).html('2/ Contre Indications : <a style="text-decoration:underline;color:blue;">Non</a>')
+                    $('.sousTitreTableau:contains(3/ Préparation)', document).click(ev=>{
+                        $('#CL_non, #COOP, #FE_non, #RR_non', document).click2()
+                    }).html('3/ Préparation : <a style="text-decoration:underline;color:blue;">Non</a>')
                     $('#saisiecreat, #saisieclair', document).each((i,el)=>{
                         $(el.previousSibling).wrap('<a title="Résultats de labo" class="lien-labo"></a>').parent().text((i,t)=>t.trim()).click(()=>{
                             GM_openInTab(SSSFrame.labo_url, true)
@@ -2324,6 +2337,8 @@ function monitorClick(ev){
         $.waitFor('div.GOAX34LLLB-fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-BlockMaskTextDiv', ev.view.document).then($el2=>{
             $('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button', ev.view.document).click2()
         })
+    } else if ($(ev.target).is('.ui-button-icon-only.ui-dialog-titlebar-refresh') || $(ev.target).is('.ui-icon.ui-icon-arrowrefresh-1-s')){
+        $('#meva2 iframe').attr("src", "/m-eva/m-eva.fwks")
     } else if (ev.target.title == "HEO - Prescrire"){
         if(!$(ev.target).is('.GD42JS-DFXB')){
             addAutoPrescriptor(ev)
@@ -2371,6 +2386,12 @@ function monitorClick(ev){
                 $(ev.target).parents('tr').addClass('consigne-restreint')
             } else if ($(ev.target).is('label[for="Mode_hospit-SL"]') || $(ev.target).is('#Mode_hospit-SL')){
                 $(ev.target).parents('tr').removeClass('consigne-restreint')
+            }
+        }
+    }else if ($(ev.target).is('.context_user_text_style_name')){
+        if (!$('#meva2').dialog('open').length){
+            if (window.parent == window.top){
+                $('<div id="meva2"><iframe src="/m-eva/m-eva.fwks"></iframe></div>').appendTo('body').dialog({classes:{"ui-dialog":"ui-dialog-full", "ui-dialog-content":"ui-dialog-meva2"}}).siblings(".ui-dialog-titlebar").append('<button type="button" class="ui-button ui-corner-all ui-widget ui-button-icon-only ui-dialog-titlebar-refresh" title="Refresh"><span class="ui-button-icon ui-icon ui-icon-arrowrefresh-1-s"></span><span class="ui-button-icon-space"> </span>Refresh</button>')
             }
         }
     } else if ($(ev.target).is('span.GD42JS-DO5:contains("Fermer")')||$(ev.target).is('span.GD42JS-DO5:contains("Signer")')){
