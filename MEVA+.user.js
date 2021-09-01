@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.72
+// @version      0.2.73
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -77,7 +77,7 @@ function copyToClip(str) {
             IPP = $('.patientInformationLine td:contains(IPP):last').text().split('[IPP: ')[1].split(',')[0]
         console.log(creat, CKDEPI)
         if (creat && CKDEPI){
-            GM_setValue("labo", {IPP:IPP,creat:creat, CKDEPI, CKDEPI, autoclose:false})
+            GM_setValue("labo", {IPP:IPP,creat:creat, CKDEPI: CKDEPI, autoclose:false})
             var listener = GM_addValueChangeListener("labo", function(name, oldValue, newValue, remote){
                 if (newValue.autoclose){
                     window.close()
@@ -820,17 +820,22 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                 case "Echodoppler Arteriel":
                 case "Examen Echographique":
                 case "EEG":
-                    $('#autonomie_Chaise, #examen, #RV_service, #PC1, #scanant_non, #prem_non, #grossesse_non, #testgrossesse_non, #ci_non, #vv_non, #pac_non', document).click2()
+                    $('#autonomie_Chaise, #examen, #RV_service, #PC1', document).click2()
                     $('#Telephone, #TelService', document).val(GM_getValue('service').phone)
                     $('#region_ana', document).val('Crâne')
                     $('.sousTitreTableau:contains(2/ Contre Indications)', document).click(ev=>{
                         $('#SM_non, #CC_non, #FC_non, #VC_non, #VV_non, #CORPS_non, #PROTON_non, #ECLATS_non', document).click2()
                     }).html('2/ Contre Indications : <a style="text-decoration:underline;color:blue;">Non</a>')
+                    $('.sousTitreTableau:contains(2/ Préparation)', document).click(ev=>{
+                        $('#scanant_non, #grossesse_non, #allergie_non, #ci_non, #vv_non, #diab_non, #testgrossesse_non, #prem_non, #pac_non', document).click2()
+                    }).html('2/ Préparation : <a style="text-decoration:underline;color:blue;">Non</a>')
                     $('.sousTitreTableau:contains(3/ Préparation)', document).click(ev=>{
                         $('#CL_non, #COOP, #FE_non, #RR_non', document).click2()
                     }).html('3/ Préparation : <a style="text-decoration:underline;color:blue;">Non</a>')
                     $('#saisiecreat, #saisieclair', document).each((i,el)=>{
+                        GM_setValue("labo", {autoclose:false})
                         $(el.previousSibling).wrap('<a title="Résultats de labo" class="lien-labo"></a>').parent().text((i,t)=>t.trim()).click(()=>{
+                            $('#saisiecreat, #saisieclair', document).val("--.-")
                             GM_openInTab(SSSFrame.labo_url, true)
                             var labo_listener = GM_addValueChangeListener("labo", function(name, old_value, new_value, remote) {
                                 console.log(new_value)
@@ -839,6 +844,10 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                                 $('#saisieclair', document).val(new_value.CKDEPI)
                                 GM_removeValueChangeListener(labo_listener)
                             })
+                        }).each((j,elm)=>{
+                            if (i==0){
+                                $(elm).click()
+                            }
                         })
                     })
                     break;
