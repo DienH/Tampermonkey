@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.73
+// @version      0.2.75
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -255,7 +255,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 
                 if(!SSSFrame.resizeMonitored){
                     $(SSSFrame).resize((ev)=>{
-                        console.log(ev)
+                        //console.log(ev)
                         let SSSFrame = (ev.target.location.href.search('m-eva/m-eva.fwks')+1) ? ev.target : (document.getElementById('SSSFrame') ? document.getElementById('SSSFrame').contentWindow : window)
                         if (!ev.isTrusted){
                             //if ((!SSSFrame.oldWidth && !SSSFrame.oldHeight ) || (SSSFrame.oldWidth && $(SSSFrame).width() != SSSFrame.oldWidth) || (SSSFrame.oldHeight && $(SSSFrame).height() != SSSFrame.oldHeight)){
@@ -728,15 +728,29 @@ $.expr[":"].containsI = function (a, i, m) {
                 promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?" ||
                 promptTitle == "Quand la prescription doit-elle être reprise ?" || promptTitle == "Date de Dernière Prise:" ||
                 promptTitle == "Quand la prescription doit-elle être suspendue ?"){
-                document.head.append(hourCSS)
-                document.head.append(hourScript)
-                document.head.append(dateScript)
-                setTimeout(dateHourPres, 500)
+                if (SSSFrame.repriseOldPres){
+                    $('a:contains(ENTREE)', document).click2()
+                } else {
+                    document.head.append(hourCSS)
+                    document.head.append(hourScript)
+                    document.head.append(dateScript)
+                    setTimeout(dateHourPres, 500)
+                }
             } else if (promptTitle == 'Sélectionnez le motif de non prise en compte de cette alerte ou veuillez le saisir en texte libre') {
                 $HEO_INPUT.val('b')[0].dispatchEvent(ke);
             } else if (promptTitle == 'Priorité: (de votre prescription)') {
-                setTimeout(()=>{$('#HEO_INPUT', SSSFrame.document).val('PLANIFIE') //[0].dispatchEvent(ke);
-                               }, 500)
+                if (SSSFrame.repriseOldPres){
+                    $('[id=preMultiChoiceMarkup]:contains(PLANIFIE)', document).click2()
+                } else {
+                    setTimeout(()=>{$('#HEO_INPUT', SSSFrame.document).val('PLANIFIE') //[0].dispatchEvent(ke);
+                                   }, 500)
+                }
+            }else if (promptTitle == 'Commentaires:'){
+                if (SSSFrame.repriseOldPres){
+                    $('a:contains(ENTREE)', document).click2()
+                }
+            } else if (promptTitle == 'Alerte médicamenteuse'){
+                $('a[onclick]:contains("Avertissement pris en compte et validé")', document).click2()
             } else if (promptTitle == 'OK pour confirmer cette prescription ?') {
                 $HEO_INPUT[0].dispatchEvent(ke);
             } else if (promptTitle == "Médicament Hors Livret, continuer :"){
@@ -820,7 +834,7 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                 case "Echodoppler Arteriel":
                 case "Examen Echographique":
                 case "EEG":
-                    $('#autonomie_Chaise, #examen, #RV_service, #PC1', document).click2()
+                    $('#autonomie_Chaise, #examen, #RV_service, #PC1, #EEG_lit_EEG_au_labo', document).click2()
                     $('#Telephone, #TelService', document).val(GM_getValue('service').phone)
                     $('#region_ana', document).val('Crâne')
                     $('.sousTitreTableau:contains(2/ Contre Indications)', document).click(ev=>{
@@ -853,62 +867,67 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                     break;
                 case "":
                         //log(SSSFrame.nouvellesConsignes)
-                    // Fenetre Arrêt / Suspension de prescription
-                    if (SSSFrame.nouvellesConsignes){
-                        if(typeof String.prototype.searchI == "undefined"){
-                            String.prototype.searchI = function(searchString) {
-                                if (typeof "searchString" == "string"){
-                                    return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
-                                } else {
-                                    return undefined
+                    if ($('head>script[src*=HoldResume]',document).length){
+                        // Fenetre Arrêt / Suspension de prescription
+                        if (SSSFrame.nouvellesConsignes){
+                            if(typeof String.prototype.searchI == "undefined"){
+                                String.prototype.searchI = function(searchString) {
+                                    if (typeof "searchString" == "string"){
+                                        return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(searchString.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+                                    } else {
+                                        return undefined
+                                    }
                                 }
                             }
-                        }
-                        Object.keys(SSSFrame.nouvellesConsignes).forEach(el=>{
-                            $('tr[id="Nursing"][name^="Gestion"]', document) //.log()
-                                .filter((i,elm)=>($(elm).a('name').searchI(el)+1) && !($(elm).a('name').split(" : ")[1].searchI(SSSFrame.nouvellesConsignes[el].consigne)+1))
-                                .find('input').click2()
-                        })
-                        if (SSSFrame.nouvellesConsignes.mode_hospit.consigne == "SL"){
-                            $('tr[id="Nursing"][name="Soins sans consentement"] input', document).click2()
-                            SSSFrame.nouvellesConsignes.mode_hospit.done=true
-                        }
-                        SSSFrame.autoPresConsignesRapides(SSSFrame.nouvellesConsignes)
-/*                         SSSFrame.consignesWaiter = SSSFrame.setInterval(()=>{
+                            Object.keys(SSSFrame.nouvellesConsignes).forEach(el=>{
+                                $('tr[id="Nursing"][name^="Gestion"]', document) //.log()
+                                    .filter((i,elm)=>($(elm).a('name').searchI(el)+1) && !($(elm).a('name').split(" : ")[1].searchI(SSSFrame.nouvellesConsignes[el].consigne)+1))
+                                    .find('input').click2()
+                            })
+                            if (SSSFrame.nouvellesConsignes.mode_hospit.consigne == "SL"){
+                                $('tr[id="Nursing"][name="Soins sans consentement"] input', document).click2()
+                                SSSFrame.nouvellesConsignes.mode_hospit.done=true
+                            }
+                            SSSFrame.autoPresConsignesRapides(SSSFrame.nouvellesConsignes)
+                            /*                         SSSFrame.consignesWaiter = SSSFrame.setInterval(()=>{
                             console.log('bouh')
                             if (!$HEO_POPUP.is(':visible')){
                                 console.log('bah')
                                 SSSFrame.autoPresConsignesRapides(SSSFrame.nouvellesConsignes)
                             }
                         },750) */
-                        if ($('input:checked', document).length){
-                            $('#playbackOrders', document).click2().log()
-                        } else {
-                            $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
-                        }
-                    } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
-                        $HEO_POPUP.hide()
-                        SSSFrame.listingPrescriptions = {IPP:$('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP :")', SSSFrame.document).text().split(" : ")[1]}
-                        $('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
-                            let posoPres = $(el).parent().next(),
-                                start = $(el).parent().next().next().text().split("/");start[2]=(new Date()).getFullYear()+" à "+start[2].split(" ")[1];start = start.join("/");start=start.split("CET")[0]
-                            posoPres = posoPres.find('div.tooltip').text() || posoPres.text()
-                            posoPres = posoPres.split('- ')
-                            SSSFrame.listingPrescriptions[el.innerText+posoPres.join("- ")+(posoPres.length ==1 && !posoPres[0] ? "»" : " »")+start] = {
-                                id:el.id,
-                                poso:posoPres[0].trim(),
-                                freq:(posoPres.length>1 ? posoPres[1].trim():""),
-                                comment:(posoPres.length>2 ? posoPres[2].trim():""),
-                                début:start
+                            if ($('input:checked', document).length){
+                                $('#playbackOrders', document).click2().log()
+                            } else {
+                                $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
                             }
-                            $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
-                        })
-                        //$.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
-                        $.waitFor('#HEO_POPUP.force_hidden:hidden', SSSFrame.document).then($el=>{
-                            $el.removeClass('force_hidden')
-                            $('.full_bg', SSSFrame.document).hide()
-                        })
-                    } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
+                        } else if (typeof SSSFrame.listingPrescriptions == "undefined"){
+                            $HEO_POPUP.hide()
+                            SSSFrame.listingPrescriptions = {IPP:$('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP :")', SSSFrame.document).text().split(" : ")[1]}
+                            $('table[width] tr[id]>td>div[name]', document).each((i,el)=>{
+                                let posoPres = $(el).parent().next(),
+                                    start = $(el).parent().next().next().text().split("/");start[2]=(new Date()).getFullYear()+" à "+start[2].split(" ")[1];start = start.join("/");start=start.split("CET")[0]
+                                posoPres = posoPres.find('div.tooltip').text() || posoPres.text()
+                                posoPres = posoPres.split('- ')
+                                SSSFrame.listingPrescriptions[el.innerText+posoPres.join("- ")+(posoPres.length ==1 && !posoPres[0] ? "»" : " »")+start] = {
+                                    id:el.id,
+                                    poso:posoPres[0].trim(),
+                                    freq:(posoPres.length>1 ? posoPres[1].trim():""),
+                                    comment:(posoPres.length>2 ? posoPres[2].trim():""),
+                                    début:start
+                                }
+                                $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
+                            })
+                            //$.waitFor('div.GD42JS-DLOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
+                            $.waitFor('#HEO_POPUP.force_hidden:hidden', SSSFrame.document).then($el=>{
+                                $el.removeClass('force_hidden')
+                                $('.full_bg', SSSFrame.document).hide()
+                            })
+                        } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
+                        }
+                    } else {
+                        if ($('tr[id="Pharmacy Scheduled Medications"] input', document).click2().length){
+                        }
                     }
                     break
                 default:
@@ -2121,6 +2140,9 @@ function monitorPresMouseOver(ev){
     if (!$ || !$.fn) {var $ = unsafeWindow.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
     //console.log(ev.target)
+    if (!ev.view.listingPrescriptions){
+        $('table[name=HEOFRAME] button:contains(Arrêt)', ev.view).click2()
+    }
     if (ev.type == "mouseover"){
         if(!$(ev.currentTarget).hasClass('currentHover_pres') && ev.view.listingPrescriptions && !$(ev.currentTarget).has('.heoSubHeader').length){
             $('tr.currentHover_pres').removeClass('currentHover_pres')
