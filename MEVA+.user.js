@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.75
+// @version      0.2.76
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -923,8 +923,18 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                                 $el.removeClass('force_hidden')
                                 $('.full_bg', SSSFrame.document).hide()
                             })
-                        } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2().length){
+                        } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).length){
+                            $('div[id="Other Investigations"]:contains("Autres examens")', document).each((i,el)=>{
+                                $(el).parent().append('<input type="checkbox" id="check_perms" style="margin-left: 30px;"><label for="check_perms">Perms</label>').find('input').log().change(ev=>{
+                                    $('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2()
+                                })
+                            })
                         }
+                            $('tr:not(:has(tr)):has(input)', document).log().click(ev=>{
+                                if (!$(ev.target).filter('input').length){
+                                    $('input', ev.currentTarget).click2()
+                                }
+                            })
                     } else {
                         if ($('tr[id="Pharmacy Scheduled Medications"] input', document).click2().length){
                         }
