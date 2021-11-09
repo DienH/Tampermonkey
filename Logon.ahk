@@ -6,13 +6,13 @@ DetectHiddenWindows, on
 
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
-user = 
+user = %user%
 password = 
 UF = 2845
 type = Planning Ser
 planning = ADDICTO
 If !WinExist("ahk_exe chrome.exe")
-	Run, c:\users\aharry\AppData\Local\Google\Chrome\Application\chrome.exe
+	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
 
 ;#Include %A_ScriptDir%\Activite-EHLSA-Gui.ahk
 return
