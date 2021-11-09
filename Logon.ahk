@@ -3,16 +3,88 @@
 SetTitlematchmode, 2
 DetectHiddenWindows, on
 
+
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
-user = %username%
+user = 
 password = 
 UF = 2845
-type = Planning Service
+type = Planning Ser
 planning = ADDICTO
 If !WinExist("ahk_exe chrome.exe")
-	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
+	Run, c:\users\aharry\AppData\Local\Google\Chrome\Application\chrome.exe
+
+;#Include %A_ScriptDir%\Activite-EHLSA-Gui.ahk
 return
+
+;^+R::Reload
+
+Logon_Login:
+	ControlSetText, Edit1, %user%
+	ControlSetText, Edit2, %password%
+	ControlFocus, Edit2
+	Sleep 10
+	Send {Enter}
+	return
+Cs_1:
+	WinWait Plan de travail ahk_exe logon.exe,, 10
+	Sleep 10
+	Send {Home}
+	Send USV2 R
+	Sleep 10
+	Send {Enter}
+	return
+Cs_2:
+	WinWait Choix du planning ahk_exe rdvwin.exe,, 10
+	Sleep 10
+	Send {tab 2}
+	Sleep 10
+	Send %type%
+	Sleep 10
+	Send {tab}
+	Sleep 10
+	Send %planning%
+	Sleep 10
+	Send {enter}
+	return
+	
+Cs_3_EHLSA:
+	WinWait, Planning de ADDICTO ahk_exe rdvwin.exe
+	Send !f
+	Sleep 10
+	Send h
+	ControlGet, PlanningComboBoxVisible, Visible,, TMcKComboBox1, Planning de ahk_exe rdvwin.exe
+	While (!PlanningComboBoxVisible){
+		Sleep 100
+		ControlGet, PlanningComboBoxVisible, Visible,, TMcKComboBox1, Planning de ahk_exe rdvwin.exe
+	}
+	ControlSend, TMcKComboBox1, {Down 2}, Planning de ahk_exe rdvwin.exe
+	return
+
+#IfWinActive, Synthèse ahk_exe unit.exe
+F8::
+	return
+#If
+
+#IfWinActive, Planning de ADDICTO ahk_exe rdvwin.exe
+&::
+	Goto Cs_3_EHLSA
+	return
+F9::
+	;Goto Cs_3_EHLSA
+	ControlGetText, InfosPatient, ,ahk_class TFormSpreadPlanningNote ahk_exe rdvwin.exe
+	Tooltip, % "bouh`n"
+	return
+
+F11::
+	Loop
+	{
+		MouseGetPos, XX, YY
+		ToolTip, % XX "x" YY
+		Sleep 250
+	}
+	return
+#If
 
 #IfWinActive, ahk_exe unit.exe
 F7::
@@ -79,30 +151,10 @@ NoHotkey:
 
 #ifwinactive LOGON - Reference ahk_exe logon.exe
 &::
-	ControlSetText, Edit1, %user%
-	ControlSetText, Edit2, %password%
-	ControlFocus, Edit2
-	Sleep 10
-	Send {Enter}
-	WinWait Plan de travail ahk_exe logon.exe,, 10
-	Sleep 10
-	Send {Home}
-	Send USV2 R
-	Sleep 10
-	Send {Enter}
-	WinWait Choix du planning ahk_exe rdvwin.exe,, 10
-	Sleep 10
-	Send {tab 2}
-	Sleep 10
-	Send %type%
-	Sleep 10
-	Send {tab}
-	Sleep 10
-	Send %planning%
-	Sleep 10
-	Send {enter}
-	;TMcKButton4 Affichage
-	;TMcKComboBox1
+	GoSub Logon_Login
+	Gosub Cs_1
+	GoSub Cs_2
+	Goto Cs_3_EHLSA
 	return
 
 #ifwinactive Plan de travail ahk_exe logon.exe
@@ -122,6 +174,12 @@ NoHotkey:
 	Send %planning%
 	Sleep 10
 	Send {enter}
+	Sleep 500
+	Send !f
+	Sleep 10
+	Send h
+	Sleep 500
+	ControlSend, TMcKComboBox1, {Down 2}, Planning de ahk_exe rdvwin.exe
 	return
 
 #ifwinactive Choix du planning ahk_exe rdvwin.exe
@@ -136,6 +194,12 @@ NoHotkey:
 	Send %planning%
 	Sleep 10
 	Send {enter}
+	Sleep 500
+	Send !f
+	Sleep 10
+	Send h
+	Sleep 500
+	ControlSend, TMcKComboBox1, {Down 2}, Planning de ahk_exe rdvwin.exe
 	return
 #ifwinactive Choix du planning ahk_exe unit.exe
 ²::
