@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.76
+// @version      0.2.77
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -266,6 +266,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                             let unitSelectorWidth = $(window).width()-630
                             $('.gwt-TabPanelBottom .GOAX34LLDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth:visible:eq(0)')
                                 .width(unitSelectorWidth > 205 ? unitSelectorWidth : 205)
+			    $('div[name=MAINFRAMEHEO_OE]', document).css('height', '100%')
                             //SSSFrame.oldHeight = $(SSSFrame).height()
                             //SSSFrame.oldWidth = $(SSSFrame).width()
                             // }
