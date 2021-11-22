@@ -3,11 +3,10 @@
 SetTitlematchmode, 2
 DetectHiddenWindows, on
 
-
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
-user = %user%
-password = 
+user = %username%
+password =
 UF = 2845
 type = Planning Ser
 planning = ADDICTO
@@ -17,12 +16,20 @@ If !WinExist("ahk_exe chrome.exe")
 ;#Include %A_ScriptDir%\Activite-EHLSA-Gui.ahk
 return
 
-;^+R::Reload
 
 Logon_Login:
 	ControlSetText, Edit1, %user%
 	ControlSetText, Edit2, %password%
 	ControlFocus, Edit2
+	Sleep 10
+	Send {Enter}
+	return
+Unit_1:
+	WinWait Plan de travail ahk_exe logon.exe,, 10
+	WinActivate Plan de travail ahk_exe logon.exe
+	Sleep 10
+	Send {Home}
+	Send USV2 U
 	Sleep 10
 	Send {Enter}
 	return
@@ -87,19 +94,54 @@ F11::
 #If
 
 #IfWinActive, ahk_exe unit.exe
-F7::
-	Logon_1_Doc_HWND := WinExist("Liste des Documents - Volet CPT_RENDU ahk_exe unit.exe")
-	WinGet, Logon_1_PID, PID, ahk_id %Logon_1_Doc_HWND%
-	Logon_1_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_1_PID)
-	Logon_1_Lettre_HWND := WinExist("CHU Lettre de Liaison PSY ahk_pid " Logon_1_PID)
-	Logon_2_Syn_HWND := WinExist("Synthèse ahk_exe unit.exe")
-	WinGet, Logon_2_PID, PID, ahk_id %Logon_2_Syn_HWND%
-	Logon_2_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_2_PID)
-	WinMove, ahk_id %Logon_1_Doc_HWND%,, 0, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
-	WinMove, ahk_id %Logon_1_Plan_HWND%,, 0, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
-	WinMove, ahk_id %Logon_1_Lettre_HWND%,, 0, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
-	WinMove, ahk_id %Logon_2_Plan_HWND%,, % A_ScreenWidth/2, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
-	WinMove, ahk_id %Logon_2_Syn_HWND%,, % A_ScreenWidth/2, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
+^r::Reload
+F7::Goto CRSynthSplitScreen
+	
+F8::
+	SetTitlematchmode, 2
+	Send !v
+	Send m
+	WinWait, Valider modifier un mouvement ahk_exe unit.exe
+	Sleep 500
+	ControlGetText, IEP, TEdit2, Valider modifier un mouvement ahk_exe unit.exe
+	if (!IEP)
+		return
+	WinClose
+	Loop 2
+	{
+		GoSub Unit_1
+		Sleep 2000
+		Send {enter}
+		Sleep 100
+		Send !p
+		Send h
+		WinWait, Recherche ahk_exe unit.exe
+		Send {tab 3}
+		Sleep 100
+		Send %IEP%
+		Sleep 100
+		Send {tab}
+		Send {down}
+		Send {enter}
+		Sleep 500
+		Send {tab 7}
+		Send {enter}
+		Sleep 1500
+		if (A_Index == 1)
+		{
+			ControlClick, Synthèse, PLANNING ahk_exe unit.exe
+		} else {
+			Send !s
+			Send t
+		}
+		Sleep 2000
+	}
+	Sleep 3000
+	Gosub CRSynthSplitScreen
+	WinWait, CHU Lettre de Liaison PSY ahk_exe unit.exe,,30
+	if (errorlevel)
+		return
+	Goto CRSynthSplitScreen
 	return
 #If
 
@@ -119,6 +161,7 @@ NoHotkey:
 	return
 
 #ifwinactive LOGON - Reference ahk_exe logon.exe
+^r::Reload
 ²::
 	ControlSetText, Edit1, %user%
 	ControlSetText, Edit2, %password%
@@ -208,4 +251,21 @@ NoHotkey:
 	Send %UF%
 	Sleep 10
 	Send {enter}
+	return
+	
+CRSynthSplitScreen:
+	Logon_1_Doc_HWND := WinExist("Liste des Documents - Volet CPT_RENDU ahk_exe unit.exe")
+	WinGet, Logon_1_PID, PID, ahk_id %Logon_1_Doc_HWND%
+	Logon_1_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_1_PID)
+	Logon_1_Lettre_HWND := WinExist("CHU Lettre de Liaison PSY ahk_pid " Logon_1_PID)
+	Logon_2_Syn_HWND := WinExist("Synthèse ahk_exe unit.exe")
+	WinGet, Logon_2_PID, PID, ahk_id %Logon_2_Syn_HWND%
+	Logon_2_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_2_PID)
+	WinMove, ahk_id %Logon_1_Doc_HWND%,, 0, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
+	WinMove, ahk_id %Logon_1_Plan_HWND%,, 0, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
+	WinMove, ahk_id %Logon_1_Lettre_HWND%,, 0, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
+	WinMove, ahk_id %Logon_2_Plan_HWND%,, % A_ScreenWidth/2, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
+	WinMove, ahk_id %Logon_2_Syn_HWND%,, % A_ScreenWidth/2, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
+	WinActivate, ahk_id %Logon_2_Syn_HWND%
+	WinActivate, ahk_id %Logon_1_Doc_HWND%
 	return
