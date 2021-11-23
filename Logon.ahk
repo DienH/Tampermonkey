@@ -268,4 +268,5 @@ CRSynthSplitScreen:
 	WinMove, ahk_id %Logon_2_Syn_HWND%,, % A_ScreenWidth/2, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
 	WinActivate, ahk_id %Logon_2_Syn_HWND%
 	WinActivate, ahk_id %Logon_1_Doc_HWND%
+	WinActivate, ahk_id %Logon_1_Lettre_HWND%
 	return
