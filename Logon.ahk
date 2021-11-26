@@ -102,7 +102,7 @@ F8::
 	Send !v
 	Send m
 	WinWait, Valider modifier un mouvement ahk_exe unit.exe
-	Sleep 500
+	Sleep 1500
 	ControlGetText, IEP, TEdit2, Valider modifier un mouvement ahk_exe unit.exe
 	if (!IEP)
 		return
