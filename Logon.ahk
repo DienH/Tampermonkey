@@ -3,10 +3,16 @@
 SetTitlematchmode, 2
 DetectHiddenWindows, on
 
+Menu, Tray, Nostandard
+Menu, Tray, Add, Relancer, ReloadScript
+Menu, Tray, Add
+Menu, Tray, standard
+Menu, Tray, Default, Relancer
+
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
 user = %username%
-password =
+password = 
 UF = 2845
 type = Planning Ser
 planning = ADDICTO
@@ -91,7 +97,26 @@ F11::
 		Sleep 250
 	}
 	return
-#If
+
+#IfWinActive, Création d'un rendez-vous par actes ahk_exe rdvwin.exe
+F6::
+	;ControlGetText, TMcKGroupBox1, Création d'un rendez-vous par actes ahk_exe rdvwin.exe
+	ControlClick, TMcKButton17, Création d'un rendez-vous par actes ahk_exe rdvwin.exe
+	WinWait, Modes de soins du patient ahk_exe rdvwin.exe
+	Sleep 500
+	ControlClick, Ajouter, Modes de soins du patient ahk_exe rdvwin.exe
+	Tooltip, bouh
+	WinWait, Détail du mode de soins ahk_exe rdvwin.exe
+	Sleep 500
+	Tooltip
+	ControlSend, TComboBox1, SL, Détail du mode de soins ahk_exe rdvwin.exe
+	Sleep 100
+	ControlClick, Valider, Détail du mode de soins ahk_exe rdvwin.exe
+	Sleep 500
+	ControlClick, Valider, Modes de soins du patient ahk_exe rdvwin.exe
+	Sleep 500
+	ControlClick, Valider, Création d'un rendez-vous par actes ahk_exe rdvwin.exe
+	return
 
 #IfWinActive, ahk_exe unit.exe
 ^r::Reload
@@ -270,3 +295,7 @@ CRSynthSplitScreen:
 	WinActivate, ahk_id %Logon_1_Doc_HWND%
 	WinActivate, ahk_id %Logon_1_Lettre_HWND%
 	return
+
+ReloadScript:
+	Reload
+	Return
