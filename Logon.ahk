@@ -282,7 +282,7 @@ CRSynthSplitScreen:
 	Logon_1_Doc_HWND := WinExist("Liste des Documents - Volet CPT_RENDU ahk_exe unit.exe")
 	WinGet, Logon_1_PID, PID, ahk_id %Logon_1_Doc_HWND%
 	Logon_1_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_1_PID)
-	Logon_1_Lettre_HWND := WinExist("CHU Lettre de Liaison PSY ahk_pid " Logon_1_PID)
+	Logon_1_Lettre_HWND := WinExist("CHU Lettre de Liaison ahk_pid " Logon_1_PID)
 	Logon_2_Syn_HWND := WinExist("Synthèse ahk_exe unit.exe")
 	WinGet, Logon_2_PID, PID, ahk_id %Logon_2_Syn_HWND%
 	Logon_2_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_2_PID)
