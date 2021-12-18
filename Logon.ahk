@@ -123,6 +123,7 @@ F6::
 F7::Goto CRSynthSplitScreen
 	
 F8::
+	Current_LOGON_HWND := WinExist("A")
 	SetTitlematchmode, 2
 	Send !v
 	Send m
@@ -134,9 +135,14 @@ F8::
 	WinClose
 	Loop 2
 	{
-		GoSub Unit_1
-		Sleep 2000
-		Send {enter}
+		if (!WinExist("ahk_id " Planning_%A_Index%)){
+			GoSub Unit_1
+			Sleep 2000
+			Send {enter}
+			Planning_%A_Index% := WinExist("A")
+		} else {
+			WinActivate, % "ahk_id " Planning_%A_Index%
+		}
 		Sleep 100
 		Send !p
 		Send h
@@ -163,10 +169,23 @@ F8::
 	}
 	Sleep 3000
 	Gosub CRSynthSplitScreen
-	WinWait, CHU Lettre de Liaison PSY ahk_exe unit.exe,,30
+	WinWait, CHU Lettre de Liaison ahk_exe unit.exe,,30
 	if (errorlevel)
 		return
 	Goto CRSynthSplitScreen
+	return
+	
+F9::
+	if (WinExist("ahk_id " Logon_1_Plan_HWND) && WinExist("ahk_id " Logon_2_Plan_HWND) && WinExist("ahk_id " Current_LOGON_HWND) && (Current_LOGON_HWND != Logon_1_Plan_HWND) && (Current_LOGON_HWND != Logon_2_Plan_HWND))
+	{
+		WinClose, ahk_id %Logon_1_Doc_HWND%
+		Sleep 10
+		WinClose, ahk_id %Logon_1_Plan_HWND%
+		WinClose, ahk_id %Logon_2_Syn_HWND%
+		Sleep 10
+		WinClose, ahk_id %Logon_2_Plan_HWND%
+		WinActivate, ahk_id %Current_LOGON_HWND%
+	}
 	return
 #If
 
