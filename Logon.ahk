@@ -13,10 +13,10 @@ Menu, Tray, Tip, Logon Helper
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
 user = %username%
-password = 
-UF = 
-type = 
-planning = 
+password =
+UF =
+type =
+planning =
 ;If !WinExist("ahk_exe chrome.exe")
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
 
@@ -83,6 +83,21 @@ F8::
 #If
 
 
+#IfWinActive, ahk_class TWPRubricoDoc ahk_exe unit.exe
+^s::
+	Send !f
+	Sleep 10
+	Send e
+	return
+#if
+
+#IfWinActive, ahk_class TWPRubricoDoc ahk_exe rdvwin.exe
+^s::
+	Send !f
+	Sleep 10
+	Send e
+	return
+#if
 
 #ifWinActive, Formulaire ahk_exe unit.exe
 ~LButton::
