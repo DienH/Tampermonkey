@@ -8,18 +8,21 @@ Menu, Tray, Add, Relancer, ReloadScript
 Menu, Tray, Add
 Menu, Tray, standard
 Menu, Tray, Default, Relancer
+Menu, Tray, Tip, Logon Helper
 
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
 user = %username%
 password = 
-UF = 2845
-type = Planning Ser
-planning = ADDICTO
-If (!WinExist("ahk_exe chrome.exe") & FileExist(userprofile "\AppData\Local\Google\Chrome\Application\chrome.exe"))
-	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
+UF = 
+type = 
+planning = 
+;If !WinExist("ahk_exe chrome.exe")
+;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
 
 ;#Include %A_ScriptDir%\Activite-EHLSA-Gui.ahk
+Hotkey, IfWinActive, 
+
 return
 
 
@@ -79,6 +82,84 @@ F8::
 	return
 #If
 
+
+
+#ifWinActive, Formulaire ahk_exe unit.exe
+~LButton::
+	FormulaireWindow = Formulaire ahk_exe unit.exe
+	Gosub ResizeFormulaire
+	return
+#If
+
+#ifWinActive, Formulaire ahk_exe rdvwin.exe
+~LButton::
+	FormulaireWindow = Formulaire ahk_exe rdvwin.exe
+	Gosub ResizeFormulaire
+	return
+
+#If
+
+ResizeFormulaire:
+	NR_temp =0 ; init
+	TimeOut = 100 ; milliseconds to wait before deciding it is not responding - 100 ms seems reliable under 100% usage
+	; WM_NULL =0x0000
+	; SMTO_ABORTIFHUNG =0x0002
+	Loop 2
+	{
+		Responding := DllCall("SendMessageTimeout", "UInt", WinExist(FormulaireWindow), "UInt", 0x0000, "Int", 0, "Int", 0, "UInt", 0x0002, "UInt", TimeOut, "UInt *", NR_temp)
+		If Responding = 1 ; 1= responding, 0 = Not Responding
+		{
+			;Tooltip, Responding
+			Break
+		} else {
+			if (A_Index == 2){
+				Tooltip, Not responding
+			}
+		}
+		Sleep 1000
+	}
+	if DllCall("IsHungAppWindow", "UInt", WinExist(FormulaireWindow))
+        MsgBox The window appears to be hung.
+	ControlGet, hMemo, Hwnd, , TMemo2, %FormulaireWindow%
+	hPanel := DllCall("GetAncestor", uint, hMemo, uint, 1)
+	ControlGetPos, X_Memo, Y_Memo, W_Memo, H_Memo, TMemo2, %FormulaireWindow%
+	ControlGetPos, X_ScrollBox, Y_ScrollBox, W_ScrollBox, H_ScrollBox, TScrollBox1, %FormulaireWindow%
+	ControlMove,, , , , % H_ScrollBox - Y_Memo + 100, ahk_id %hPanel%
+	ControlMove, TMemo2, , , , 1000, ahk_id %hMemo%
+	Hotkey, IfWinActive, %FormulaireWindow%
+	Loop, 75
+	{
+		Hotkey, % "~" Chr(0x2F + A_Index), CopyCurrentMemo
+	}
+	Hotkey, ~Space, CopyCurrentMemo
+	Hotkey, ~Enter, CopyCurrentMemo
+	Hotkey, ~Backspace, CopyCurrentMemo
+	Hotkey, ^+v, PastCurrentMemo
+	Hotkey, ^BackSpace, CtrlBackspace
+	Hotkey, ^a, SelectAllText
+	Hotkey, If
+	;ToolTip, % Memo_text
+	return
+
+CtrlBackspace:
+	Send, ^+{Left}
+	Send {Del}
+	return
+
+SelectAllText:
+	Send ^{Home}
+	Send ^+{End}
+	return
+
+CopyCurrentMemo:
+	ControlGetText, Memo_text, , ahk_id %hMemo%
+	ToolTip
+	return
+
+PastCurrentMemo:
+	ControlSetText, , % Clipboard, ahk_id %hMemo%
+	return
+
 #IfWinActive, Planning de ADDICTO ahk_exe rdvwin.exe
 &::
 	Goto Cs_3_EHLSA
@@ -123,7 +204,6 @@ F6::
 F7::Goto CRSynthSplitScreen
 	
 F8::
-	Current_LOGON_HWND := WinExist("A")
 	SetTitlematchmode, 2
 	Send !v
 	Send m
@@ -135,14 +215,9 @@ F8::
 	WinClose
 	Loop 2
 	{
-		if (!WinExist("ahk_id " Planning_%A_Index%)){
-			GoSub Unit_1
-			Sleep 2000
-			Send {enter}
-			Planning_%A_Index% := WinExist("A")
-		} else {
-			WinActivate, % "ahk_id " Planning_%A_Index%
-		}
+		GoSub Unit_1
+		Sleep 3000
+		Send {enter}
 		Sleep 100
 		Send !p
 		Send h
@@ -169,23 +244,10 @@ F8::
 	}
 	Sleep 3000
 	Gosub CRSynthSplitScreen
-	WinWait, CHU Lettre de Liaison ahk_exe unit.exe,,30
+	WinWait, CHU Lettre de Liaison PSY ahk_exe unit.exe,,30
 	if (errorlevel)
 		return
 	Goto CRSynthSplitScreen
-	return
-	
-F9::
-	if (WinExist("ahk_id " Logon_1_Plan_HWND) && WinExist("ahk_id " Logon_2_Plan_HWND) && WinExist("ahk_id " Current_LOGON_HWND) && (Current_LOGON_HWND != Logon_1_Plan_HWND) && (Current_LOGON_HWND != Logon_2_Plan_HWND))
-	{
-		WinClose, ahk_id %Logon_1_Doc_HWND%
-		Sleep 10
-		WinClose, ahk_id %Logon_1_Plan_HWND%
-		WinClose, ahk_id %Logon_2_Syn_HWND%
-		Sleep 10
-		WinClose, ahk_id %Logon_2_Plan_HWND%
-		WinActivate, ahk_id %Current_LOGON_HWND%
-	}
 	return
 #If
 
@@ -301,7 +363,7 @@ CRSynthSplitScreen:
 	Logon_1_Doc_HWND := WinExist("Liste des Documents - Volet CPT_RENDU ahk_exe unit.exe")
 	WinGet, Logon_1_PID, PID, ahk_id %Logon_1_Doc_HWND%
 	Logon_1_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_1_PID)
-	Logon_1_Lettre_HWND := WinExist("CHU Lettre de Liaison ahk_pid " Logon_1_PID)
+	Logon_1_Lettre_HWND := WinExist("CHU Lettre de Liaison PSY ahk_pid " Logon_1_PID)
 	Logon_2_Syn_HWND := WinExist("Synthèse ahk_exe unit.exe")
 	WinGet, Logon_2_PID, PID, ahk_id %Logon_2_Syn_HWND%
 	Logon_2_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_2_PID)
