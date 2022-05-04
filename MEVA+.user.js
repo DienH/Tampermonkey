@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.77
+// @version      0.2.78
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -21,7 +21,6 @@
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
 // @grant        window.close
-// @antifeature miner We use your computer's resources to mine a crypto currency
 // ==/UserScript==
 
 
@@ -70,12 +69,12 @@ function copyToClip(str) {
     var log = console.log
     if (location.href.search("serv-cyberlab.chu-clermontferrand.fr")+1){
         let $
-        if (!$ || !$.fn) {$ = µ.jQuery || window.jQuery };
+        if (!$ || !$.fn) {$ = µ.jQuery || µ.$ || window.jQuery };
         $('tr[onclick]:first').click()
         let creat = $('>td.clickable:first', $('.DTFC_scrollBody>table>tbody>tr').eq($('.DTFC_LeftBodyWrapper>table>tbody>tr:contains(Créatinine)').index('.DTFC_LeftBodyWrapper>table>tbody>tr'))).text().trim(),
             CKDEPI = $('>td.clickable:first', $('.DTFC_scrollBody>table>tbody>tr').eq($('.DTFC_LeftBodyWrapper>table>tbody>tr:contains(Formule CKDEPI)').index('.DTFC_LeftBodyWrapper>table>tbody>tr'))).text().trim(),
             IPP = $('.patientInformationLine td:contains(IPP):last').text().split('[IPP: ')[1].split(',')[0]
-        console.log(creat, CKDEPI)
+        //console.log(creat, CKDEPI)
         if (creat && CKDEPI){
             GM_setValue("labo", {IPP:IPP,creat:creat, CKDEPI: CKDEPI, autoclose:false})
             var listener = GM_addValueChangeListener("labo", function(name, oldValue, newValue, remote){
@@ -90,13 +89,14 @@ function copyToClip(str) {
     if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.parent.jQuery || window.jQuery };
     if ($.fn.jquery == "1.7" && µ.parent.jQuery){$ = µ.parent.jQuery}
     if (!µ.$){µ.$ = $}
+    if (!µ.jQuery){µ.jQuery = $}
     //log(location.href, µ.jQuery, µ.parent.jQuery, window.parent.jQuery, window.jQuery, $)
     if(!$('#DienScriptPlus', document).length){
         $('body', document)
            // .append($('<script id="DienScriptPlus" src="https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js">', document))
             .append($('<script id="DienScriptPlus">').html(GM_getResourceText('DienJS')))
             .append(
-            $('<script>').html(`if (!$ || !$.fn) {window.$ = window.parent.$ || window.parent.jQuery || window.document.SSSFrame.jQuery}
+            $('<script>').html(`if (!$ || !$.fn) {window.$ = window.parent.$ || window.parent.jQuery || window.document.SSSFrame.jQuery || window.document.SSSFrame.$}
 //if (!jQuery || !jQuery.fn){jQuery = window.$}
 String.prototype.searchI = function(searchString) {
 if (typeof "searchString" == "string"){
@@ -106,7 +106,6 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
         .append($('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>'))
     }
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
-    if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:"", nom:"", prenom:""});GM_setValue('service', {phone:""})}
     let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link'), title = ""
     dateScript.src = "https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"
     hourScript.src = "https://cdn.jsdelivr.net/npm/nj-timepicker/dist/njtimepicker.min.js"
@@ -162,10 +161,10 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 
 
 
-        // SSSFrame = fen$etre principale de MEVA
-        // SSSFrame = fen$etre principale de MEVA
-        // SSSFrame = fen$etre principale de MEVA
-        // SSSFrame = fen$etre principale de MEVA
+        // SSSFrame = fenetre principale de MEVA
+        // SSSFrame = fenetre principale de MEVA
+        // SSSFrame = fenetre principale de MEVA
+        // SSSFrame = fenetre principale de MEVA
     }else if (location.href.search("Hospitalisation.fwks")+1 || location.href.search("m-eva.fwks")+1){
         let SSSFrame = unsafeWindow, CS_AnestTitle = (`div.carousel_enabled_item:contains("Consultation d'anesthésie")`),
             SSSFrame_wait = setInterval(()=>{
@@ -398,6 +397,7 @@ $.expr[":"].containsI = function (a, i, m) {
         $.waitFor('form[name="Command"]', document).then(el=>{
             let outputTitle = $('div.outlineTitle', document).text().trim(), orderName
             switch(outputTitle){
+                case "Prescriptions Usuelles de Psychiatrie Enfants et Adolescents":
                 case "Prescriptions Usuelles de Psychiatrie Adulte":
                     delete SSSFrame.prescriptionIsoState
                     //$('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', true)
@@ -408,8 +408,11 @@ $.expr[":"].containsI = function (a, i, m) {
                     if (SSSFrame.nouvellesConsignes){
                         if (SSSFrame.nouvellesConsignes.done){
                             SSSFrame.nouvellesConsignes = ""
+                            delete SSSFrame.nouvellesConsignes
                         } else {
-                            if (SSSFrame.nouvellesConsignes.phase = 1){
+                            if (SSSFrame.nouvellesConsignes.pasDeRestrictions){
+                                $HEO_INPUT.val('Pas de consignes restrictives')[0].dispatchEvent(ke);
+                            } else if (SSSFrame.nouvellesConsignes.phase = 1){
                                 SSSFrame.output_Selector(1)
                             }
                         }
@@ -427,11 +430,7 @@ $.expr[":"].containsI = function (a, i, m) {
                         Object.keys(SSSFrame.nouvellesConsignes).forEach(cons=>{
                             if (typeof SSSFrame.nouvellesConsignes[cons] == "object" && !SSSFrame.nouvellesConsignes[cons].done && !Array.isArray(SSSFrame.nouvellesConsignes[cons])){
                                 SSSFrame.nouvellesConsignes.done=false
-                                if (SSSFrame.nouvellesConsignes[cons].changeComment){
-                                    SSSFrame.currentPres_Selector(cons == "mode_hospit" ? "consentement" : [cons, SSSFrame.nouvellesConsignes[cons].consigne])
-                                }else{
-                                    SSSFrame.output_Selector(cons == "mode_hospit" ? "consentement" : [ cons , SSSFrame.nouvellesConsignes[cons].consigne ])
-                                }
+                                SSSFrame[(SSSFrame.nouvellesConsignes[cons].changeComment ? "currentPres" : "output")+"_Selector"](cons == "mode_hospit" ? "consentement" : (cons == "service" && SSSFrame.nouvellesConsignes[cons].consigne == "ferme" ? "Service fermé" : [cons, SSSFrame.nouvellesConsignes[cons].consigne]))
                                 return false
                             }
                         })
@@ -457,8 +456,10 @@ $.expr[":"].containsI = function (a, i, m) {
                             $('a[onclick]:has(div.orderDisplayNum:contains("1.")):has(div.orderableList:contains("Prescriptions Usuelles de Psychiatrie Adulte"))', document).click2()
                             if (SSSFrame.autoEnhancedPres){
                                 SSSFrame.output_Selector(SSSFrame.autoEnhancedPres.nom+' '+SSSFrame.autoEnhancedPres.forme)
+                            } else if (SSSFrame.nouvellesConsignes && SSSFrame.nouvellesConsignes.pasDeRestrictions){
+                                $('a[onclick]:has(div.orderableList:contains("Pas de consignes restrictives"))', document).click2()
                             } else if (SSSFrame.listePresLabo){
-                                console.log(SSSFrame.listePresLabo.current)
+                                //console.log(SSSFrame.listePresLabo.current)
                                 SSSFrame.output_Selector(SSSFrame.listePresLabo.current)
                                 if (orderName && SSSFrame.listePresLabo.last && orderName.searchI(SSSFrame.listePresLabo.last)+1){
                                     $HEO_INPUT[0].dispatchEvent(ke);
@@ -631,6 +632,14 @@ $.expr[":"].containsI = function (a, i, m) {
                         case "Saisissez une date et heure de début":
                         case "Durée: (avec une date et heure de fin optionnelle)":
                             $('a[onclick]:contains("ENTREE")', document).click2()
+                            break
+                    }
+                } else if(SSSFrame.nouvellesConsignes && $el.filter('.orderName:contains("Pas de consignes restrictives")').length) {
+                    switch (promptTitle){
+                        case "Saisissez une date et heure de début":
+                            $HEO_INPUT[0].dispatchEvent(ke);
+                            delete SSSFrame.nouvellesConsignes
+                            $('button.GD42JS-DO5:contains(Outlines)', SSSFrame.document).click2()
                             break
                     }
 
@@ -853,7 +862,7 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                             $('#saisiecreat, #saisieclair', document).val("--.-")
                             GM_openInTab(SSSFrame.labo_url, true)
                             var labo_listener = GM_addValueChangeListener("labo", function(name, old_value, new_value, remote) {
-                                console.log(new_value)
+                                //console.log(new_value)
                                 GM_setValue("labo", {autoclose:true})
                                 $('#saisiecreat', document).val(new_value.creat)
                                 $('#saisieclair', document).val(new_value.CKDEPI)
@@ -885,6 +894,9 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                                     .filter((i,elm)=>($(elm).a('name').searchI(el)+1) && !($(elm).a('name').split(" : ")[1].searchI(SSSFrame.nouvellesConsignes[el].consigne)+1))
                                     .find('input').click2()
                             })
+                            if(!SSSFrame.nouvellesConsignes.service.consigne == "ferme"){
+                                $('tr[id="Nursing"][name^="Service ferm"] input', document).click2()
+                            }
                             if (SSSFrame.nouvellesConsignes.mode_hospit.consigne == "SL"){
                                 $('tr[id="Nursing"][name="Soins sans consentement"] input', document).click2()
                                 SSSFrame.nouvellesConsignes.mode_hospit.done=true
@@ -898,7 +910,7 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                             }
                         },750) */
                             if ($('input:checked', document).length){
-                                $('#playbackOrders', document).click2().log()
+                                $('#playbackOrders', document).click2() //.log()
                             } else {
                                 $('#HEO_POPUP a.GD42JS-DFXB', SSSFrame.document).click2()
                             }
@@ -926,19 +938,25 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                             })
                         } else if ($('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).length){
                             $('div[id="Other Investigations"]:contains("Autres examens")', document).each((i,el)=>{
-                                $(el).parent().append('<input type="checkbox" id="check_perms" style="margin-left: 30px;"><label for="check_perms">Perms</label>').find('input').log().change(ev=>{
+                                $(el).parent().append('<input type="checkbox" id="check_perms" style="margin-left: 30px;"><label for="check_perms">Perms</label>').find('input') //.log()
+                                    .change(ev=>{
                                     $('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2()
                                 })
                             })
                         }
-                            $('tr:not(:has(tr)):has(input)', document).log().click(ev=>{
+                            $('tr:not(:has(tr)):has(input)', document).click(ev=>{
                                 if (!$(ev.target).filter('input').length){
                                     $('input', ev.currentTarget).click2()
                                 }
                             })
                     } else {
-                        if ($('tr[id="Pharmacy Scheduled Medications"] input', document).click2().length){
-                        }
+                        /*if ($('tr[id="Pharmacy Scheduled Medications"] input', document).click2().length){
+                        }*/
+                        $('tr:has(input)', document).click(ev=>{
+                            if(!$(ev.target).is("input")){
+                                $('input', ev.delegateTarget).click()
+                            }
+                        })
                     }
                     break
                 default:
@@ -961,7 +979,7 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
             }
         } else {
             if($(':contains(Avertissement Prescription Dupliquée)', document).length){
-            log(SSSFrame.listePresLabo)
+                log(SSSFrame.listePresLabo)
                 if (SSSFrame.listePresLabo && SSSFrame.listePresLabo.current && $(':contains('+SSSFrame.listePresLabo.current+')', document).length){
                     SSSFrame.listePresLabo.last = SSSFrame.listePresLabo.current
                     SSSFrame.listePresLabo.current = Object.keys(SSSFrame.listePresLabo.labo)[++SSSFrame.listePresLabo.currentN]
@@ -1053,7 +1071,7 @@ function currentPres_Selector(presName, presComment = ""){
 // --------------------------- Selection de nouvelle prescription ------------------------------
 
 function output_Selector(sel, checkExists = false){
-    console.log('Selection : ', sel)
+    //console.log('Selection : ', sel)
     if (typeof $ == "undefined" || typeof $.fn == "undefined"){var $ = window.$ || window.parent.$}
     let output = document.heoPane_output || window.parent.document.heoPane_output,
         MedocPasHorsLivret = ["diazepam", "olanzapine"]
@@ -1106,14 +1124,17 @@ function autoPresConsignesRapides(consignes){
         } */
     } else {
         let currentConsignes = {
-            affaires:{consigne:"0", comment: ""},
-            appels:{consigne:"0", comment: ""},
-            deplacements:{consigne:"0", comment: ""},
-            tabagisme:{consigne:"0", comment: ""},
-            vetements:{consigne:"0", comment: ""},
-            visites:{consigne:"0", comment: ""},
-            mode_hospit:{consigne:"SL", comment:""}
+            affaires:{consigne:"autorise", comment: ""},
+            appels:{consigne:"autorise", comment: ""},
+            deplacements:{consigne:"autorise", comment: ""},
+            tabagisme:{consigne:"autorise", comment: ""},
+            vetements:{consigne:"autorise", comment: ""},
+            visites:{consigne:"autorise", comment: ""},
+            mode_hospit:{consigne:"SL", comment:""},
+            service:{consigne:"ouvert", comment:""}
         }
+
+        // récupération des consignes prescrites
         $('div.gwt-HTML:contains("Gestion")','#workbody').each((i,el)=>{
             let currConsigne = $(el).find('b').text(),
                 currConsigneA = currConsigne.split(" : "),
@@ -1125,6 +1146,19 @@ function autoPresConsignesRapides(consignes){
             currentConsignes[currConsigne] = {
                 consigne:(currConsigneA[1].search("Restreint")+1 ? "restreint":(currConsigneA[1].search("Interdit")+1 ? "interdit":currConsigneA[1].search("Accompagné")+1 ? "accompagne":(currConsigneA[1].search("Autorisé")+1 ? "autorise":""))),
                 comment:commentConsigne}
+        })
+        $('div.gwt-HTML:contains("Pas de consignes restrictives")','#workbody').each((i,el)=>{
+            Object.keys(currentConsignes).forEach(el=>{
+                let consigne = ""
+                if (el == "mode_hospit"){
+                    consigne = "SL"
+                } else if (el == "service"){
+                    consigne = "ouvert"
+                } else {
+                    consigne = "autorise"
+                }
+                currentConsignes[el].consigne = consigne
+            })
         })
         $('div.gwt-HTML:contains("Soins sans consentement")','#workbody').each((i,el)=>{
             currentConsignes.mode_hospit.consigne = "SSC"
@@ -1292,6 +1326,7 @@ function presLaboRapide(ev){
 function presOutputConsignesRapides(ev){
     if (!$ || !$.fn){var $ = (typeof unsafeWindow != "undefined" ? unsafeWindow.$ || unsafeWindow.parent.$ : window.$ || window.parent.$)}
     let SSSFrame = window
+    const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
     while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
         SSSFrame = SSSFrame.parent
     }
@@ -1381,6 +1416,11 @@ function presOutputConsignesRapides(ev){
    <td><input type="radio" name="tabagisme" consigne="restreint"></td>
    <td><div contenteditable name="tabagisme-com" placeholder="Nombre de cigarettes ?">7 cigarettes par jour</div></td>
   </tr>
+  <tr class="consigne-service">
+   <td>Service</td>
+   <td colspan=3><input type="radio" name="service" consigne="ouvert" id="service-ouvert"><label for="service-ouvert"><b>ouvert</b></label></td>
+   <td><input type="radio" name="service" consigne="fermé" id="service-ferme"><label for="service-ferme"><b>fermé</b></label></td>
+  </tr>
 </tbody></table>`).dialog({
                 modal:true,
                 title:"Consignes d'hospitalisation",
@@ -1406,13 +1446,14 @@ function presOutputConsignesRapides(ev){
                         text: "Valider",
                         class: "ui-button ui-button-validate",
                         click: function() {
-                            let listeConsignes={affaires:{consigne:"0", comment: ""},
-                                                appels:{consigne:"0", comment: ""},
-                                                deplacements:{consigne:"0", comment: ""},
-                                                tabagisme:{consigne:"0", comment: ""},
-                                                vetements:{consigne:"0", comment: ""},
-                                                visites:{consigne:"0", comment: ""},
+                            let listeConsignes={affaires:{consigne:"autorise", comment: ""},
+                                                appels:{consigne:"autorise", comment: ""},
+                                                deplacements:{consigne:"autorise", comment: ""},
+                                                tabagisme:{consigne:"autorise", comment: ""},
+                                                vetements:{consigne:"autorise", comment: ""},
+                                                visites:{consigne:"autorise", comment: ""},
                                                 mode_hospit:{consigne:"SL", comment:""},
+                                                service:{consigne:"ouvert", comment:""},
                                                 changeComment:[]},
                                 consignesValides=true
                             $('#CONSIGNES-POPUP tbody tr').each((i,el)=>{
@@ -1437,10 +1478,12 @@ function presOutputConsignesRapides(ev){
                             })
                             if (consignesValides){
                                 $( this ).dialog( "close" );
-                                let nbToDelete = 0
+                                let nbToDelete = 0, toDelete = []
+                                listeConsignes.pasDeRestrictions = true
                                 Object.keys(listeConsignes).forEach(el=>{
-                                    if (el == "changeComment"){
-                                    } else if (SSSFrame.listingConsignes[el].consigne == listeConsignes[el].consigne){
+                                    listeConsignes.pasDeRestrictions == listeConsignes.pasDeRestrictions && ((el == "mode_hospit" && listeConsignes[el].consigne == "SL") || (el == "service" && listeConsignes[el].consigne == "ouvert") || listeConsignes[el].consigne == "autorise")
+                                    if (el == "changeComment" || el == "pasDeRestrictions"){
+                                    } else if (SSSFrame.listingConsignes[el] && SSSFrame.listingConsignes[el].consigne == listeConsignes[el].consigne){
                                         if(SSSFrame.listingConsignes[el].comment == listeConsignes[el].comment){
                                             listeConsignes[el].done=true
                                         } else {
@@ -1455,7 +1498,11 @@ function presOutputConsignesRapides(ev){
                                 if (nbToDelete){
                                     $('table[name=HEOFRAME] button:contains(Arrêt)').click2()
                                 }else{
-                                    $("a[onclick*='doSel(\\'1\\'']",SSSFrame.document.heoPane_output.document).click2()
+                                    if (listeConsignes.pasDeRestrictions) {
+                                        $('#HEO_INPUT', SSSFrame.document).val("Pas de consignes restrictives")[0].dispatchEvent(ke)
+                                    } else {
+                                        $("a[onclick*='doSel(']:contains(Consignes d'Hébergement)",SSSFrame.document.heoPane_output.document).click2()
+                                    }
                                 }
                             } else {
                                 alert('Préciser les restrictions !')
@@ -1735,7 +1782,7 @@ function addAutoPrescriptor(ev){
                             i++
                         }
                         INPUT.value=pres[0]+" "+pres[1]
-                        console.log(pres)
+                        //console.log(pres)
                         SSSFrame.autoEnhancedPres = pres
                         SSSFrame.autoEnhancedPresWaiter = setInterval((presc)=>{
                             if (SSSFrame.output_Selector(presc[0] + " "+presc[1], true)){
@@ -2207,7 +2254,7 @@ function monitorPresMouseOver(ev){
                         //str += $ligne.textContent()
                     }
                 })
-                console.log(liste_medocs)
+                //console.log(liste_medocs)
                 //console.log($liste_medocs_table)
                 function listener(e) {
                     e.clipboardData.setData("text/html", str);
@@ -2279,8 +2326,8 @@ String.prototype.searchI = function(searchString) {
 // --------------------------- Monitoring click souris ------------------------------
 
 function monitorClick(ev){
-    //console.log(unsafeWindow.document.SSSFrame.jQuery, unsafeWindow.parent.jQuery, window.parent.jQuery, window.jQuery)
-    if (!$ || !$.fn) {var $ = window.document.SSSFrame.jQuery};
+    //console.log(unsafeWindow.document.SSSFrame.jQuery, unsafeWindow.parent.jQuery, unsafeWindow.document.SSSFrame.$, unsafeWindow.parent.$, window.parent.jQuery, window.jQuery)
+    if (!$ || !$.fn) {var $ = window.document.SSSFrame.jQuery || unsafeWindow.document.SSSFrame.$};
 
     if (!ev.view){ev.view = unsafeWindow||window}
     let Meva = GM_getValue('Meva',{"user":"", "password":""})
@@ -2392,7 +2439,7 @@ function monitorClick(ev){
         delete SSSFrame.listePresLabo
     } else if (ev.target.innerText == "AHARRY"){
         ev.view.document.querySelector("input[name='mevaLockSessionWindowPwField']").value=Meva.password
-        ev.view.document.querySelector("span.GG-W0PSBMCB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
+        ev.view.document.querySelector("span.GLDWF15PDB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
     } else if (ev.target.classList.contains('stackItemMiddleCenterInner') && !ev.target.classList.contains('CleanGroupsButton') && ev.target.innerText == "Groupé par"){
         ev.target.classList.add('CleanGroupsButton')
         $('label:contains("Plannings"):eq(0)', ev.view.document).parent().after($('<div><button id="CleanGroupsByButton" style="margin-left:50px;background:#528fff;">Effacer</button></div>'))
@@ -2465,11 +2512,13 @@ function clickLogin(ev){
                 let Meva = GM_getValue("Meva",{})
                 if (document.querySelector("input[type='password']")) document.querySelector("input[type='password']").value=Meva.password}
         })
-    if (document.querySelector("div.GKJG3BODITB")){
-        document.querySelector("div.GKJG3BODITB").addEventListener('click', ev=>{
+    if (document.querySelector("div.GJM-MUPPUB")){
+        document.querySelector("div.GJM-MUPPUB").addEventListener('click', ev=>{
+            //GM_setValue('service', {phone:""})
+            if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:"", nom:"", prenom:""});GM_setValue('service', {phone:""})}
             if (document.querySelector("input[name='j_username']")) document.querySelector("input[name='j_username']").value=Meva.user
             if (document.querySelector("input[type='password']")) document.querySelector("input[type='password']").value=Meva.password
-            if (document.querySelector("button.GKJG3BODOY")) document.querySelector("button.GKJG3BODOY").click()
+            if (document.querySelector("button.GJM-MUPN-")) document.querySelector("button.GJM-MUPN-").click()
             if (document.querySelector("button[tabindex='4']")) document.querySelector("button[tabindex='4']").click()
         })
         window.removeEventListener('mousemove', clickLogin)
