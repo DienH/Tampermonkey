@@ -325,7 +325,7 @@
 		}
 	    	return $selection;
 	}
-}($ || jQuery));
+}($ && $.fn ? $ : jQuery);
 
 function log(...thing){
     return console.log(...thing);
