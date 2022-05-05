@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.78
+// @version      0.2.79
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -84,6 +84,7 @@ function copyToClip(str) {
                 }
             })
         }
+        setTimeout(()=>{µ.location.reload()},240000)
         return true
     }
     if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.parent.jQuery || window.jQuery };
@@ -248,9 +249,20 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                     //  .append('<style>.full_bg{position:fixed;top:0;left:0;width:100%;height:100%;background:black;opacity:0.2;</style>}')
                 }
             }
-                $(`div.carousel_enabled_item:contains("Résultats"):not(.modified)`).addClass('modified').each((i,el)=>{el.onclick=ev=>{
-                    open(SSSFrame.labo_url)
-                }})
+                $(`div.carousel_enabled_item:contains("Résultats"):not(.modified)`).addClass('modified').each((i,el)=>{
+                    el.onclick=ev=>{open(SSSFrame.labo_url)}
+                    /*
+                    $(el).contextmenu(ev=>{
+                        if (!$('#labo_frame').dialog('open').attr('src',SSSFrame.labo_url).length){
+                            if (window.parent == window.top){
+                                $('<div id="labo_frame"><iframe src="'+SSSFrame.labo_url+'"></iframe></div>').appendTo('body').dialog({classes:{"ui-dialog":"ui-dialog-full", "ui-dialog-content":"ui-dialog-labo"},height:$(window).height(), width:$(window).width()})
+                                    .siblings(".ui-dialog-titlebar")
+                                    .append('<button type="button" class="ui-button ui-corner-all ui-widget ui-button-icon-only ui-dialog-titlebar-refresh" title="Refresh"><span class="ui-button-icon ui-icon ui-icon-arrowrefresh-1-s"></span><span class="ui-button-icon-space"> </span>Refresh</button>')
+                            }
+                        }
+                    })
+                    */
+                })
 
                 if(!SSSFrame.resizeMonitored){
                     $(SSSFrame).resize((ev)=>{
@@ -342,7 +354,7 @@ button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background: green;c
 .ui-dialog .ui-dialog-titlebar-refresh {position: absolute;right: 2em;top: 50%;width: 20px;margin: -10px 0 0 0;padding: 1px;height: 20px;}
 .ui-dialog.ui-dialog-full {width:100vw;height:100vh;top:0!important;left:0!important;}
 .ui-dialog-meva2 {height: calc(100% - 40px);padding: 0;}
-#meva2 iframe {width:calc(100% - 5px);height:calc(100% - 5px);}
+#meva2 iframe, #labo_frame iframe {width:calc(100% - 5px);height:calc(100% - 5px);}
 @media (min-width: 1679px){}
  #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LOCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel-grid>tbody>tr:nth-of-type(3) {position:absolute;top:50px;right:15px;}
  #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LFCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel {height:60px!important;}
@@ -894,7 +906,7 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                                     .filter((i,elm)=>($(elm).a('name').searchI(el)+1) && !($(elm).a('name').split(" : ")[1].searchI(SSSFrame.nouvellesConsignes[el].consigne)+1))
                                     .find('input').click2()
                             })
-                            if(!SSSFrame.nouvellesConsignes.service.consigne == "ferme"){
+                            if(!(SSSFrame.nouvellesConsignes.service.consigne == "ferme")){
                                 $('tr[id="Nursing"][name^="Service ferm"] input', document).click2()
                             }
                             if (SSSFrame.nouvellesConsignes.mode_hospit.consigne == "SL"){
@@ -1146,6 +1158,9 @@ function autoPresConsignesRapides(consignes){
             currentConsignes[currConsigne] = {
                 consigne:(currConsigneA[1].search("Restreint")+1 ? "restreint":(currConsigneA[1].search("Interdit")+1 ? "interdit":currConsigneA[1].search("Accompagné")+1 ? "accompagne":(currConsigneA[1].search("Autorisé")+1 ? "autorise":""))),
                 comment:commentConsigne}
+        })
+        $('div.gwt-HTML:contains("Service fermé")','#workbody').each((i,el)=>{
+            currentConsignes.service.consigne = "ferme"
         })
         $('div.gwt-HTML:contains("Pas de consignes restrictives")','#workbody').each((i,el)=>{
             Object.keys(currentConsignes).forEach(el=>{
@@ -1419,7 +1434,7 @@ function presOutputConsignesRapides(ev){
   <tr class="consigne-service">
    <td>Service</td>
    <td colspan=3><input type="radio" name="service" consigne="ouvert" id="service-ouvert"><label for="service-ouvert"><b>ouvert</b></label></td>
-   <td><input type="radio" name="service" consigne="fermé" id="service-ferme"><label for="service-ferme"><b>fermé</b></label></td>
+   <td><input type="radio" name="service" consigne="ferme" id="service-ferme"><label for="service-ferme"><b>fermé</b></label></td>
   </tr>
 </tbody></table>`).dialog({
                 modal:true,
@@ -2480,7 +2495,9 @@ function monitorClick(ev){
     }else if ($(ev.target).is('.context_user_text_style_name')){
         if (!$('#meva2').dialog('open').length){
             if (window.parent == window.top){
-                $('<div id="meva2"><iframe src="/m-eva/m-eva.fwks"></iframe></div>').appendTo('body').dialog({classes:{"ui-dialog":"ui-dialog-full", "ui-dialog-content":"ui-dialog-meva2"}}).siblings(".ui-dialog-titlebar").append('<button type="button" class="ui-button ui-corner-all ui-widget ui-button-icon-only ui-dialog-titlebar-refresh" title="Refresh"><span class="ui-button-icon ui-icon ui-icon-arrowrefresh-1-s"></span><span class="ui-button-icon-space"> </span>Refresh</button>')
+                $('<div id="meva2"><iframe src="/m-eva/m-eva.fwks"></iframe></div>').appendTo('body').dialog({classes:{"ui-dialog":"ui-dialog-full", "ui-dialog-content":"ui-dialog-meva2"},height:$(window).height(), width:$(window).width()})
+                    .siblings(".ui-dialog-titlebar")
+                    .append('<button type="button" class="ui-button ui-corner-all ui-widget ui-button-icon-only ui-dialog-titlebar-refresh" title="Refresh"><span class="ui-button-icon ui-icon ui-icon-arrowrefresh-1-s"></span><span class="ui-button-icon-space"> </span>Refresh</button>')
             }
         }
     } else if ($(ev.target).is('span.GD42JS-DO5:contains("Fermer")')||$(ev.target).is('span.GD42JS-DO5:contains("Signer")')){
