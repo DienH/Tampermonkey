@@ -2125,6 +2125,7 @@ sortiePerm.hours.element.onclick = (ev)=> {
  if (ev.target.classList.contains('selected') || (sortiePerm.hours.lastValue != sortiePerm.hours.currentValue))
  {
   sortiePerm.hours.lastValue = sortiePerm.hours.currentValue
+  retourPerm.setValue({minutes:sortiePerm.minutes.currentValue})
   sortiePerm.buttons.save.click()
  }
 }
@@ -2173,14 +2174,14 @@ sortiePerm.on('save', data=>{
  retourPerm.show()
 })
 retourPerm.on('save', data=>{
- let datePerm = {start:datePicker.getStartDate().setHours(sortiePerm.hours.currentValue), end:new Date(datePicker.getEndDate().setHours(retourPerm.hours.currentValue)),
+ let datePerm = {start:(new Date(datePicker.getStartDate().setHours(sortiePerm.hours.currentValue))).setMinutes(sortiePerm.minutes.currentValue), end:new Date((new Date(datePicker.getEndDate().setHours(retourPerm.hours.currentValue))).setMinutes(retourPerm.minutes.currentValue)),
   hours:sortiePerm.days*24+(Number(retourPerm.hours.currentValue)-Number(sortiePerm.hours.currentValue))}
  datePicker.datePicked = datePerm
  if (datePerm.hours > 48){
   datePerm.start = new Date(datePerm.start+172800000)
   datePerm.hours = datePerm.hours-48
   document.getElementById('Datebox0').value = datePerm.start.toLocaleString().split(" ")[0]
-  document.getElementById('Heurebox0').value =document.getElementById('Heurebox').value
+  document.getElementById('Heurebox0').value = document.getElementById('Heurebox').value
   window.parent.datePermRestante = datePerm
   document.body.onunload = window.parent.autoExtendPerm
  } else {
