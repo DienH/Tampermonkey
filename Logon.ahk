@@ -13,10 +13,13 @@ Menu, Tray, Tip, Logon Helper
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
 user = %username%
-password =
-UF =
-type =
-planning =
+password = 
+UF = 3221
+type = Planning Service
+planning = PSY PEA - ADO HJ
+planning2 = PSY PEA - ADO CATTP
+dr_1 = CYRILLE Diane
+dr_2 = FENEON Domi
 ;If !WinExist("ahk_exe chrome.exe")
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
 
@@ -60,6 +63,37 @@ Cs_2:
 	Send {tab}
 	Sleep 10
 	Send %planning%
+	Sleep 10
+	Send {enter}
+	return
+Cs_2_bis:
+	WinWait Choix du planning ahk_exe rdvwin.exe,, 10
+	Sleep 10
+	Send {tab 2}
+	Sleep 10
+	Send %type%
+	Sleep 10
+	Send {tab}
+	Sleep 10
+	Send %planning2%
+	Sleep 10
+	Send {enter}
+	return
+Cs_2_dr_1:
+	WinWait Choix du planning ahk_exe rdvwin.exe,, 10
+	Sleep 10
+	Send {tab 3}
+	Sleep 10
+	Send %dr_1%
+	Sleep 10
+	Send {enter}
+	return
+Cs_2_dr_2:
+	WinWait Choix du planning ahk_exe rdvwin.exe,, 10
+	Sleep 10
+	Send {tab 3}
+	Sleep 10
+	Send %dr_2%
 	Sleep 10
 	Send {enter}
 	return
@@ -128,13 +162,11 @@ ResizeFormulaire:
 			Break
 		} else {
 			if (A_Index == 2){
-				Tooltip, Not responding
+				;Tooltip, Not responding
 			}
 		}
 		Sleep 1000
 	}
-	if DllCall("IsHungAppWindow", "UInt", WinExist(FormulaireWindow))
-        MsgBox The window appears to be hung.
 	ControlGet, hMemo, Hwnd, , TMemo2, %FormulaireWindow%
 	hPanel := DllCall("GetAncestor", uint, hMemo, uint, 1)
 	ControlGetPos, X_Memo, Y_Memo, W_Memo, H_Memo, TMemo2, %FormulaireWindow%
@@ -318,52 +350,36 @@ NoHotkey:
 	GoSub Logon_Login
 	Gosub Cs_1
 	GoSub Cs_2
-	Goto Cs_3_EHLSA
+	;Goto Cs_3_EHLSA
 	return
 
 #ifwinactive Plan de travail ahk_exe logon.exe
 &::
-	Send {Home}
-	Send USV2 R
-	Sleep 10
-	Send {Enter}
-	WinWait Choix du planning ahk_exe rdvwin.exe,, 10
-	Sleep 10
-	Send {tab 2}
-	Sleep 10
-	Send %type%
-	Sleep 10
-	Send {tab}
-	Sleep 10
-	Send %planning%
-	Sleep 10
-	Send {enter}
-	Sleep 500
-	Send !f
-	Sleep 10
-	Send h
-	Sleep 500
-	ControlSend, TMcKComboBox1, {Down 2}, Planning de ahk_exe rdvwin.exe
+	Gosub Cs_1
+	GoSub Cs_2
 	return
 
+é::
+	Gosub Cs_1
+	GoSub Cs_2_bis
+	return
+
+c::
+	Gosub Cs_1
+	Gosub Cs_2_dr_1
+	return
+f::
+	Gosub Cs_1
+	Gosub Cs_2_dr_2
+	return
+	
 #ifwinactive Choix du planning ahk_exe rdvwin.exe
 &::
-	Sleep 10
-	Send {tab 2}
-	Sleep 10
-	Send %type%
-	Sleep 10
-	Send {tab}
-	Sleep 10
-	Send %planning%
-	Sleep 10
-	Send {enter}
-	Sleep 500
-	Send !f
-	Sleep 10
-	Send h
-	Sleep 500
-	ControlSend, TMcKComboBox1, {Down 2}, Planning de ahk_exe rdvwin.exe
+	GoSub Cs_2
+	return
+	
+é::
+	GoSub Cs_2_bis
 	return
 #ifwinactive Choix du planning ahk_exe unit.exe
 ²::
@@ -378,7 +394,7 @@ CRSynthSplitScreen:
 	Logon_1_Doc_HWND := WinExist("Liste des Documents - Volet CPT_RENDU ahk_exe unit.exe")
 	WinGet, Logon_1_PID, PID, ahk_id %Logon_1_Doc_HWND%
 	Logon_1_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_1_PID)
-	Logon_1_Lettre_HWND := WinExist("CHU Lettre de Liaison PSY ahk_pid " Logon_1_PID)
+	Logon_1_Lettre_HWND := WinExist("CHU Lettre de Liaison ahk_pid " Logon_1_PID)
 	Logon_2_Syn_HWND := WinExist("Synthèse ahk_exe unit.exe")
 	WinGet, Logon_2_PID, PID, ahk_id %Logon_2_Syn_HWND%
 	Logon_2_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_2_PID)
