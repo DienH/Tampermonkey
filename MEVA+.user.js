@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.79
+// @version      0.2.80
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -11,7 +11,6 @@
 // @updateURL    https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.update
 // @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.js
 // @require      https://code.jquery.com/jquery.min.js
-// require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js
 // @resource     DienJS https://raw.githubusercontent.com/DienH/Tampermonkey/master/Dien.js
 // @grant        unsafeWindow
 // @grant        GM_getValue
@@ -22,6 +21,7 @@
 // @grant        GM_removeValueChangeListener
 // @grant        window.close
 // ==/UserScript==
+// require      https://cdn.jsdelivr.net/gh/DienH/Tampermonkey@master/Dien.js
 
 
 // lien pdf Article 80
@@ -956,11 +956,16 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                                 })
                             })
                         }
-                            $('tr:not(:has(tr)):has(input)', document).click(ev=>{
-                                if (!$(ev.target).filter('input').length){
-                                    $('input', ev.currentTarget).click2()
-                                }
-                            })
+
+                        // sélection par ligne en cliquant dans la fenetre popup de reprise de prescription ou pres terminées ou arrêt par lot
+                        $('tr:not(:has(tr)):has(input)', document).click(ev=>{
+                            if (!$(ev.target).filter('input').length){
+                                $('input', ev.currentTarget).click2()
+                            }
+                        })
+                        $('div#Nursing, div#Laboratory, div[id="Pharmacy Scheduled Medications"]', document).click(ev=>{
+                            $('tr[id="'+ev.target.id+'"] input', document).click2()
+                        })
                     } else {
                         /*if ($('tr[id="Pharmacy Scheduled Medications"] input', document).click2().length){
                         }*/
@@ -968,6 +973,9 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                             if(!$(ev.target).is("input")){
                                 $('input', ev.delegateTarget).click()
                             }
+                        })
+                        $('div#Nursing, div#Laboratory, div[id="Pharmacy Scheduled Medications"]', document).click(ev=>{
+                            $('tr[id="'+ev.target.id+'"] input', document).click2()
                         })
                     }
                     break
