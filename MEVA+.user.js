@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.80
+// @version      0.2.81
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -709,7 +709,7 @@ $.expr[":"].containsI = function (a, i, m) {
                     // ---------- Consignes auto -----------
                     // ---------- Consignes auto -----------
                     // ---------- Consignes auto -----------
-                } else if (SSSFrame.nouvellesConsignes && $el.filter('div.orderName:contains(Gestion)').length){
+                } else if (SSSFrame.nouvellesConsignes && ($el.filter('div.orderName:contains(Gestion)').length || $el.filter('div.orderName:contains("Service ferm")').length)){
                     delete SSSFrame.prescriptionIsoState
                     let currConsigne, currConsigneA
                     switch(promptTitle){
@@ -828,7 +828,7 @@ $.expr[":"].containsI = function (a, i, m) {
 // --------------------------- Fenêtre Popup ------------------------------
 
     } else if ((location.href.search("popupContents.jsp")+1)){
-        let styleEl = document.createElement('style'), title, pres,
+        let styleEl = document.createElement('style'), title, pres, bioDate = (new Date()),
             $HEO_POPUP = $('#HEO_POPUP', SSSFrame.document)
         styleEl.innerHTML = `
 .outOf2DaysRange {background:coral;}
@@ -887,6 +887,20 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                         })
                     })
                     break;
+                case "CFD_Essai_TOP30":
+                    $('#Frequence',document).val("UNE FOIS")
+                    bioDate.setDate(bioDate.getDate()+1)
+                    log(bioDate)
+                    setTimeout(()=>{
+                        $('#Datebox', document).val(bioDate.toLocaleDateString())
+                        $('#Heurebox', document).val('08:00')
+                    }, 1000)
+                    $('td:has(input)', document).click(ev=>{
+                        if(!$(ev.target).is('input')){
+                            $('input', ev.delegateTarget).click()
+                        }
+                    })
+                    break
                 case "":
                         //log(SSSFrame.nouvellesConsignes)
                     if ($('head>script[src*=HoldResume]',document).length){
@@ -1028,6 +1042,7 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                     t[1]="RESET_ORDER="+t[1].split("=")[1].split(",")[0]
                     return t.join("@")}).attr({class: "Retour", style:"padding-left:16px"}).text("annuler l'arrêt et les modifications")
             })}
+            /*
             if (SSSFrame.nouvellesConsignes){
                 let [consigne, autorisation] = $('b:eq(0)', document.body).text().split(' : ')
                 if (autorisation){
@@ -1037,6 +1052,7 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                     }
                 }
             }
+            */
         }
         switch ($('h1',document).text()){
             case "Erreur":
@@ -1270,6 +1286,7 @@ function presLaboRapide(ev){
         minHeight:250,
         minWidth:680,
         width:$(SSSFrame.datePresPicker.picker).width()+298,
+        position:{my:"center top-200", at:"center"},
         height:"auto",
         resize:"auto",
         autoResize:true,
@@ -1863,6 +1880,7 @@ function dateHourPres(ev){
 .nj-picker .nj-hours-container {width:400px;}
 .nj-action-container {grid-template-columns: repeat(2,1fr)!important;}
 .nj-overlay {display:none!important}
+.litepicker {right:100px!important;bottom:0!important;}
 `
     document.head.append(styleEl)
 
@@ -1906,7 +1924,7 @@ var datePresPicker = new Litepicker({
  onHide:()=>{if (!HEO_input){hourPresPicker.hideTimeout = setTimeout(()=>{hourPresPicker.hide()}, 100)}},
  onShow: ()=>{
               clearTimeout(hourPresPicker.hideTimeout)
-              $(datePresPicker.picker).css({top: "",left: "",right: 100,bottom: 0, overflow:"hidden", inset:"initial"})
+              $(datePresPicker.picker).css({top: "",left: ""})
               if (!HEO_input){
                $(datePresPicker.picker).position({at:"left bottom", my:"left top", of:$("#LABO-POPUP").parent()})
                $(hourPresPicker.container).position({at:"right bottom", my:"right top", of:$("#LABO-POPUP").parent()})
@@ -2073,20 +2091,20 @@ if (window.parent.datePermRestante){
  if (dateRestante.hours > 48){
   document.getElementById('Datebox').value = dateRestante.start.toLocaleDateString()
   document.getElementById('Heurebox').value = dateRestante.start.toLocaleTimeString([], {timeStyle: 'short'})
-  dateRestante.start = new Date(dateRestante.start+172800000)
+  dateRestante.start = new Date(dateRestante.start.getTime()+172800000)
   dateRestante.hours = dateRestante.hours-48
   document.getElementById('Datebox0').value = dateRestante.start.toLocaleDateString()
-  document.getElementById('Heurebox0').value =document.getElementById('Heurebox').value
+  document.getElementById('Heurebox0').value = document.getElementById('Heurebox').value
   window.parent.datePermRestante = dateRestante
-  document.getElementById('btPrescrire').click()
+  document.body.onunload = window.parent.autoExtendPerm
  } else {
   document.getElementById('Datebox').value = dateRestante.start.toLocaleDateString()
   document.getElementById('Heurebox').value = dateRestante.start.toLocaleTimeString([], {timeStyle: 'short'})
   document.getElementById('Datebox0').value = dateRestante.end.toLocaleDateString()
   document.getElementById('Heurebox0').value = dateRestante.end.toLocaleTimeString([], {timeStyle: 'short'})
   window.parent.datePermRestante = null
-  document.getElementById('btPrescrire').click()
  }
+ document.getElementById('btPrescrire').click()
 } else {
 var sortiePerm = new NJTimePicker({
     targetEl: document.querySelector('input[name="Heurebox"]'),
