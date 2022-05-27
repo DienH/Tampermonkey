@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.81
+// @version      0.2.82
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -750,7 +750,12 @@ $.expr[":"].containsI = function (a, i, m) {
                 promptTitle == "Date/time of BMT:" || promptTitle == "Quand la prescription doit-être arrêtée ?" ||
                 promptTitle == "Quand la prescription doit-elle être reprise ?" || promptTitle == "Date de Dernière Prise:" ||
                 promptTitle == "Quand la prescription doit-elle être suspendue ?"){
-                if (SSSFrame.repriseOldPres){
+                if (SSSFrame.renouvellementIso){
+                    if (promptTitle == "Saisissez une date et heure de début"){
+                    setTimeout(()=>{$('#HEO_INPUT', SSSFrame.document).val(SSSFrame.renouvellementIso.toLocaleString().slice(0,-3).replace(",", ""))[0].dispatchEvent(ke);
+                                   }, 500)
+                    }
+                } else if (SSSFrame.repriseOldPres){
                     $('a:contains(ENTREE)', document).click2()
                 } else {
                     document.head.append(hourCSS)
@@ -761,7 +766,7 @@ $.expr[":"].containsI = function (a, i, m) {
             } else if (promptTitle == 'Sélectionnez le motif de non prise en compte de cette alerte ou veuillez le saisir en texte libre') {
                 $HEO_INPUT.val('b')[0].dispatchEvent(ke);
             } else if (promptTitle == 'Priorité: (de votre prescription)') {
-                if (SSSFrame.repriseOldPres){
+                if (SSSFrame.repriseOldPres || SSSFrame.renouvellementIso){
                     $('[id=preMultiChoiceMarkup]:contains(PLANIFIE)', document).click2()
                 } else {
                     setTimeout(()=>{$('#HEO_INPUT', SSSFrame.document).val('PLANIFIE') //[0].dispatchEvent(ke);
@@ -983,6 +988,20 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                     } else {
                         /*if ($('tr[id="Pharmacy Scheduled Medications"] input', document).click2().length){
                         }*/
+                        if ($('head>link[href*="playbackOrdersPreviousStay"]', document)){
+                            SSSFrame.renouvellementIso = $('tr[id="Nursing"][name*="__Mise en Iso"]:first, tr[id="Nursing"][name*="__ Isolement"]:first, tr[id="Nursing"][name*="__Surveillance Prise"]:first, tr[id="Nursing"][name*="__Surveillance Risque S"]:first, ' +
+                              'tr[id="Nursing"][name*="__Surveillance Risque T"]:first, tr[id="Nursing"][name*="__Surveillance Troubles"]:first, tr[id="Nursing"][name*="__Surveillance Apport"]:first,'+
+                              'tr[id="Nursing"][name*="__Surveillance Conscience"]:first, tr[id="Nursing"][name*="__Surveillance  Etat"]:first, tr[id="Nursing"][name*="__Surveillance Pouls"]:first', document).find('input').click2()
+                            .end().first().find('td:eq(3)').text().split(" ")
+                            SSSFrame.renouvellementIso[0] = SSSFrame.renouvellementIso[0].split("/")
+                            SSSFrame.renouvellementIso[0] = "20"+SSSFrame.renouvellementIso[0][2]+"-"+SSSFrame.renouvellementIso[0][1]+"-"+SSSFrame.renouvellementIso[0][0]
+                            SSSFrame.renouvellementIso[1] = SSSFrame.renouvellementIso[1].split("h").join(":")
+                            SSSFrame.renouvellementIso = SSSFrame.renouvellementIso.join("T")
+                            SSSFrame.renouvellementIso = new Date(Date.parse(SSSFrame.renouvellementIso))
+                            SSSFrame.renouvellementIso.setHours(SSSFrame.renouvellementIso.getHours()+Number($('tr[id="Nursing"][name*="__Mise en Iso"]:first', document).find('td:eq(4)').text().split(" ")[0]))
+                            $('input#playbackOrders', document).click2()
+                            unsafeWindow.launchPlayBackOrders()
+                        }
                         $('tr:has(input)', document).click(ev=>{
                             if(!$(ev.target).is("input")){
                                 $('input', ev.delegateTarget).click()
@@ -1019,6 +1038,8 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                     SSSFrame.listePresLabo.current = Object.keys(SSSFrame.listePresLabo.labo)[++SSSFrame.listePresLabo.currentN]
                     $('input[value="Annuler"]', document).click2()
                 }
+            } else if (SSSFrame.renouvellementIso && $('body#infoPatientPopup', document).length){
+                $('form[action="commander?HEOCMD=@PLAYBACKORDERSPREVIOUSSTAY"] input', document).click2()
             }
         }
         if ($('#modif_action', document).length){
@@ -2240,21 +2261,34 @@ function monitorPresMouseOver(ev){
     if (!$ || !$.fn) {var $ = unsafeWindow.jQuery};
     if (!ev.view){ev.view = unsafeWindow || window}
     //console.log(ev.target)
+    let SSSFrame = ev.view
     if (!ev.view.listingPrescriptions){
         $('table[name=HEOFRAME] button:contains(Arrêt)', ev.view).click2()
     }
     if (ev.type == "mouseover"){
         if(!$(ev.currentTarget).hasClass('currentHover_pres') && ev.view.listingPrescriptions && !$(ev.currentTarget).has('.heoSubHeader').length){
             $('tr.currentHover_pres').removeClass('currentHover_pres')
-            $('#hoverMenu_pres', ev.view.document).attr('class', "").show().position({at: "right center",my:"right center", of:ev.target}) //, using:(pos,elPos)=>{
+            $('#hoverMenu_pres', SSSFrame.document).attr('class', "").show().position({at: "right center",my:"right center", of:ev.target}) //, using:(pos,elPos)=>{
                 //console.log(pos,elPos)
                 //elPos.element.element.css({top:($(elPos.target.element[0].currentTarget).offset().top+2), left:pos.left+2})
             //}})
             $(ev.currentTarget).addClass('currentHover_pres')
-            if ($(ev.currentTarget).has('span.heoDiscontinuedOrder').length){$('#hoverMenu_pres', ev.view.document).addClass('stopped')}
-            if ($(ev.currentTarget).has('span.heldOrderMarkup').length){$('#hoverMenu_pres', ev.view.document).addClass('suspended')}
-            if ($(ev.currentTarget).has('span.heoModifiedOrder').length){$('#hoverMenu_pres', ev.view.document).addClass('modified')}
+            if ($(ev.currentTarget).has('span.heoDiscontinuedOrder').length){$('#hoverMenu_pres', SSSFrame.document).addClass('stopped')}
+            if ($(ev.currentTarget).has('span.heldOrderMarkup').length){$('#hoverMenu_pres', SSSFrame.document).addClass('suspended')}
+            if ($(ev.currentTarget).has('span.heoModifiedOrder').length){$('#hoverMenu_pres', SSSFrame.document).addClass('modified')}
         }
+
+        // renouvellement ordonnance
+        if($('.patientinformationpanel-field', SSSFrame.document).last().text().charAt(0) == "I"){
+            if (!$('#renouvellement_iso', SSSFrame.document).length){
+                $('.GD42JS-DL-B:contains(Surveillance)').append('<div id="renouvellement_iso"><a><span class="renewPresc" title="Renouveller la prescription d\'isolement">Renouvellement d\'isolement</span></a></div>')
+                .find('#renouvellement_iso a').click(ev=>{
+                    $('.GD42JS-DO5:contains(Plus)', SSSFrame.document).log().click2()
+                    SSSFrame.renouvellementIso = true
+                })
+            }
+        }
+
 
         // mise en forme de l'ordonnance
         if (!$('#liste_ordonnance', ev.view.document).length){
@@ -2296,8 +2330,8 @@ function monitorPresMouseOver(ev){
                         //str += $ligne.textContent()
                     }
                 })
-                //console.log(liste_medocs)
-                //console.log($liste_medocs_table)
+                console.log(liste_medocs)
+                console.log($liste_medocs_table)
                 function listener(e) {
                     e.clipboardData.setData("text/html", str);
                     e.clipboardData.setData("text/plain", str);
@@ -2527,14 +2561,14 @@ function monitorClick(ev){
                     .append('<button type="button" class="ui-button ui-corner-all ui-widget ui-button-icon-only ui-dialog-titlebar-refresh" title="Refresh"><span class="ui-button-icon ui-icon ui-icon-arrowrefresh-1-s"></span><span class="ui-button-icon-space"> </span>Refresh</button>')
             }
         }
-    } else if ($(ev.target).is('span.GD42JS-DO5:contains("Fermer")')||$(ev.target).is('span.GD42JS-DO5:contains("Signer")')){
+    } else if ($(ev.target).is('.GD42JS-DO5:contains("Fermer")')||$(ev.target).is('.GD42JS-DO5:contains("Signer")')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         $.waitFor('div.GD42JS-DPOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
             $el.show()
             $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
             $('.full_bg', SSSFrame.document).hide()
         })
-    } else if ($(ev.target).is('span.GD42JS-DO5:contains(Oups)') || $(ev.target).is('span.GD42JS-DO5:contains(Outlines)')){
+    } else if ($(ev.target).is('.GD42JS-DO5:contains(Oups)') || $(ev.target).is('.GD42JS-DO5:contains(Outlines)')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
         delete SSSFrame.nouvellesConsignes
