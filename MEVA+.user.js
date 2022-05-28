@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.82
+// @version      0.2.83
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -242,6 +242,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                     delete SSSFrame.nouvellesConsignes
                     delete SSSFrame.autoEnhancedPres
                     delete SSSFrame.listePresLabo
+                    delete SSSFrame.renouvellementIso
                     $('#CONSIGNES-POPUP', SSSFrame.document).dialog('destroy').remove()
                     $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
                     //$('div.GD42JS-DLOB', SSSFrame.document).hide() // cacher la fenêtre popup MEVA à l'initialisation de la page
@@ -2278,12 +2279,21 @@ function monitorPresMouseOver(ev){
             if ($(ev.currentTarget).has('span.heoModifiedOrder').length){$('#hoverMenu_pres', SSSFrame.document).addClass('modified')}
         }
 
-        // renouvellement ordonnance
+        // renouvellement isolement
         if($('.patientinformationpanel-field', SSSFrame.document).last().text().charAt(0) == "I"){
             if (!$('#renouvellement_iso', SSSFrame.document).length){
-                $('.GD42JS-DL-B:contains(Surveillance)').append('<div id="renouvellement_iso"><a><span class="renewPresc" title="Renouveller la prescription d\'isolement">Renouvellement d\'isolement</span></a></div>')
+                $('.GD42JS-DL-B:contains(Surveillance)').append('<div id="renouvellement_iso"><a><img class="gwt-Image small-gwt-Image" title="Renouveller la prescription d\'isolement" src="../../../heoclient-application-web/images/control_repeat_blue.png">Renouvellement d\'isolement</a></div>')
                 .find('#renouvellement_iso a').click(ev=>{
-                    $('.GD42JS-DO5:contains(Plus)', SSSFrame.document).log().click2()
+                    if ($('.GD42JS-DOYB:contains("Surveillance et soins") tr.heoMainGrid:has(.renewPresc):contains("Isolement")', SSSFrame.document).length){
+                        $('.GD42JS-DEAB:contains(Renouveler)', SSSFrame.document).click2()
+                        $.waitFor('.GD42JS-DJYB .GD42JS-DOYB:has(.GD42JS-DF-B:contains("Renouvellement de prescriptions"))')
+                        .then($el=>{
+                            $('.GD42JS-DBUB .GD42JS-DOUB:contains(Isolement)', $el).each((i,el)=>{$('input:radio:first', el).click2()})
+                            $('.GD42JS-DO5:contains(Valider)', $el).click2()
+                        })
+                    } else {
+                        $('.GD42JS-DO5:contains(Plus)', SSSFrame.document).click2()
+                    }
                     SSSFrame.renouvellementIso = true
                 })
             }
@@ -2504,8 +2514,8 @@ function monitorClick(ev){
         })
     } else if ($(ev.target).is('.ui-button-icon-only.ui-dialog-titlebar-refresh') || $(ev.target).is('.ui-icon.ui-icon-arrowrefresh-1-s')){
         $('#meva2 iframe').attr("src", "/m-eva/m-eva.fwks")
-    } else if (ev.target.title == "HEO - Prescrire"){
-        if(!$(ev.target).is('.GD42JS-DFXB')){
+    } else if (ev.target.title == "HEO - Prescrire" || $(ev.target).is('.GD42JS-DO5:contains(Oups)') || $(ev.target).is('.GD42JS-DO5:contains(Outlines)')){
+        if(ev.target.title == "HEO - Prescrire" && !$(ev.target).is('.GD42JS-DFXB')){
             addAutoPrescriptor(ev)
         }
         let SSSFrame = window.top.SSSFrame || window.top[0]
@@ -2513,6 +2523,7 @@ function monitorClick(ev){
         delete SSSFrame.nouvellesConsignes
         delete SSSFrame.listingConsignes
         delete SSSFrame.listePresLabo
+        delete SSSFrame.renouvellementIso
     } else if (ev.target.innerText == "AHARRY"){
         ev.view.document.querySelector("input[name='mevaLockSessionWindowPwField']").value=Meva.password
         ev.view.document.querySelector("span.GLDWF15PDB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
@@ -2568,12 +2579,11 @@ function monitorClick(ev){
             $('#HEO_POPUP', SSSFrame.document).removeClass('force_hidden')
             $('.full_bg', SSSFrame.document).hide()
         })
-    } else if ($(ev.target).is('.GD42JS-DO5:contains(Oups)') || $(ev.target).is('.GD42JS-DO5:contains(Outlines)')){
-        let SSSFrame = window.top.SSSFrame || window.top[0]
         delete SSSFrame.autoEnhancedPres
         delete SSSFrame.nouvellesConsignes
         delete SSSFrame.listingConsignes
         delete SSSFrame.listePresLabo
+        delete SSSFrame.renouvellementIso
     }
 }
 
