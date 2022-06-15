@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.83
+// @version      0.2.84
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -303,7 +303,10 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
         if (!document.getElementById('SSSFrame_MevaStyle')){
             $('<style id="SSSFrame_MevaStyle">', document).html(`
 #HEO_POPUP .dialogMiddleCenter {background:#F5F5F5;}
+#HEO_POPUP {top:25px!important;}
 #HEO_POPUP.force_hidden {visibility:hidden!important}
+#HEO_POPUP>div>table {height:auto!important;}
+#HEO_POPUP #pcFrame {height:calc(100vh - 130px)!important;}
 #CONSIGNES-POPUP table, #CONSIGNES-POPUP td, #CONSIGNES-POPUP th {border: 1px solid black;border-collapse: collapse;font-size:14px;}
 #CONSIGNES-POPUP table {width:100%;}
 #CONSIGNES-POPUP table td+td {text-align:center;}
@@ -417,7 +420,8 @@ $.expr[":"].containsI = function (a, i, m) {
                     $('a:contains("Retourner à la liste")', document).remove()
                     $('a:contains("Consignes")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Consignes rapides</a>').click(presOutputConsignesRapides))
                     $('a:contains("Sorties Temp")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Permission rapide</a>').click(presOutputConsignesRapides))
-                    $('a:contains("Bilans Psychiatrie")', document).contextmenu(ev=>{ev.preventDefault();presLaboRapide(ev);}).before($('<a class="presPsy-rapide">Bilan rapide</a>').click(presLaboRapide))
+                    $('a:contains("Bilans Psychiatrie")', document).contextmenu(ev=>{ev.preventDefault();presLaboPrincipaux(ev);}).before($('<a class="presPsy-rapide">Bilan rapide</a>').click(presLaboPrincipaux))
+                    //$('a:contains("Bilans Psychiatrie")', document).contextmenu(ev=>{ev.preventDefault();presLaboRapide(ev);}).before($('<a class="presPsy-rapide">Bilan rapide</a>').click(presLaboRapide))
                     if (SSSFrame.nouvellesConsignes){
                         if (SSSFrame.nouvellesConsignes.done){
                             SSSFrame.nouvellesConsignes = ""
@@ -475,7 +479,7 @@ $.expr[":"].containsI = function (a, i, m) {
                                 //console.log(SSSFrame.listePresLabo.current)
                                 SSSFrame.output_Selector(SSSFrame.listePresLabo.current)
                                 if (orderName && SSSFrame.listePresLabo.last && orderName.searchI(SSSFrame.listePresLabo.last)+1){
-                                    $HEO_INPUT[0].dispatchEvent(ke);
+                                    setTimeout(()=>{$HEO_INPUT[0].dispatchEvent(ke);}, 500)
                                 }
                             }
                         }
@@ -667,7 +671,8 @@ $.expr[":"].containsI = function (a, i, m) {
                             $('a[onclick]:contains("ENTREE")', document).click2()
                             break;
                         case "Saisissez une date et heure de début":
-                            $HEO_INPUT.val(SSSFrame.listePresLabo.labo[SSSFrame.listePresLabo.current] || SSSFrame.listePresLabo.date).each((i,el)=>{
+                            setTimeout(()=>{
+                                $HEO_INPUT.val(SSSFrame.listePresLabo.labo[SSSFrame.listePresLabo.current] || SSSFrame.listePresLabo.date).each((i,el)=>{
                                 if (SSSFrame.listePresLabo.current != "Lithium Sanguin" && SSSFrame.listePresLabo.current != "Dosage Clozapine" && SSSFrame.listePresLabo.current != "Dosage Acide Valpro"){
                                     SSSFrame.listePresLabo.last = SSSFrame.listePresLabo.current
                                     SSSFrame.listePresLabo.current = Object.keys(SSSFrame.listePresLabo.labo)[++SSSFrame.listePresLabo.currentN]
@@ -676,32 +681,36 @@ $.expr[":"].containsI = function (a, i, m) {
                                     }
                                 }
                                 el.dispatchEvent(ke);
-                            })
+                            })}, 500)
                             break;
                         case "Commentaires:":
-                            $HEO_INPUT.each((i,el)=>{
-                                if (SSSFrame.listePresLabo.current == "Dosage Clozapine" || SSSFrame.listePresLabo.current == "Dosage Acide Valpro"){
+                            setTimeout(()=>{
+                                $HEO_INPUT.each((i,el)=>{
+                                    if (SSSFrame.listePresLabo.current == "Dosage Clozapine" || SSSFrame.listePresLabo.current == "Dosage Acide Valpro"){
+                                        SSSFrame.listePresLabo.last = SSSFrame.listePresLabo.current
+                                        SSSFrame.listePresLabo.current = Object.keys(SSSFrame.listePresLabo.labo)[++SSSFrame.listePresLabo.currentN]
+                                        if (!SSSFrame.listePresLabo.current){
+                                            delete SSSFrame.listePresLabo
+                                        }
+                                    }
+                                    el.dispatchEvent(ke);
+                            })
+                            }, 500)
+                            break;
+                        case "Nature du liquide:":
+                            setTimeout(()=>{
+                                $HEO_INPUT.each((i,el)=>{
                                     SSSFrame.listePresLabo.last = SSSFrame.listePresLabo.current
                                     SSSFrame.listePresLabo.current = Object.keys(SSSFrame.listePresLabo.labo)[++SSSFrame.listePresLabo.currentN]
                                     if (!SSSFrame.listePresLabo.current){
                                         delete SSSFrame.listePresLabo
                                     }
-                                }
-                                el.dispatchEvent(ke);
-                            })
-                            break;
-                        case "Nature du liquide:":
-                            $HEO_INPUT.each((i,el)=>{
-                                SSSFrame.listePresLabo.last = SSSFrame.listePresLabo.current
-                                SSSFrame.listePresLabo.current = Object.keys(SSSFrame.listePresLabo.labo)[++SSSFrame.listePresLabo.currentN]
-                                if (!SSSFrame.listePresLabo.current){
-                                    delete SSSFrame.listePresLabo
-                                }
-                                el.dispatchEvent(ke);
-                            })
+                                    el.dispatchEvent(ke);
+                                })
+                            }, 500)
                             break;
                         default:
-                            $HEO_INPUT[0].dispatchEvent(ke);
+                            setTimeout(()=>{$HEO_INPUT[0].dispatchEvent(ke);}, 500)
                             break;
                     }
 
@@ -794,7 +803,8 @@ $.expr[":"].containsI = function (a, i, m) {
                                                    "BHEP":"BHEP : ASAT ALAT",
                                                    "crp":"CRP (Sang)",
                                                    "bs":"BS (Iono,CA,Uree,Creat,Glucose)",
-                                                   "tshu":"TSH (Sang)"}
+                                                   "tshu":"TSH (Sang)",
+                                                   "principaux examens": "Principaux Examens Laboratoires"}
                 if(!$("a[onclick*='@THERAPEUTICSUBSTITUTION='", document).each((i,el)=>{
                     let presSearch = el.innerText.split('"')[1], presAction = listePrescriptionsEquivalent[presSearch]
                     if (presAction){
@@ -834,7 +844,7 @@ $.expr[":"].containsI = function (a, i, m) {
 // --------------------------- Fenêtre Popup ------------------------------
 
     } else if ((location.href.search("popupContents.jsp")+1)){
-        let styleEl = document.createElement('style'), title, pres, bioDate = (new Date()),
+        let styleEl = document.createElement('style'), title, pres, bioDate = (new Date()), textarea_infos,
             $HEO_POPUP = $('#HEO_POPUP', SSSFrame.document)
         styleEl.innerHTML = `
 .outOf2DaysRange {background:coral;}
@@ -842,8 +852,14 @@ $.expr[":"].containsI = function (a, i, m) {
 body {background-color:#F5F5F5;}
 a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
 .titreIform {background-color:green!important;}
+form[name=CFD_Essai_TOP30] {padding-top:80px}
+form[name=CFD_Essai_TOP30] .BandeauTitreEtPatient {position:fixed;top:0;background:#F5F5F5}
+form[name=CFD_Essai_TOP30] .BandeauBoutons input {position:fixed;right:0}
+form[name=CFD_Essai_TOP30] .BandeauBoutons #btPrescrire {top:0;background:#008000;color:white}
+form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa500}
 `
         document.head.append(styleEl)
+        $('head', document).append($('<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">'))
 
         if (title = document.head.querySelector('title')){
             switch(title.innerText){
@@ -892,11 +908,24 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                             }
                         })
                     })
+                    $('input[type=checkbox], input[type=radio]', document).each((i,el)=>{
+                        if (el.nextSibling.nodeType == 3){
+                            $(el).add(el.nextSibling).wrapAll('<label>')
+                        }
+                    })
+                    $('textarea[onchange]', document).each((i,el)=>{
+                        if (textarea_infos = unsafeWindow["js_obj_"+el.name] ){
+                            el.title = textarea_infos.hint
+                        }
+                        if (!el.onkeypress){
+                            el.onkeypress = el.onchange
+                        }
+                    })
                     break;
-                case "CFD_Essai_TOP30":
+                case "CFD_Essai_TOP30": // principaux examens de la laboratoire
+                    $('form[name=CFD_Essai_TOP30] .BandeauBoutons input', document).addClass('ui-button ui-corner-all').width(42)
                     $('#Frequence',document).val("UNE FOIS")
                     bioDate.setDate(bioDate.getDate()+1)
-                    log(bioDate)
                     setTimeout(()=>{
                         $('#Datebox', document).val(bioDate.toLocaleDateString())
                         $('#Heurebox', document).val('08:00')
@@ -972,7 +1001,7 @@ a.lien-labo{text-decoration: underline;color: blue;margin-right: 10px;}
                             $('div[id="Other Investigations"]:contains("Autres examens")', document).each((i,el)=>{
                                 $(el).parent().append('<input type="checkbox" id="check_perms" style="margin-left: 30px;"><label for="check_perms">Perms</label>').find('input') //.log()
                                     .change(ev=>{
-                                    $('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).click2()
+                                    $('tr[id="Other Investigations"][name*="temporaire en cours"] input', document).prop("checked", ev.delegateTarget.checked) //.click2()
                                 })
                             })
                         }
@@ -1240,6 +1269,21 @@ function autoPresConsignesRapides(consignes){
 // --------------------------- Popup pres labo rapide ------------------------------
 // --------------------------- Popup pres labo rapide ------------------------------
 // --------------------------- Popup pres labo rapide ------------------------------
+
+function presLaboPrincipaux(ev){
+    if (!$ || !$.fn){var $ = (typeof unsafeWindow != "undefined" ? unsafeWindow.$ || unsafeWindow.parent.$ : window.$ || window.parent.$)}
+    let SSSFrame = window
+    const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
+    while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
+        SSSFrame = SSSFrame.parent
+    }
+    $('#panelOutput', SSSFrame.document).changes('child', ev=>{
+        SSSFrame.output_Selector(1)
+        $(ev.target).disconnect()
+        console.log('bah')
+    })
+    $('#HEO_INPUT', SSSFrame.document).val("Principaux Examens Laboratoires")[0].dispatchEvent(ke)
+}
 
 function presLaboRapide(ev){
     if (!$ || !$.fn){var $ = (typeof unsafeWindow != "undefined" ? unsafeWindow.$ || unsafeWindow.parent.$ : window.$ || window.parent.$)}
@@ -1902,7 +1946,7 @@ function dateHourPres(ev){
 .nj-picker .nj-hours-container {width:400px;}
 .nj-action-container {grid-template-columns: repeat(2,1fr)!important;}
 .nj-overlay {display:none!important}
-.litepicker {right:100px!important;bottom:0!important;}
+body[onload] .litepicker {right:100px!important;bottom:0!important;}
 `
     document.head.append(styleEl)
 
