@@ -153,6 +153,8 @@ ResizeFormulaire:
 	TimeOut = 100 ; milliseconds to wait before deciding it is not responding - 100 ms seems reliable under 100% usage
 	; WM_NULL =0x0000
 	; SMTO_ABORTIFHUNG =0x0002
+	MouseGetPos,,,,hControlText,2
+	SendMessage, 0x30,,1,, ahk_id %hControlText% 
 	Loop 2
 	{
 		Responding := DllCall("SendMessageTimeout", "UInt", WinExist(FormulaireWindow), "UInt", 0x0000, "Int", 0, "Int", 0, "UInt", 0x0002, "UInt", TimeOut, "UInt *", NR_temp)
@@ -181,10 +183,11 @@ ResizeFormulaire:
 	Hotkey, ~Space, CopyCurrentMemo
 	Hotkey, ~Enter, CopyCurrentMemo
 	Hotkey, ~Backspace, CopyCurrentMemo
-	Hotkey, ^+v, PastCurrentMemo
+	Hotkey, ^+v, PasteCurrentMemo
 	Hotkey, ^BackSpace, CtrlBackspace
 	Hotkey, ^a, SelectAllText
 	Hotkey, If
+	Control, Enable,, TDateTimePicker1, %FormulaireWindow%
 	;ToolTip, % Memo_text
 	return
 
@@ -203,8 +206,36 @@ CopyCurrentMemo:
 	ToolTip
 	return
 
-PastCurrentMemo:
-	ControlSetText, , % Clipboard, ahk_id %hMemo%
+PasteCurrentMemo:
+	ControlSetText, , % Memo_text, ahk_id %hMemo%
+	return
+
+/*
+;~LButton up::
+;	MouseGetPos,,, CurrentMouseWindow
+;	if (winExist("CHU Lettre de Liaison ahk_id " CurrentMouseWindow)){
+;		ControlSend, TWPRichText1, {Alt down}f{Alt up},  ahk_id %CurrentMouseWindow%
+;		Sleep 10
+;		;ControlSend, , {e}, ahk_id %CurrentMouseWindow%
+;	}
+;	return
+*/
+
+CopyCurrentLettre:
+	Clipboard_old := Clipboard
+	Send ^a
+	Send ^c
+	Send {Esc}
+	Lettre_text := Clipboard
+	Clipboard := Clipboard_old
+	return
+	
+PasteCurrentLettre:
+	Clipboard_old := Clipboard
+	Clipboard := Lettre_text
+	Send ^a
+	Send ^v
+	Clipboard := Clipboard_old
 	return
 
 #IfWinActive, Planning de ADDICTO ahk_exe rdvwin.exe
@@ -264,6 +295,7 @@ F8::
 	{
 		GoSub Unit_1
 		Sleep 3000
+		WinWait, Choix du planning ahk_exe unit.exe
 		Send {enter}
 		Sleep 100
 		Send !p
@@ -354,12 +386,12 @@ NoHotkey:
 	return
 
 #ifwinactive Plan de travail ahk_exe logon.exe
-&::
+h::
 	Gosub Cs_1
 	GoSub Cs_2
 	return
 
-é::
+t::
 	Gosub Cs_1
 	GoSub Cs_2_bis
 	return
