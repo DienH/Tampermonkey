@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.84
+// @version      0.2.85
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -741,8 +741,10 @@ $.expr[":"].containsI = function (a, i, m) {
                                     break
                             }
                             break
-                        case "Saisissez une date et heure de début":
                         case "Durée: (avec une date et heure de fin optionnelle)":
+                            $HEO_INPUT.val(SSSFrame.nouvellesConsignes.duree_consignes)[0].dispatchEvent(ke);
+                            break
+                        case "Saisissez une date et heure de début":
                         case "Fréquence:":
                             $('a[onclick]:contains("ENTREE")', document).click2()
                             break
@@ -762,7 +764,7 @@ $.expr[":"].containsI = function (a, i, m) {
                 promptTitle == "Quand la prescription doit-elle être suspendue ?"){
                 if (SSSFrame.renouvellementIso){
                     if (promptTitle == "Saisissez une date et heure de début"){
-                    setTimeout(()=>{$('#HEO_INPUT', SSSFrame.document).val(SSSFrame.renouvellementIso.toLocaleString().slice(0,-3).replace(",", ""))[0].dispatchEvent(ke);
+                    setTimeout(()=>{$HEO_INPUT.val(SSSFrame.renouvellementIso.toLocaleString().slice(0,-3).replace(",", ""))[0].dispatchEvent(ke);
                                    }, 500)
                     }
                 } else if (SSSFrame.repriseOldPres){
@@ -844,7 +846,7 @@ $.expr[":"].containsI = function (a, i, m) {
 // --------------------------- Fenêtre Popup ------------------------------
 
     } else if ((location.href.search("popupContents.jsp")+1)){
-        let styleEl = document.createElement('style'), title, pres, bioDate = (new Date()), textarea_infos,
+        let styleEl = document.createElement('style'), title, pres, bioDate = (new Date()), textarea_infos, $datepickerFRScript,
             $HEO_POPUP = $('#HEO_POPUP', SSSFrame.document)
         styleEl.innerHTML = `
 .outOf2DaysRange {background:coral;}
@@ -929,12 +931,46 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                     setTimeout(()=>{
                         $('#Datebox', document).val(bioDate.toLocaleDateString())
                         $('#Heurebox', document).val('08:00')
+                        $('body', document).append($('<script>').attr('src', $datepickerFRScript.attr('src')))
+                        $datepickerFRScript.remove()
                     }, 1000)
                     $('td:has(input)', document).click(ev=>{
                         if(!$(ev.target).is('input')){
                             $('input', ev.delegateTarget).click()
                         }
                     })
+                    $datepickerFRScript = $('script[src*=datepicker]')
+                    $('.BandeauEnTete1', document).eq(0).before($(`<table class="Cadre"><tbody><tr>
+                    <td><label><input type="checkbox" id="BS1" name="BS1"> BS <span class="Parentheses">(Iono,Ca,Urée,Créat,Glucose)</span></label></td>
+                    <td><label><input type="checkbox" id="Bio_Simple" name="Bio_Simple"> Bio simple <span class="Parentheses">(NFS,BS)</span></label></td>
+                    <td><label><input type="checkbox" id="Bio_Complet" name="Bio_Complet"> Bio complet <span class="Parentheses">(NFS,BS,CRP,BC,BH)</span></label></td>
+                    <td><label><input type="checkbox" id="Bio_Entree" name="Bio_Entree"> Bio entrée <span class="Parentheses">(NFS,BS,CRP,BC,BH,TSH)</span></label></td>
+                    <td><label><input type="checkbox" id="Bio_TCA" name="Bio_TCA"> TCA <span class="Parentheses">(NFS,BS,BH,TSH,P)</span></label></td>
+                    </tr></tbody></table>`).on('click', 'input',ev=>{
+                        console.log(ev)
+                        switch(ev.currentTarget.id){
+                            case "BS1":
+                                $('#CA, #URE, #CRE, #GL', document).prop('checked', ev.currentTarget.checked)
+                                $('#IONO', document).prop('checked', !ev.currentTarget.checked).click()
+                                break;
+                            case "Bio_Simple":
+                                $('#CA, #URE, #CRE, #GL', document).prop('checked', ev.currentTarget.checked)
+                                $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
+                                break;
+                            case "Bio_Complet":
+                                $('#CA, #URE, #CRE, #GL, #CRP, #BC, #BHEP, #BILCAOG', document).prop('checked', ev.currentTarget.checked)
+                                $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
+                                break;
+                            case "Bio_Entree":
+                                $('#CA, #URE, #CRE, #GL, #CRP, #BC, #BHEP, #TSH, #BILCAOG', document).prop('checked', ev.currentTarget.checked)
+                                $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
+                                break;
+                            case "Bio_TCA":
+                                $('#CA, #URE, #CRE, #GL, #BHEP, #TSH, #P, #Mg', document).prop('checked', ev.currentTarget.checked)
+                                $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
+                                break;
+                        }
+                    }))
                     break
                 case "":
                         //log(SSSFrame.nouvellesConsignes)
@@ -1238,17 +1274,21 @@ function autoPresConsignesRapides(consignes){
             currentConsignes.service.consigne = "ferme"
         })
         $('div.gwt-HTML:contains("Pas de consignes restrictives")','#workbody').each((i,el)=>{
-            Object.keys(currentConsignes).forEach(el=>{
-                let consigne = ""
-                if (el == "mode_hospit"){
-                    consigne = "SL"
-                } else if (el == "service"){
-                    consigne = "ouvert"
-                } else {
-                    consigne = "autorise"
-                }
-                currentConsignes[el].consigne = consigne
-            })
+            let heureConsigne = $(el).textContent().split("  »")[1].slice(0,-3),
+                [pasDeConsignesJour, pasDeConsignesHeure] = heureConsigne.split(" à "), datePasDeConsigne = new Date(pasDeConsignesJour.split("/")[2], Number(pasDeConsignesJour.split("/")[1])-1, pasDeConsignesJour.split("/")[0], pasDeConsignesHeure.split("h")[0], pasDeConsignesHeure.split("h")[1])
+            if (datePasDeConsigne <= (new Date())){
+                Object.keys(currentConsignes).forEach(el=>{
+                    let consigne = ""
+                    if (el == "mode_hospit"){
+                        consigne = "SL"
+                    } else if (el == "service"){
+                        consigne = "ouvert"
+                    } else {
+                        consigne = "autorise"
+                    }
+                    currentConsignes[el].consigne = consigne
+                })
+            }
         })
         $('div.gwt-HTML:contains("Soins sans consentement")','#workbody').each((i,el)=>{
             currentConsignes.mode_hospit.consigne = "SSC"
@@ -1450,7 +1490,7 @@ function presOutputConsignesRapides(ev){
 <table>
  <thead>
   <tr class="consigne-mode_hospit">
-   <td colspan="5" style="text-align: center;">Hospitalisation en :
+   <td colspan="3" style="text-align: center;">Hospitalisation en :
     <input type="radio" checked id="Mode_hospit-SL" name="mode_hospit" consigne="SL"><label for="Mode_hospit-SL"> SL</label>
     <input type="radio" id="Mode_hospit-SSC" name="mode_hospit" consigne="SSC"><label for="Mode_hospit-SSC"> SSC</label>
     <select id="Type-SSC">
@@ -1459,6 +1499,12 @@ function presOutputConsignesRapides(ev){
      <option value="SSCDTu">SSCDTu</option>
      <option value="SPPI">SPPI</option>
     </select>
+   </td>
+   <td colspan="2" style="text-align: center;">
+   <span>Durée des consignes</span>
+   <select id="duree_consignes">
+     <option value="">illimitée</option>
+     <option value="48h">48h</option>
    </td>
   </tr>
   <tr>
@@ -1579,6 +1625,7 @@ function presOutputConsignesRapides(ev){
                             if (listeConsignes.deplacements.consigne == "restreint" && listeConsignes.deplacements.restriction == "seul" && listeConsignes.deplacements.comment == ""){
                                 consignesValides = false
                             }
+                            listeConsignes.duree = $('#CONSIGNES-POPUP #duree_consignes').val()
                             $('#CONSIGNES-POPUP thead tr:first').each((i,el)=>{
                                 listeConsignes.mode_hospit={consigne:$('input:checked', el).attr('id').split('-')[1],comment:$('select',el).val()}
                             })
@@ -1588,7 +1635,7 @@ function presOutputConsignesRapides(ev){
                                 listeConsignes.pasDeRestrictions = true
                                 Object.keys(listeConsignes).forEach(el=>{
                                     listeConsignes.pasDeRestrictions == listeConsignes.pasDeRestrictions && ((el == "mode_hospit" && listeConsignes[el].consigne == "SL") || (el == "service" && listeConsignes[el].consigne == "ouvert") || listeConsignes[el].consigne == "autorise")
-                                    if (el == "changeComment" || el == "pasDeRestrictions"){
+                                    if (el == "changeComment" || el == "pasDeRestrictions" || el == "duree_consignes"){
                                     } else if (SSSFrame.listingConsignes[el] && SSSFrame.listingConsignes[el].consigne == listeConsignes[el].consigne){
                                         if(SSSFrame.listingConsignes[el].comment == listeConsignes[el].comment){
                                             listeConsignes[el].done=true
