@@ -5,7 +5,8 @@
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
-// @include      http*://serv-cyberlab.chu-clermontferrand.fr/cyberlab/*
+// @match        http*://serv-cyberlab.chu-clermontferrand.fr/cyberlab/*
+// @match        http*://cyberlab.chu-clermontferrand.fr/cyberlab/*
 // @exclude      http*://meva/heoclient-application-web/shortStop.jsp
 // @exclude      http*://meva/heoclient-application-web/clientRequest.jsp*
 // @updateURL    https://github.com/DienH/Tampermonkey/raw/master/MEVA%2B.user.update
