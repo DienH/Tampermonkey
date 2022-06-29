@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.85
+// @version      0.2.86
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
