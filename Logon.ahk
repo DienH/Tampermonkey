@@ -145,7 +145,12 @@ F8::
 	FormulaireWindow = Formulaire ahk_exe rdvwin.exe
 	Gosub ResizeFormulaire
 	return
-
+#If
+#ifWinActive, Formulaire ahk_exe crosspass.exe
+~LButton::
+	FormulaireWindow = Formulaire ahk_exe crosspass.exe
+	Gosub ResizeFormulaire
+	return
 #If
 
 ResizeFormulaire:
@@ -345,7 +350,7 @@ F8::
 NoHotkey:
 	return
 
-#ifwinactive LOGON - Reference ahk_exe logon.exe
+#ifwinactive LOGON - M-Référence ahk_exe logon.exe
 ^r::Reload
 ²::
 	ControlSetText, Edit1, %user%
