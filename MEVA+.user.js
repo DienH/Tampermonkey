@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.86
+// @version      0.2.87
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -68,7 +68,7 @@ function copyToClip(str) {
     }
     var µ = unsafeWindow
     var log = console.log
-    if (location.href.search("serv-cyberlab.chu-clermontferrand.fr")+1){
+    if (location.href.search("cyberlab.chu-clermontferrand.fr")+1){
         let $
         if (!$ || !$.fn) {$ = µ.jQuery || µ.$ || window.jQuery };
         $('tr[onclick]:first').click()
@@ -170,10 +170,10 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
     }else if (location.href.search("Hospitalisation.fwks")+1 || location.href.search("m-eva.fwks")+1){
         let SSSFrame = unsafeWindow, CS_AnestTitle = (`div.carousel_enabled_item:contains("Consultation d'anesthésie")`),
             SSSFrame_wait = setInterval(()=>{
-                let patientIPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains(IPP)').text().split(' : ')[1]
+                let patientIPP = $('div.GP3D0Y0NPB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains(IPP)').text().split(' : ')[1]
                 if (patientIPP != SSSFrame.patientIPP){
-                    let patientBD = $('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient').text().split(" (")[2].split(')')[0].split('/').reverse().join(''),
-                        labo_url = 'https://serv-cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
+                    let patientBD = $('.GP3D0Y0CN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient').text().split(" (")[2].split(')')[0].split('/').reverse().join(''),
+                        labo_url = 'https://cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
                         '?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
                     SSSFrame.labo_url = labo_url
                 }
@@ -252,6 +252,8 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 }
             }
                 $(`div.carousel_enabled_item:contains("Résultats"):not(.modified)`).addClass('modified').each((i,el)=>{
+                    console.log(el)
+                    console.log(SSSFrame.labo_url)
                     el.onclick=ev=>{open(SSSFrame.labo_url)}
                     /*
                     $(el).contextmenu(ev=>{
@@ -2521,7 +2523,7 @@ function monitorClick(ev){
             } else if (action == "Résultats de labo"){
                 let patientIPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains(IPP)').text().split(' : ')[1].split("IPP")[0],
                 patientBD = $('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient').text().split(" (")[2].split(')')[0].split('/').reverse().join(''),
-                labo_url = 'https://serv-cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
+                labo_url = 'https://cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
                     '?Class=Order&Method=SearchOrders&LoginName=aharry&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
 
             } else if (action == "Article 80"){
@@ -2618,7 +2620,7 @@ function monitorClick(ev){
         delete SSSFrame.renouvellementIso
     } else if (ev.target.innerText == "AHARRY"){
         ev.view.document.querySelector("input[name='mevaLockSessionWindowPwField']").value=Meva.password
-        ev.view.document.querySelector("span.GLDWF15PDB-fr-mckesson-framework-gwt-widgets-client-resources-IconsCss-icon_accept").click()
+        ev.view.document.querySelector("span.GLDWF15F0.GLDWF15PDB").click()
     } else if (ev.target.classList.contains('stackItemMiddleCenterInner') && !ev.target.classList.contains('CleanGroupsButton') && ev.target.innerText == "Groupé par"){
         ev.target.classList.add('CleanGroupsButton')
         $('label:contains("Plannings"):eq(0)', ev.view.document).parent().after($('<div><button id="CleanGroupsByButton" style="margin-left:50px;background:#528fff;">Effacer</button></div>'))
