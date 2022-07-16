@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.87
+// @version      0.2.88
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -183,34 +183,54 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                   'div.carousel_disabled_item:contains("HEO - Prescrire"), div.carousel_disabled_item:contains("Observations"), div.carousel_disabled_item:contains("Résultats de laboratoire")')
                     .prependTo($('div.carousel_disabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("HEO - Prescrire")').parent())
 
+                if (!$('#resetFavoritesUnits').length){
+                    $('.gwt-TabBarItem-wrapper-selected').each((i,el)=>{
+                        $(el).clone("gwt-TabBarItem-wrapper-selected").removeClass('gwt-TabBarItem-wrapper-selected').attr('id', 'resetFavoritesUnits').appendTo($(el).parent()).find('.GP3D0Y0NPB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label').text('Onglets favoris').end().find('[src*=icons]').attr('src', "/m-eva/img/icons/star.png" ).end().find('.gwt-TabBarItem-selected').removeClass('gwt-TabBarItem-selected').end()
+                            .click(ev=>{
+                            window.dispatchEvent(new KeyboardEvent('keydown', {"keyCode":116}));
+                            let repaired_mR = `function mR(b, c, d) {var e, f, g, j;j = _kc();try {Ykc(j, b.d, b.i)} catch (a) {a = OIb(a);if (EX(a, 61)) {e = a;g = new AR(b.i);Cc(g, new yR(e.rb()));throw g} else throw NIb(a)}oR(b, j);b.e && (j.withCredentials = true,undefined);f = new gR(j,b.g,d);Zkc(j, new sR(f,d));try {if (c.search("name")+1 && c.search("critere")+1){`
+                            +`c='7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|`
+                            // Planning favoris
+                            +`{"name":"La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000340#H"]}}|{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"]}}|{"name":"Gergovie / Pariou", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000276#H","XWAY#0000000274#H"]}}|{"name":"Domes / Gravenoire", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000275#H","XWAY#0000000277#H"]}}|{"name":"PassAje / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000331#H"]}}|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'`
+                            +`}j.send(c)} catch (a) {a = OIb(a);if (EX(a, 61)) {e = a;throw new yR(e.rb())} else{throw NIb(a)}}return f}`
+                            $('iframe').filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal')
+                                .each((i,el)=>{
+                                let script = el.contentDocument.createElement('script')
+                                script.innerHTML = repaired_mR
+                                el.contentDocument.body.append(script)
+                            })
+                        })
+                    })
+                }
+
                 // Ajout d'un icone pour sélectionner le jour actuel pour la liste des patients
-            let $dateInput = $('input.GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error', SSSFrame.document).parent()
-            if (!$dateInput.siblings('[title*=Aujourd]').length){
-                $dateInput.before(
-                    $(`<img title="Aujourd'hui" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsSAAALEgHS3X78AAAH+klEQVR42q1WeUyV2RU/3WKbph2t`+
-                      `/3TqZCa109Tp1GmDog4dMHVQB5eIuBL3nVrRDooBcQsoaK0CimIELIvKVh4+HohjZR9UXOrXGFFwFwyKIPDYH8uv59z3PnwPGZwm/ZJfzv3ud+89v/u755z7EQCyR2u9hbKyjbRu3Toa+auRFBUeTWfP5FD`+
-                      `/cYOiAxQbF0O+G33p/Q/epz+vW08+K/8y4Fjq7e2lnp5euv+4krKvJVN6QTx5ec6lPcF74lPOpOJPMz/7cn/CDsq5mkamsmS2qZQtKEvl9xQrriQrGC+foSxGasE/aOqUL+jLTX5UXFSC3`+
-                      `/zuQ3j7eFJJWSGl5cdTdVW1ct7d3W0l0N7SSQlnT9Ds6NE0Mew9cp7xEeXmm/Iryx9gzKp3Az6Pepdc9g4nl7CfkUvoMPp07zCasHcoTdgzlMbveYfGh7xD40J+SuOCf6Ls2N1D6ZMvRtKR2HCqq2nAxx4jMCn4A`+
-                      `/IO9CC3rb8kQ4ZBEejs7CTVMDebqSi/mJKMcXBN/BF+ve/74Mn4T2EFPlwyBJ+dGgKXmB/ij3FWuDiAv8W+xqcxQ+AW/2OMivweNuxagfLShxjlNRxOid/F5xHvITAoEJmmDOXXYrHYCJibqDCviGKzIuF0ivDJCcL44OHwCB+F3+4njEsjjD1NcD7zLZFMGJNE+H3oD+B26OcYfYDf0wnuJ0Zg87a`+
-                      `/MgGrApZOG4HmFjMTKKYTxgg4pbLzTHZoJPyB7YQsXvCfTOJ/gBrPmxzPc8ecZctrObFP95Mj4B/kB2POWesR6Ao0NTfRv87nUbThoJrgbOIFeNI403fgnCXW1vct4Gxn1dwsXkMInGMCp36BgJ3+yP7KZFWgyxYDjU2NdM50nqIy`+
-                      `/oax53nSBcZXNvv/AK/llEeYnDYCQcEByL2Y4xgDDY0NlGUwUXj6XnycTxhdyCiw2behYBDYjfmohOBqGIb9+/cjvzBP+e3q6rIRaGig5ORkSjacQkGNEUUvsqyozUJxrQklL7Md8HVdjkJp/TkrXuXikh2kT76XCHi8rFXacA6Z`+
-                      `/07Cob8fwtclJTYCltcEEhLjKdOQid427ulkdNisxYYuRrcdemzoxTc/vbYxFuvrk3tVCI8Ix6VLlxyPoL6+nuLi4ig1LRWN5gaYW5rQxBDb3GpGS3sLWtqaFVo7WtFmh`+
-                      `/bONnRY2tHZ1WFFdycsCpa+vraONnT1WFBReRdRUVEoKytzPIK6ujo6fvy4HAO4OoGZKculEh0dHWhtbUVPTw+4aqKtrU318WTrJrlPnyN9Mkf6ZLw88i7f5Hn06BGio6Nx48YNRwIvX76kI0eOUFJSEu7du4cHDx7gyZMnuHv3LlgdNVn67t+`+
-                      `/r9pCoLGxUS34/PnzPiJCQCCExbGMkUcndvv2bZw8eRI3b958fRdIo7a2lsLDw+UYICR27dqFDRs2KLnE8enTp3Hw4EEcPnxY7UAeaYeEhODYsWMqsllFRaK4uBiLFy9WY2JjY3H58mXVPnDggGrL+tevX3dU4MWLF8SLUExMjBp85coV7Nu3T7`+
-                      `WvXbuGzZs398VVQEAANE0DE1ZWdxQREaHaYnfu3KmIvHr1SrUjIyORmZmp3vmocfXqVUcCLCPxbiQOlFR5eXlqorQTExNx9OhR1RYpxVlaWppatKioSPWVl5cjKCgIVVVV2LFjh1LN399fETKZTJg/f37fMYpib2RBTU0NsUMSRyLjhQsXsHXrVj`+
-                      `UpPz8fq1ev7lPAx8cHpaWlSn6Wsm/XciRCdtasWepI3N3dwcri1q1bipysK/HFsYaSvjpgU+DZs2cUGBhIsohErxAQqWVSe3s7du/erXa0bds2RUzGyDv/Nakdr1+/HryGshK8Mk/IiFoSyHKE0ldZWamOrrCw0JFAdXU1bdmyhWQnZrNZMX`+
-                      `/69KlqNzU1qTTic1OxISknUS4ORYE7d+4oQkJU+uS7PkYyRKysJ49kkQQjH7HjEfDZ0aZNm0giXVJHIM65Qqq2WD3P9W/iUBxLX3Nzs3IkY8TqtULiRq8R8sgRhIWFicKOCvBuieWTTFAOJPcFOgGdhEAUEQK6OuK8paWlDzoBHUJUrH4EwcHBy`+
-                      `M3NdVSAz43WrFlDoaGhyok4l5TRneokBPYExPlABOxJ6ATkqaioUNmVnZ3t+E/4+PFjWr58uaSiciJFRScxEBF7EgMR6U9C2qKABKQEstFodFTg4cOHtGjRIpJoF0dCoD+J/kSExGBE7EnoBCRgJYsMBsObBLhY0Pbt25UjvhsGJWGvRH8iA6kh`+
-                      `VgJWCpafnx/S09Mdj4DTg2bPni21QDngu+ENEm87ksFISFu/jDZu3IiUlBRHBTg9aMaMGSTyiCPJX8ldIaKT0TEQobeR0muJVEUpVny5OSrA6UFTp05VBCRq9V18U1RLjuvQC49eJ3TIjkV2gbT1OrBq1SokJCQ4EuD0UASEHddpXLx4UV1IOuQ`+
-                      `+0FFQUDAguLwqyAVlD7kVxcpVnJGRgaVLl0L+vsQvb8BKgIODPD09acqUKXB1dX0Dbm5umDhxIiZNmqQumcmTJ4MJY9q0aZg+fTpmzpypLiGOI8yZMwfz5s3DggUL4O3tDc4uLFmyRDnmWoMVK1bIHeGoAOcnsRNiB3m8uMZENLECdqR5eHho7Eh`+
-                      `jRxoT1by8vLS5c+dqnDnawoULNXaisRNt2bJl2sqVKzW+PbW1a9dqfHNqrKrm6+urcanXOAPUd10BIfBfNO+db7uKud8AAAAASUVORK5CYII="`+
-                      `style="width: 18px;transform: translateY(3px);cursor:pointer;" class="gwt-Image">`)).up().up().css('width',190)
-                SSSFrame.dispatchEvent(new Event('resize'))
-            }
+                let $dateInput = $('input.GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error', SSSFrame.document).parent()
+                if (!$dateInput.siblings('[title*=Aujourd]').length){
+                    $dateInput.before(
+                        $(`<img title="Aujourd'hui" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsSAAALEgHS3X78AAAH+klEQVR42q1WeUyV2RU/3WKbph2t`+
+                          `/3TqZCa109Tp1GmDog4dMHVQB5eIuBL3nVrRDooBcQsoaK0CimIELIvKVh4+HohjZR9UXOrXGFFwFwyKIPDYH8uv59z3PnwPGZwm/ZJfzv3ud+89v/u755z7EQCyR2u9hbKyjbRu3Toa+auRFBUeTWfP5FD`+
+                          `/cYOiAxQbF0O+G33p/Q/epz+vW08+K/8y4Fjq7e2lnp5euv+4krKvJVN6QTx5ec6lPcF74lPOpOJPMz/7cn/CDsq5mkamsmS2qZQtKEvl9xQrriQrGC+foSxGasE/aOqUL+jLTX5UXFSC3`+
+                          `/zuQ3j7eFJJWSGl5cdTdVW1ct7d3W0l0N7SSQlnT9Ds6NE0Mew9cp7xEeXmm/Iryx9gzKp3Az6Pepdc9g4nl7CfkUvoMPp07zCasHcoTdgzlMbveYfGh7xD40J+SuOCf6Ls2N1D6ZMvRtKR2HCqq2nAxx4jMCn4A`+
+                          `/IO9CC3rb8kQ4ZBEejs7CTVMDebqSi/mJKMcXBN/BF+ve/74Mn4T2EFPlwyBJ+dGgKXmB/ij3FWuDiAv8W+xqcxQ+AW/2OMivweNuxagfLShxjlNRxOid/F5xHvITAoEJmmDOXXYrHYCJibqDCviGKzIuF0ivDJCcL44OHwCB+F3+4njEsjjD1NcD7zLZFMGJNE+H3oD+B26OcYfYDf0wnuJ0Zg87a`+
+                          `/MgGrApZOG4HmFjMTKKYTxgg4pbLzTHZoJPyB7YQsXvCfTOJ/gBrPmxzPc8ecZctrObFP95Mj4B/kB2POWesR6Ao0NTfRv87nUbThoJrgbOIFeNI403fgnCXW1vct4Gxn1dwsXkMInGMCp36BgJ3+yP7KZFWgyxYDjU2NdM50nqIy`+
+                          `/oax53nSBcZXNvv/AK/llEeYnDYCQcEByL2Y4xgDDY0NlGUwUXj6XnycTxhdyCiw2behYBDYjfmohOBqGIb9+/cjvzBP+e3q6rIRaGig5ORkSjacQkGNEUUvsqyozUJxrQklL7Md8HVdjkJp/TkrXuXikh2kT76XCHi8rFXacA6Z`+
+                          `/07Cob8fwtclJTYCltcEEhLjKdOQid427ulkdNisxYYuRrcdemzoxTc/vbYxFuvrk3tVCI8Ix6VLlxyPoL6+nuLi4ig1LRWN5gaYW5rQxBDb3GpGS3sLWtqaFVo7WtFmh`+
+                          `/bONnRY2tHZ1WFFdycsCpa+vraONnT1WFBReRdRUVEoKytzPIK6ujo6fvy4HAO4OoGZKculEh0dHWhtbUVPTw+4aqKtrU318WTrJrlPnyN9Mkf6ZLw88i7f5Hn06BGio6Nx48YNRwIvX76kI0eOUFJSEu7du4cHDx7gyZMnuHv3LlgdNVn67t+`+
+                          `/r9pCoLGxUS34/PnzPiJCQCCExbGMkUcndvv2bZw8eRI3b958fRdIo7a2lsLDw+UYICR27dqFDRs2KLnE8enTp3Hw4EEcPnxY7UAeaYeEhODYsWMqsllFRaK4uBiLFy9WY2JjY3H58mXVPnDggGrL+tevX3dU4MWLF8SLUExMjBp85coV7Nu3T7`+
+                          `WvXbuGzZs398VVQEAANE0DE1ZWdxQREaHaYnfu3KmIvHr1SrUjIyORmZmp3vmocfXqVUcCLCPxbiQOlFR5eXlqorQTExNx9OhR1RYpxVlaWppatKioSPWVl5cjKCgIVVVV2LFjh1LN399fETKZTJg/f37fMYpib2RBTU0NsUMSRyLjhQsXsHXrVj`+
+                          `UpPz8fq1ev7lPAx8cHpaWlSn6Wsm/XciRCdtasWepI3N3dwcri1q1bipysK/HFsYaSvjpgU+DZs2cUGBhIsohErxAQqWVSe3s7du/erXa0bds2RUzGyDv/Nakdr1+/HryGshK8Mk/IiFoSyHKE0ldZWamOrrCw0JFAdXU1bdmyhWQnZrNZMX`+
+                          `/69KlqNzU1qTTic1OxISknUS4ORYE7d+4oQkJU+uS7PkYyRKysJ49kkQQjH7HjEfDZ0aZNm0giXVJHIM65Qqq2WD3P9W/iUBxLX3Nzs3IkY8TqtULiRq8R8sgRhIWFicKOCvBuieWTTFAOJPcFOgGdhEAUEQK6OuK8paWlDzoBHUJUrH4EwcHBy`+
+                          `M3NdVSAz43WrFlDoaGhyok4l5TRneokBPYExPlABOxJ6ATkqaioUNmVnZ3t+E/4+PFjWr58uaSiciJFRScxEBF7EgMR6U9C2qKABKQEstFodFTg4cOHtGjRIpJoF0dCoD+J/kSExGBE7EnoBCRgJYsMBsObBLhY0Pbt25UjvhsGJWGvRH8iA6kh`+
+                          `VgJWCpafnx/S09Mdj4DTg2bPni21QDngu+ENEm87ksFISFu/jDZu3IiUlBRHBTg9aMaMGSTyiCPJX8ldIaKT0TEQobeR0muJVEUpVny5OSrA6UFTp05VBCRq9V18U1RLjuvQC49eJ3TIjkV2gbT1OrBq1SokJCQ4EuD0UASEHddpXLx4UV1IOuQ`+
+                          `+0FFQUDAguLwqyAVlD7kVxcpVnJGRgaVLl0L+vsQvb8BKgIODPD09acqUKXB1dX0Dbm5umDhxIiZNmqQumcmTJ4MJY9q0aZg+fTpmzpypLiGOI8yZMwfz5s3DggUL4O3tDc4uLFmyRDnmWoMVK1bIHeGoAOcnsRNiB3m8uMZENLECdqR5eHho7Eh`+
+                          `jRxoT1by8vLS5c+dqnDnawoULNXaisRNt2bJl2sqVKzW+PbW1a9dqfHNqrKrm6+urcanXOAPUd10BIfBfNO+db7uKud8AAAAASUVORK5CYII="`+
+                          `style="width: 18px;transform: translateY(3px);cursor:pointer;" class="gwt-Image">`)).up().up().css('width',190)
+                    SSSFrame.dispatchEvent(new Event('resize'))
+                }
 
                 // Menu contextuel par patient
-            if (!$('#contextMenu_patients', SSSFrame.document).length){
-                $('body', SSSFrame.document).append($(`
+                if (!$('#contextMenu_patients', SSSFrame.document).length){
+                    $('body', SSSFrame.document).append($(`
 <ul id="contextMenu_patients">
   <li><div><img src="/heoclient-application-web/icon/heo_blue_32.png" class="gwt-Image small-gwt-Image">Prescriptions</div></li>
   <li><div><img src="/m-eva-resourcestatic/icons/produits/xway/acte_32.png" class="gwt-Image small-gwt-Image">Observations</div></li>
@@ -222,10 +242,10 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <li><div><img style="width: 24px;margin: -6px -3px 0px -5px;" src="https://www.petit-ambulances.com/wp-content/uploads/2018/02/FIAT-DUCATO.png" class="gwt-Image small-gwt-Image icon-transport">Article 80</div></li>
 </ul>
 `).menu().hide())
-            }
+                }
                 // Menu flottant pour les prescriptions
-            if(!$('#hoverMenu_pres', SSSFrame.document).length){
-                $('#workbody', SSSFrame.document).append($(`
+                if(!$('#hoverMenu_pres', SSSFrame.document).length){
+                    $('#workbody', SSSFrame.document).append($(`
 <div id="hoverMenu_pres">
   <span title="Modifier" action="MODIFY"><img src="/heoclient-application-web/images/pencil.png" class="gwt-Image"></span>
   <span title="Arrêt immédiat" action="DCAO-0"><img src="/heoclient-application-web/images/stop.png" class="gwt-Image"></span>
@@ -236,21 +256,21 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 </div>
 `).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DOYB>.GD42JS-DK-B tr', monitorPresMouseOver)
 
-                let IPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP : ")', SSSFrame.document).text().split(" : ")[1]
-                if ((typeof SSSFrame.listingPrescriptions == "undefined" || (SSSFrame.listingPrescriptions.IPP != IPP) ) && $('#workbody').length){
-                    delete SSSFrame.listingPrescriptions
-                    delete SSSFrame.listingConsignes
-                    delete SSSFrame.nouvellesConsignes
-                    delete SSSFrame.autoEnhancedPres
-                    delete SSSFrame.listePresLabo
-                    delete SSSFrame.renouvellementIso
-                    $('#CONSIGNES-POPUP', SSSFrame.document).dialog('destroy').remove()
-                    $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
-                    //$('div.GD42JS-DLOB', SSSFrame.document).hide() // cacher la fenêtre popup MEVA à l'initialisation de la page
-                    //$('body', SSSFrame.document).append('<div class="full_bg"><span>Préparation de la liste de prescription</span></div>')
-                    //  .append('<style>.full_bg{position:fixed;top:0;left:0;width:100%;height:100%;background:black;opacity:0.2;</style>}')
+                    let IPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP : ")', SSSFrame.document).text().split(" : ")[1]
+                    if ((typeof SSSFrame.listingPrescriptions == "undefined" || (SSSFrame.listingPrescriptions.IPP != IPP) ) && $('#workbody').length){
+                        delete SSSFrame.listingPrescriptions
+                        delete SSSFrame.listingConsignes
+                        delete SSSFrame.nouvellesConsignes
+                        delete SSSFrame.autoEnhancedPres
+                        delete SSSFrame.listePresLabo
+                        delete SSSFrame.renouvellementIso
+                        $('#CONSIGNES-POPUP', SSSFrame.document).dialog('destroy').remove()
+                        $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
+                        //$('div.GD42JS-DLOB', SSSFrame.document).hide() // cacher la fenêtre popup MEVA à l'initialisation de la page
+                        //$('body', SSSFrame.document).append('<div class="full_bg"><span>Préparation de la liste de prescription</span></div>')
+                        //  .append('<style>.full_bg{position:fixed;top:0;left:0;width:100%;height:100%;background:black;opacity:0.2;</style>}')
+                    }
                 }
-            }
                 $(`div.carousel_enabled_item:contains("Résultats"):not(.modified)`).addClass('modified').each((i,el)=>{
                     console.log(el)
                     console.log(SSSFrame.labo_url)
@@ -281,7 +301,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                             let unitSelectorWidth = $(window).width()-630
                             $('.gwt-TabPanelBottom .GOAX34LLDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth:visible:eq(0)')
                                 .width(unitSelectorWidth > 205 ? unitSelectorWidth : 205)
-			    $('div[name=MAINFRAMEHEO_OE]', document).css('height', '100%')
+                            $('div[name=MAINFRAMEHEO_OE]', document).css('height', '100%')
                             //SSSFrame.oldHeight = $(SSSFrame).height()
                             //SSSFrame.oldWidth = $(SSSFrame).width()
                             // }
@@ -294,14 +314,14 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 document.head.append(hourScript)
                 document.head.append(dateScript)
                 setTimeout(dateHourPres, 500)
-            /*
+                /*
         $.waitFor('#workbody:not(.mouseOver_Monitored)', SSSFrame.document).then($el=>{
             $el.addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DJYB.GD42JS-DJ-B tr', monitorPresMouseOver)
             SSSFrame.listingPrescriptions=true
             $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
         })
         */
-        }, 2000)
+            }, 2000)
 
         if (!document.getElementById('SSSFrame_MevaStyle')){
             $('<style id="SSSFrame_MevaStyle">', document).html(`
@@ -340,6 +360,7 @@ background-position:initial;}
 #contextMenu_patients {position:fixed!important;}
 #contextMenu_patients.ui-menu .ui-menu-item-wrapper {padding:8px;}
 #contextMenu_patients.ui-menu .ui-menu-item {padding:0;}
+#resetFavoritesUnits {cursor:pointer;}
 .gwt-Image.small-gwt-Image {width: 16px;transform: translateY(3px);padding-right: 8px;margin-top: -5px;}
 .icon-documents {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAMxSURBVDhPdZLrT1N3GMc7txcmlhcmUxPj2y1LTMxeLBpJTP8CE0tGdJE4EyVLUGMr4WaBjgrCzKCOoiBooUaglhZaioXTUnrh9OZpexwtp/eW0QsdUEmIGpeFfXcoJsaAT/K8+SXPJ9/Lj6PvKev1qCs9zLTAwMwIBsOEsC0xV10VN9eWJaw1Z/6arz2e8zccAofzBWevmVVcou0jV+DTCRDzjiLhUyLm6t+K2Dr/CVtaNxmjKB+xNslDIbJEDOz7cPZxkjYRnbQ1wquvQ2SRQjKVwkp+BYXCKjYKebxeW8bGenp98+07Q279zSUAnypZsjfSec8dZJwtoG1yjI8/h2ZiAnNWK3x+Gn6aBhMKY2l5GauFTdkuQGKunl5xtSBLNiFirAY53QOVZhzE7Bwo+k+4KR9eBRmEonGkVzd2A+LmOjrr/BXpeRGihABWXRv6ngxCPfkCdg8Fu5sCtRDEYiyJVP6zADEyLCBmEsKm70Dv4FPojBa4AyE4/AE46ACoxQjCmcJeFhrovFtStJAw18CobkG7VAa5UoMZ0lNcC/UKrmAEgfTabsCSbSfEnKP5A0CCNhYwMKrBlN0NncUBg4OC2bsAf2r1cwAJcs5mxIxCGJRNEN/rQj+rwOD0Yoo9nvUFQTJJeFNr3XtYqKdzbAuZ7RZmboJQidF+/w+oXhB4GU7AxcSK64kuwewPyTicA0fYsxJ2dz4VC/Bvh1hswSiAcYzN4H43hrVTIBfCcAbCoJgomOXcf3KleuyHU6cufHfixLfl5eVfFgFJa4Mp69hpIW66BULTirYHA3g2Y8eUN44JVwimYAauaBrdfQPvleqJtHcxMk1HUiL5sP4bToZsOf23R2LOkKJ/k2yIWkXtlvB281ZX/xDkKh0qKq/jp6vX8IugDk2SuxhVa6E32QqqSaJD/JvsaFHFGik+mp0X3YvPVr/WPqqkz52v+F06pHysmDQ5Oh4psvV3pe8qhQ0rl69WEd2yPmLgscI9olRrpdKe74uA7UlZft4fJW78aBq63Mjlcr/m8Xhf1bc/PNg1ojv+QGk4e7uz92RpaWkJ+87l8/mH+RcvHuPxeNz/AX7dZzZ5DoFPAAAAAElFTkSuQmCC)}
 .icon-ordonnance {content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIbSURBVDhPY6AqEF/3yExszaMasXUP6sTWPqoVW/PQheH/f0aoNE7AKGkdKidjEWImWTw7T7xt40IYFqtcXCVtHWYhaxWuzFBfzwRVjwrk7UMlpCxD9ktZhLzHhaUtgs9L2YSrQbWgAgnzcE2gomfSliH/cWKLkE+SVsG2UC2oAGYAEP+Qsgx+AnTNLSD9C4h/AjX+lrYM/kuMAU+BinYCFU8GOvcG0NZV0hZBc6UsgvcCxe4D+R8JugCo8AtQ4Wugzd9AtgNd8gPuAsuQR1Kx1S7ia++IMdT/Rw1MJBfcBOLNQPZxoAGXgPQpoAvuAA16LJXaNUds1Z1TwGg9I7LmsRcDA1LUIgXiWaDibSD/Am09A8SHgezrUpahJ8Rnn9kgtvbhfzBec3+V1qorbFDtSAaAFAP9DLIRGA5/gPzfQPqvtFXoNdF559aLrXnwEYxX318jk9wrBE8XSGFwRNIiJBmo8RzQoNVAGhKIViHbxaYfqwNqXgi0vVt8/qU8KeuImUD5dAbjNFa4AUB/Pwcacg/olTeggATa/gUo/kPaMvSK2Nzz24HO/yu69sFdscXXVkjbRq0EGn5ZwjJInkHMJkgJqPAOUCPWRAT00jPx7u0LRdc+/A404Jv49GOLpKzDZgHlGiVsQkQZjIHOAOaDQKAh9UAXNKBjoGtqpYJLnUXXPYwHZrJU8dRuc6BXc0D5BxgCBDMaAcDAAABTEhAox93HNQAAAABJRU5ErkJggg==)}
@@ -2637,6 +2658,17 @@ function monitorClick(ev){
         )
         $('<div style="position:absolute;width:100%;height:100%;top:0;left:0;background:#000;opacity:0.5;">')
             .appendTo($('.GOAX34LHSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridMenuPopup', ev.view.document))
+    } else if (ev.target.id == "resetFavoritesUnits"){
+        console.log(ev)
+        window.dispatchEvent(new KeyboardEvent('keydown', {"keyCode":116}));
+        let repaired_mR = `function mR(b, c, d) {var e, f, g, j;j = _kc();try {Ykc(j, b.d, b.i)} catch (a) {a = OIb(a);if (EX(a, 61)) {e = a;g = new AR(b.i);Cc(g, new yR(e.rb()));throw g} else throw NIb(a)}oR(b, j);b.e && (j.withCredentials = true,undefined);f = new gR(j,b.g,d);Zkc(j, new sR(f,d));try {if (c.search("name")+1 && c.search("critere")+1){c='7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|{"name":"La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000340#H"], "nombreJour":null, "startDay":"16/07/2022 10:18:42.797 +0200", "endDay":null}}|{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"], "nombreJour":null, "startDay":"16/07/2022 10:19:02.266 +0200", "endDay":null}}|{"name":"Gergovie / Pariou", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000276#H","XWAY#0000000274#H"], "nombreJour":null, "startDay":"16/07/2022 10:19:24.795 +0200", "endDay":null}}|{"name":"Domes / Gravenoire", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000275#H","XWAY#0000000277#H"], "nombreJour":null, "startDay":"16/07/2022 10:20:23.755 +0200", "endDay":null}}|{"name":"PassAje / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000331#H"], "nombreJour":null, "startDay":"16/07/2022 10:22:07.948 +0200", "endDay":null}}|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'}j.send(c)} catch (a) {a = OIb(a);if (EX(a, 61)) {e = a;throw new yR(e.rb())} else{throw NIb(a)}}return f}`
+        $('iframe').filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal')
+            .each((i,el)=>{
+                let script = el.contentDocument.createElement('script')
+                script.innerHTML = repaired_mR
+                el.contentDocument.body.append(script)
+            }
+        )
     } else if ($(ev.target).parents('#CONSIGNES-POPUP').length){
         if ($(ev.target).parents("tbody").length){
             if ($(ev.target).is('input[type=radio]')){
