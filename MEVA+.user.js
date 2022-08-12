@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.88
+// @version      0.2.89
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -352,7 +352,6 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 #CONSIGNES-POPUP tr.consigne-deplacements-restriction input+label {margin-right:25px;}
 #CONSIGNES-POPUP #Type-SSC {visibility:hidden;}
 #CONSIGNES-POPUP .consigne-restreint #Type-SSC {visibility:visible;}
-div[name="MAINFRAMEHEO_OE"]>table>tbody>tr>td>table>tbody>tr:nth-child(2)>td>div {height:45px!important;}
 .ui-widget-content .ui-state-default.ui-button-validate {background:#090;color:#fee;}
 div.ui-dialog[aria-describedby="CONSIGNES-POPUP"] .ui-dialog-titlebar-close .ui-button-icon-primary {background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB8ElEQVR42p2Sb0/TUBTGiYlJ41cwkcXwRq5mUdQ36LqKsDlQJ8rY//8MZGyjrNlSmKv6QhM/id9qMSESxK3KoN262z3ezhhdtkrgJCc5ycnv3PM8505MnDOQy12xb5bLk6hWiV2/m1gjnWi0pAfCLht4F/2KDIgiGYUTpJPKoruxibb/5ef24osbIzDq79BnaYoSuvk8GYITafQKJaBWh1WrHl8JinLp9wBF4fqiZPZ33wAfP8GUa+i93oK18gCOp2BsFQHW1xMp/Fh4QjEzc3lYQlLhaL5ITakKvP8AWq6gk85CjyVhbBYAeW9Qq/Ne2nC7ufEmJpNcN5OjvcI2k/MW2KszsAZUZejRONTHHnv43yFaOGZCZnIicSAYAaQK1LkF80zYinYoQfRIDLCuEQgBr1aB7R2m24vm7Cw5Aw4RLRyFkV0HdiQGloEik8MM1FdW0XrI48DpJPZwKAIjk2P/QIIWDKMlzNHvD1zmyVM/sL6B02d+HN29j4PpaTIKM61Geo29KkJjq7fcjwaGWXl45x49nvcA6QxOvD4c3nLiy7Wpv0Pay8vCaSAII5WBthJEkxeG3G443NxXcpP+5AVoviV8c97G/tVJYWgL1bMoHC89R9PFj3W74XBw+9en6Fj4TxzxvPC/Uw2G2MEXjV//kEpgRFM89AAAAABJRU5ErkJggg==");
 background-position:initial;}
@@ -384,13 +383,18 @@ button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background: green;c
 .ui-dialog.ui-dialog-full {width:100vw;height:100vh;top:0!important;left:0!important;}
 .ui-dialog-meva2 {height: calc(100% - 40px);padding: 0;}
 #meva2 iframe, #labo_frame iframe {width:calc(100% - 5px);height:calc(100% - 5px);}
-@media (min-width: 1679px){}
  #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LOCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel-grid>tbody>tr:nth-of-type(3) {position:absolute;top:50px;right:15px;}
  #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LFCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel {height:60px!important;}
  .GG-W0PSBPTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel>tbody>tr>td {width:auto!important;}
  .GG-W0PSBPTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel>tbody>tr>td>div {width:980px!important;}
  .GG-W0PSBBUB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel_bouton_precedent, .GG-W0PSBDUB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel_bouton_suivant {display:none;}
-
+.GP3D0Y0NEB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-HasValueWidget.GP3D0Y0MEB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth {max-width:700px;width!50vw!important;min-width:200px;}
+@media (min-width: 1679px){}
+@media (max-width:900px){
+ table[name="HEOFRAME"]>tbody>tr>td>table>tbody>tr>td>div {
+    height: 60px!important;
+ }
+}
 @media (min-height: 900px){
  //.GOAX34LERB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridBody, .GOAX34LMSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-Grid-sizer {height:auto!important;}
 }
@@ -2657,6 +2661,7 @@ function monitorClick(ev){
                 el.contentDocument.body.append(script)
             }
         )
+                            window.dispatchEvent(new KeyboardEvent('keydown', {"keyCode":116}));
         $('<div style="position:absolute;width:100%;height:100%;top:0;left:0;background:#000;opacity:0.5;">')
             .appendTo($('.GOAX34LHSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridMenuPopup', ev.view.document))
     } else if (ev.target.id == "resetFavoritesUnits"){
