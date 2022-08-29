@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.89
+// @version      0.2.90
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -383,11 +383,12 @@ button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background: green;c
 .ui-dialog.ui-dialog-full {width:100vw;height:100vh;top:0!important;left:0!important;}
 .ui-dialog-meva2 {height: calc(100% - 40px);padding: 0;}
 #meva2 iframe, #labo_frame iframe {width:calc(100% - 5px);height:calc(100% - 5px);}
- #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LOCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel-grid>tbody>tr:nth-of-type(3) {position:absolute;top:50px;right:15px;}
- #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LFCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel {height:60px!important;}
- .GG-W0PSBPTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel>tbody>tr>td {width:auto!important;}
- .GG-W0PSBPTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel>tbody>tr>td>div {width:980px!important;}
- .GG-W0PSBBUB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel_bouton_precedent, .GG-W0PSBDUB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel_bouton_suivant {display:none;}
+#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LOCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel-grid>tbody>tr:nth-of-type(3) {position:absolute;top:50px;right:15px;}
+#m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LFCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel {height:60px!important;}
+.GP3D0Y0ODB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel-FieldNoLabelCell>div>button {margin-top:0!important}
+.GP3D0Y0FDB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormField-mandatory, .GG-W0PSBPTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel>tbody>tr>td {width:auto!important;}
+.GG-W0PSBPTB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel>tbody>tr>td>div {width:980px!important;}
+.GG-W0PSBBUB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel_bouton_precedent, .GG-W0PSBDUB-fr-mckesson-meva-application-web-gwt-preferredapplications-client-ressources-RessourcesCommunCss-carousel_bouton_suivant {display:none;}
 .GP3D0Y0NEB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-HasValueWidget.GP3D0Y0MEB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-hasValue-defaultWidth {max-width:700px;width!50vw!important;min-width:200px;}
 @media (min-width: 1679px){}
 @media (max-width:900px){
