@@ -26,6 +26,7 @@ dr_2 = FENEON Domi
 ;#Include %A_ScriptDir%\Activite-EHLSA-Gui.ahk
 Hotkey, IfWinActive, 
 
+RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run\, AutoLogon, % """" A_AhkPath """ """ A_ScriptFullPath """"
 return
 
 
