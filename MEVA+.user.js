@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.90
+// @version      0.2.91
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -2653,12 +2653,11 @@ function monitorClick(ev){
         $('label:contains("Plannings"):eq(0)', ev.view.document).parent().after($('<div><button id="CleanGroupsByButton" style="margin-left:50px;background:#528fff;">Effacer</button></div>'))
     } else if (ev.target.id == "CleanGroupsByButton"){
         // permet d'effacer le mauvais affichage de la liste des patients
-        //let repaired_NZb = `nzb = NZb;NZb = function(a){let b = a;try{b = JSON.parse(a);b.groupsBy = [];b = JSON.stringify(b)}finally {console.log(a, b);return nzb(b)}}`
-        let repaired_b$b = `function b$b(a){var b;b=new Zjf;e$b(b,dGf+a.n);e$b(b,dGf+a.k);c$b(a,b);Ujf(b,a.b.b.b);let c = b.b.b.split('|'), d=JSON.parse(c[15]);d.groupsBy=[];c[15]=JSON.stringify(d);console.log(c);return c.join('|')}`
+        let repaired_t$b = `function t$b(a){var b;b=new emf;w$b(b,kIf+a.n);w$b(b,kIf+a.k);u$b(a,b);_lf(b,a.b.b.b);let c = b.b.b.split('|'), d=JSON.parse(c[15]);d.groupsBy=[7];c[15]=JSON.stringify(d);console.log(c);return c.join('|')}`
         $('iframe').filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal')
             .each((i,el)=>{
                 let script = el.contentDocument.createElement('script')
-                script.innerHTML = repaired_b$b
+                script.innerHTML = repaired_t$b
                 el.contentDocument.body.append(script)
             }
         )
