@@ -1085,18 +1085,9 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                         /*if ($('tr[id="Pharmacy Scheduled Medications"] input', document).click2().length){
                         }*/
                         if ($('head>link[href*="playbackOrdersPreviousStay"]', document)){
-                            SSSFrame.renouvellementIso = $('tr[id="Nursing"][name*="__Mise en Iso"]:first, tr[id="Nursing"][name*="__ Isolement"]:first, tr[id="Nursing"][name*="__Surveillance Prise"]:first, tr[id="Nursing"][name*="__Surveillance Risque S"]:first, ' +
-                              'tr[id="Nursing"][name*="__Surveillance Risque T"]:first, tr[id="Nursing"][name*="__Surveillance Troubles"]:first, tr[id="Nursing"][name*="__Surveillance Apport"]:first,'+
-                              'tr[id="Nursing"][name*="__Surveillance Conscience"]:first, tr[id="Nursing"][name*="__Surveillance  Etat"]:first, tr[id="Nursing"][name*="__Surveillance Pouls"]:first', document).find('input').click2()
-                            .end().first().find('td:eq(3)').text().split(" ")
-                            SSSFrame.renouvellementIso[0] = SSSFrame.renouvellementIso[0].split("/")
-                            SSSFrame.renouvellementIso[0] = "20"+SSSFrame.renouvellementIso[0][2]+"-"+SSSFrame.renouvellementIso[0][1]+"-"+SSSFrame.renouvellementIso[0][0]
-                            SSSFrame.renouvellementIso[1] = SSSFrame.renouvellementIso[1].split("h").join(":")
-                            SSSFrame.renouvellementIso = SSSFrame.renouvellementIso.join("T")
-                            SSSFrame.renouvellementIso = new Date(Date.parse(SSSFrame.renouvellementIso))
-                            SSSFrame.renouvellementIso.setHours(SSSFrame.renouvellementIso.getHours()+Number($('tr[id="Nursing"][name*="__Mise en Iso"]:first', document).find('td:eq(4)').text().split(" ")[0]))
-                            $('input#playbackOrders', document).click2()
-                            unsafeWindow.launchPlayBackOrders()
+                            if ($('tr[id="Nursing"][name*="__Mise en Iso"]:first', document).length){
+                                $('body', document).prepend($('<button style="margin: 15px auto;display: block;font-size: xx-large;color: red;">Renouveler ISO</button>').click(ev=>{renouvellement_Iso(SSSFrame, $)}))
+                            }
                         }
                         $('tr:has(input)', document).click(ev=>{
                             if(!$(ev.target).is("input")){
@@ -1333,6 +1324,21 @@ function autoPresConsignesRapides(consignes){
 }
 
 
+// --------------------------- Renouvellement ISO ----------------------------------
+function renouvellement_Iso(SSSFrame, $){
+    SSSFrame.renouvellementIso = $('tr[id="Nursing"][name*="__Mise en Iso"]:first, tr[id="Nursing"][name*="__ Isolement"]:first, tr[id="Nursing"][name*="__Surveillance Prise"]:first, tr[id="Nursing"][name*="__Surveillance Risque S"]:first, ' +
+                                   'tr[id="Nursing"][name*="__Surveillance Risque T"]:first, tr[id="Nursing"][name*="__Surveillance Troubles"]:first, tr[id="Nursing"][name*="__Surveillance Apport"]:first,'+
+                                   'tr[id="Nursing"][name*="__Surveillance Conscience"]:first, tr[id="Nursing"][name*="__Surveillance  Etat"]:first, tr[id="Nursing"][name*="__Surveillance Pouls"]:first', document).find('input').click2()
+        .end().first().find('td:eq(3)').text().split(" ")
+    SSSFrame.renouvellementIso[0] = SSSFrame.renouvellementIso[0].split("/")
+    SSSFrame.renouvellementIso[0] = "20"+SSSFrame.renouvellementIso[0][2]+"-"+SSSFrame.renouvellementIso[0][1]+"-"+SSSFrame.renouvellementIso[0][0]
+    SSSFrame.renouvellementIso[1] = SSSFrame.renouvellementIso[1].split("h").join(":")
+    SSSFrame.renouvellementIso = SSSFrame.renouvellementIso.join("T")
+    SSSFrame.renouvellementIso = new Date(Date.parse(SSSFrame.renouvellementIso))
+    SSSFrame.renouvellementIso.setHours(SSSFrame.renouvellementIso.getHours()+Number($('tr[id="Nursing"][name*="__Mise en Iso"]:first', document).find('td:eq(4)').text().split(" ")[0]))
+    $('input#playbackOrders', document).click2()
+    //unsafeWindow.launchPlayBackOrders()
+}
 
 // --------------------------- Popup pres labo rapide ------------------------------
 // --------------------------- Popup pres labo rapide ------------------------------
