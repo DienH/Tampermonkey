@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.93
+// @version      0.2.95
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -773,7 +773,12 @@ $.expr[":"].containsI = function (a, i, m) {
                             }
                             break
                         case "Durée: (avec une date et heure de fin optionnelle)":
-                            $HEO_INPUT.val(SSSFrame.nouvellesConsignes.duree_consignes)[0].dispatchEvent(ke);
+                            setTimeout(()=>{
+                                $HEO_INPUT.each((i,el)=>{
+                                    el.value = SSSFrame.nouvellesConsignes.duree
+                                    el.dispatchEvent(ke);
+                                })
+                            }, 500)
                             break
                         case "Saisissez une date et heure de début":
                         case "Fréquence:":
@@ -784,7 +789,7 @@ $.expr[":"].containsI = function (a, i, m) {
                             currConsigneA = $('div.orderName', heoOutputFrame.document).text().trim().split(" : ")
                             currConsigne = currConsigneA[0].split(" ")[2].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
                             SSSFrame.nouvellesConsignes[currConsigne].done=true
-                            $HEO_INPUT.val(SSSFrame.nouvellesConsignes[currConsigne].comment)[0].dispatchEvent(ke);
+                            $HEO_INPUT.each((i,el)=>setTimeout(elm=>{elm.value=SSSFrame.nouvellesConsignes[currConsigne].comment;elm.dispatchEvent(ke)}, 500, el))
                             break
                     }
                 }
@@ -1339,7 +1344,7 @@ function renouvellement_Iso(SSSFrame, $){
     SSSFrame.renouvellementIso.setHours(SSSFrame.renouvellementIso.getHours()+Number($('tr[id="Nursing"][name*="__Mise en Iso"]:first', document).find('td:eq(4)').text().split(" ")[0]))
     $('input#playbackOrders', document).click2()
     //unsafeWindow.launchPlayBackOrders()
-}window
+}
 
 // --------------------------- Popup pres labo rapide ------------------------------
 // --------------------------- Popup pres labo rapide ------------------------------
@@ -1351,7 +1356,6 @@ function presLaboPrincipaux_bis(ev){
     while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
         SSSFrame = SSSFrame.parent
     }
-    console.log(SSSFrame)
     SSSFrame.presLaboPrincipaux()
 }
 
@@ -1362,13 +1366,11 @@ function presLaboPrincipaux(ev){
     while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
         SSSFrame = SSSFrame.parent
     }
-    //console.log($.fn)
-    $('#panelOutput', SSSFrame.document).changes('child', ev=>{
+    $('#panelOutput', SSSFrame.document).observe([], ev=>{
         setTimeout(($, ev, SSSFrame)=>{
             SSSFrame.output_Selector(1)
             $(ev.target).disconnect()
-            console.log('bah')
-        }, 1000, $, ev, SSSFrame)
+        }, 500, $, ev, SSSFrame)
     })
     $('#HEO_INPUT', SSSFrame.document).val("Principaux Examens Laboratoires")[0].dispatchEvent(ke)
 }
