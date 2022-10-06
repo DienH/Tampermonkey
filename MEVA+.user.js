@@ -106,6 +106,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 } else {return undefined}
 }`)).append($('<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">'))
         .append($('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>'))
+        .append($('<script>').html(presLaboPrincipaux.toString()))
     }
     $.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
     let dateScript = document.createElement('script'), hourScript = document.createElement('script'), hourCSS = document.createElement('link'), title = ""
@@ -450,7 +451,7 @@ $.expr[":"].containsI = function (a, i, m) {
                     $('a:contains("Retourner à la liste")', document).remove()
                     $('a:contains("Consignes")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Consignes rapides</a>').click(presOutputConsignesRapides))
                     $('a:contains("Sorties Temp")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Permission rapide</a>').click(presOutputConsignesRapides))
-                    $('a:contains("Bilans Psychiatrie")', document).contextmenu(ev=>{ev.preventDefault();presLaboPrincipaux(ev);}).before($('<a class="presPsy-rapide">Bilan rapide</a>').click(presLaboPrincipaux))
+                    $('a:contains("Bilans Psychiatrie")', document).contextmenu(ev=>{ev.preventDefault();presLaboPrincipaux(ev);}).before($('<a class="presPsy-rapide">Bilan rapide</a>').click(presLaboPrincipaux_bis))
                     //$('a:contains("Bilans Psychiatrie")', document).contextmenu(ev=>{ev.preventDefault();presLaboRapide(ev);}).before($('<a class="presPsy-rapide">Bilan rapide</a>').click(presLaboRapide))
                     if (SSSFrame.nouvellesConsignes){
                         if (SSSFrame.nouvellesConsignes.done){
@@ -1338,13 +1339,21 @@ function renouvellement_Iso(SSSFrame, $){
     SSSFrame.renouvellementIso.setHours(SSSFrame.renouvellementIso.getHours()+Number($('tr[id="Nursing"][name*="__Mise en Iso"]:first', document).find('td:eq(4)').text().split(" ")[0]))
     $('input#playbackOrders', document).click2()
     //unsafeWindow.launchPlayBackOrders()
-}
+}window
 
 // --------------------------- Popup pres labo rapide ------------------------------
 // --------------------------- Popup pres labo rapide ------------------------------
 // --------------------------- Popup pres labo rapide ------------------------------
 // --------------------------- Popup pres labo rapide ------------------------------
 // --------------------------- Popup pres labo rapide ------------------------------
+function presLaboPrincipaux_bis(ev){
+    let SSSFrame = unsafeWindow || window
+    while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
+        SSSFrame = SSSFrame.parent
+    }
+    console.log(SSSFrame)
+    SSSFrame.presLaboPrincipaux()
+}
 
 function presLaboPrincipaux(ev){
     if (!$ || !$.fn){var $ = (typeof unsafeWindow != "undefined" ? unsafeWindow.$ || unsafeWindow.parent.$ : window.$ || window.parent.$)}
@@ -1353,10 +1362,13 @@ function presLaboPrincipaux(ev){
     while (!SSSFrame.name || SSSFrame.name != "SSSFrame"){
         SSSFrame = SSSFrame.parent
     }
+    //console.log($.fn)
     $('#panelOutput', SSSFrame.document).changes('child', ev=>{
-        SSSFrame.output_Selector(1)
-        $(ev.target).disconnect()
-        console.log('bah')
+        setTimeout(($, ev, SSSFrame)=>{
+            SSSFrame.output_Selector(1)
+            $(ev.target).disconnect()
+            console.log('bah')
+        }, 1000, $, ev, SSSFrame)
     })
     $('#HEO_INPUT', SSSFrame.document).val("Principaux Examens Laboratoires")[0].dispatchEvent(ke)
 }
