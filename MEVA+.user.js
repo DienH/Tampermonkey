@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.95
+// @version      0.2.97
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/*
@@ -981,7 +981,7 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                     <td><label><input type="checkbox" id="Bio_Simple" name="Bio_Simple"> Bio simple <span class="Parentheses">(NFS,BS)</span></label></td>
                     <td><label><input type="checkbox" id="Bio_Complet" name="Bio_Complet"> Bio complet <span class="Parentheses">(NFS,BS,CRP,BC,BH)</span></label></td>
                     <td><label><input type="checkbox" id="Bio_Entree" name="Bio_Entree"> Bio entrée <span class="Parentheses">(NFS,BS,CRP,BC,BH,TSH)</span></label></td>
-                    <td><label><input type="checkbox" id="Bio_TCA" name="Bio_TCA"> TCA <span class="Parentheses">(NFS,BS,BH,TSH,P)</span></label></td>
+                    <td><label><input type="checkbox" id="Bio_TCA" name="Bio_TCA"> TCA <span class="Parentheses">(NFS,BS,BH,TSH,T3L,P)</span></label></td>
                     </tr></tbody></table>`).on('click', 'input',ev=>{
                         console.log(ev)
                         switch(ev.currentTarget.id){
@@ -1002,7 +1002,7 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                                 $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
                                 break;
                             case "Bio_TCA":
-                                $('#CA, #URE, #CRE, #GL, #BHEP, #TSH, #P, #Mg', document).prop('checked', ev.currentTarget.checked)
+                                $('#CA, #URE, #CRE, #GL, #BHEP, #TSH, #P, #Mg, #T3L', document).prop('checked', ev.currentTarget.checked)
                                 $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
                                 break;
                         }
@@ -1368,6 +1368,7 @@ function presLaboPrincipaux(ev){
     }
     $('#panelOutput', SSSFrame.document).observe([], ev=>{
         setTimeout(($, ev, SSSFrame)=>{
+            console.log('bah')
             SSSFrame.output_Selector(1)
             $(ev.target).disconnect()
         }, 500, $, ev, SSSFrame)
@@ -1738,6 +1739,7 @@ function addAutoPrescriptor(ev){
     // ou "MOLECULE POSOLOGIE" (ex diazepam 10-5-5-10)
     // ou "MOLECULE DOSE" pour des traitements prédéfinis ("olanzapine 10" équivaut à "olanzapine 10 coucher")
     let SSSFrame = ev.name && ev.name == "SSSFrame" ? ev : (ev && ev.view && ev.view.document.name == "SSSFrame" ? ev.view : document.getElementById('SSSFrame').contentWindow), $ = SSSFrame.$
+    const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
 
     // liste équivalance DCI
     let DCI = {loxapac:"loxapine", nozinan:"levomepromazine", tercian:"cyamemazine",
@@ -1849,9 +1851,11 @@ function addAutoPrescriptor(ev){
         })
 
         $(el).on('keydown', function(ev){
-            //console.log(ev)
             let INPUT = ev.target
-            if(ev.keyCode==13){ // on Enter keydown
+            if(ev.keyC=="?"){
+                INPUT.value="?"
+                INPUT.dispatchEvent(ke)
+            } else if(ev.keyCode==13){ // on Enter keydown
                 let command = INPUT.value.trim()
                 //initialisation de l'historique de commandes
                 if (!INPUT.history){
@@ -2239,9 +2243,12 @@ if (!window.parent.autoExtendPerm){
  script = document.createElement('script')
  script.id = "autoPermScript"
  script.innerHTML = "autoExtendPerm = function(){"+
+   "console.log('ah 1');debugger;"+
    "document.heoPane_output.frameElement.onload=function(ev){"+
+    "console.log('ah 2');debugger;"+
     "ev.path[0].onload=function(ev){"+
-     "ev.path[0].onload=function(ev){ev.path[0].onload='';output_Selector()};"+
+     "console.log('ah 3');debugger;"+
+     "ev.path[0].onload=function(ev){ev.path[0].onload='';output_Selector();console.log('ah 4')};"+
      "output_Selector(1)};"+
     "output_Selector(2)};"+
    "output_Selector()};"+
