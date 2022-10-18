@@ -58,6 +58,8 @@
 			this.data;
 		})//*/;
         },
+	copyText(){
+	}    
 	//replace text with given text. Can completely replace a text node containing a string with a new Text
 	replaceText(...args){
 		if (1 < arguments.length < 4){
@@ -331,6 +333,7 @@ function log(...thing){
     return console.log(...thing);
 }
 
+
 function download(data, filename, type) {
     let url,a = document.createElement("a"), file
     try{
@@ -351,6 +354,10 @@ function download(data, filename, type) {
     }, 0);
 }
 
+async clipboardPermission() => {
+	await navigator.clipboard.readText();
+}
+		
 async function waitForElement(selector) {
     let $selection
     while ( ($selection = $(selector)).length === 0) {
