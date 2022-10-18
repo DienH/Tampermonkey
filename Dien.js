@@ -354,7 +354,15 @@ function download(data, filename, type) {
         window.URL.revokeObjectURL(url);
     }, 0);
 }
-		
+
+
+async function waitForjQuery(func, waitUI="false"){
+    while (!window.$ || !window.$.fn || !window.$.fn.jquery || (waitUI && !window.$.fn.modal) ) {
+        await new Promise( resolve => requestAnimationFrame(resolve) )
+    }
+    return func();
+}
+
 async function waitForElement(selector) {
     let $selection
     while ( ($selection = $(selector)).length === 0) {
