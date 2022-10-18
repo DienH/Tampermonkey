@@ -354,10 +354,6 @@ function download(data, filename, type) {
         window.URL.revokeObjectURL(url);
     }, 0);
 }
-
-async clipboardPermission() => {
-	await navigator.clipboard.readText();
-}
 		
 async function waitForElement(selector) {
     let $selection
