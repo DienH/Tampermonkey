@@ -59,7 +59,8 @@
 		})//*/;
         },
 	copyText(){
-	}    
+		navigator.clipboard.writeText($(this).text())
+	},
 	//replace text with given text. Can completely replace a text node containing a string with a new Text
 	replaceText(...args){
 		if (1 < arguments.length < 4){
