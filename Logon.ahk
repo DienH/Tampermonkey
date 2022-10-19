@@ -321,13 +321,14 @@ F8::
 		if (A_Index == 1)
 		{
 			ControlClick, Synthèse, PLANNING ahk_exe unit.exe
+			Sleep 2000
 		} else {
 			Send !s
 			Send t
 		}
-		Sleep 2000
 	}
-	Sleep 3000
+	WinWait, Liste des Documents ahk_exe unit.exe,,30
+	Sleep 1000
 	Gosub CRSynthSplitScreen
 	WinWait, CHU Lettre de Liaison PSY ahk_exe unit.exe,,30
 	if (errorlevel)
