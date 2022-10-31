@@ -20,6 +20,7 @@ planning = PSY PEA - ADO HJ
 planning2 = PSY PEA - ADO CATTP
 dr_1 = CYRILLE Diane
 dr_2 = FENEON Domi
+cs_int = Interne (pea ado
 ;If !WinExist("ahk_exe chrome.exe")
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
 
@@ -95,6 +96,15 @@ Cs_2_dr_2:
 	Send {tab 3}
 	Sleep 10
 	Send %dr_2%
+	Sleep 10
+	Send {enter}
+	return
+Cs_2_int:
+	WinWait Choix du planning ahk_exe rdvwin.exe,, 10
+	Sleep 10
+	Send {tab 3}
+	Sleep 10
+	Send %cs_int%
 	Sleep 10
 	Send {enter}
 	return
@@ -321,14 +331,13 @@ F8::
 		if (A_Index == 1)
 		{
 			ControlClick, Synthèse, PLANNING ahk_exe unit.exe
-			Sleep 2000
 		} else {
 			Send !s
 			Send t
 		}
+		Sleep 2000
 	}
-	WinWait, Liste des Documents ahk_exe unit.exe,,30
-	Sleep 1000
+	Sleep 3000
 	Gosub CRSynthSplitScreen
 	WinWait, CHU Lettre de Liaison PSY ahk_exe unit.exe,,30
 	if (errorlevel)
@@ -412,6 +421,11 @@ f::
 	Gosub Cs_2_dr_2
 	return
 	
+i::
+	Gosub Cs_1
+	Gosub Cs_2_int
+	return
+
 #ifwinactive Choix du planning ahk_exe rdvwin.exe
 &::
 	GoSub Cs_2
