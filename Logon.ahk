@@ -14,13 +14,13 @@ Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
 user = %username%
 password = 
-UF = 3221
+UF = 2848
 type = Planning Service
 planning = PSY PEA - ADO HJ
 planning2 = PSY PEA - ADO CATTP
-dr_1 = CYRILLE Diane
+dr_1 = MOREAU Myl
 dr_2 = FENEON Domi
-cs_int = Interne (pea ado
+cs_int = Interne (PSYB)
 ;If !WinExist("ahk_exe chrome.exe")
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
 
@@ -412,14 +412,14 @@ t::
 	GoSub Cs_2_bis
 	return
 
-c::
+m::
 	Gosub Cs_1
 	Gosub Cs_2_dr_1
 	return
-f::
-	Gosub Cs_1
-	Gosub Cs_2_dr_2
-	return
+;f::
+;	Gosub Cs_1
+;	Gosub Cs_2_dr_2
+;	return
 	
 i::
 	Gosub Cs_1
