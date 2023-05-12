@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.97
+// @version      0.2.98
 // @description  Help with MEVA
 // @author       Me
-// @match        http*://meva/*
+// @match        http*://meva/m-eva/*
+// @match        http*://meva/heoclient-application-web/*
 // @match        http*://serv-cyberlab.chu-clermontferrand.fr/cyberlab/*
 // @match        http*://cyberlab.chu-clermontferrand.fr/cyberlab/*
 // @exclude      http*://meva/heoclient-application-web/shortStop.jsp
@@ -42,7 +43,7 @@ function copyToClip(str) {
 };
 */
 
-
+var prescrireConsignesAutorisees = true;
 
 
 (function() {
@@ -980,10 +981,9 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                     <td><label><input type="checkbox" id="BS1" name="BS1"> BS <span class="Parentheses">(Iono,Ca,Urée,Créat,Glucose)</span></label></td>
                     <td><label><input type="checkbox" id="Bio_Simple" name="Bio_Simple"> Bio simple <span class="Parentheses">(NFS,BS)</span></label></td>
                     <td><label><input type="checkbox" id="Bio_Complet" name="Bio_Complet"> Bio complet <span class="Parentheses">(NFS,BS,CRP,BC,BH)</span></label></td>
-                    <td><label><input type="checkbox" id="Bio_Entree" name="Bio_Entree"> Bio entrée <span class="Parentheses">(NFS,BS,CRP,BC,BH,TSH)</span></label></td>
+                    <td><label><input type="checkbox" id="Bio_Entree" name="Bio_Entree"> Bio entrée <span class="Parentheses">(NFS,BS,CRP,BC,BH,TSH, EAL)</span></label></td>
                     <td><label><input type="checkbox" id="Bio_TCA" name="Bio_TCA"> TCA <span class="Parentheses">(NFS,BS,BH,TSH,T3L,P)</span></label></td>
                     </tr></tbody></table>`).on('click', 'input',ev=>{
-                        console.log(ev)
                         switch(ev.currentTarget.id){
                             case "BS1":
                                 $('#CA, #URE, #CRE, #GL', document).prop('checked', ev.currentTarget.checked)
@@ -998,7 +998,7 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                                 $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
                                 break;
                             case "Bio_Entree":
-                                $('#CA, #URE, #CRE, #GL, #CRP, #BC, #BHEP, #TSH, #BILCAOG', document).prop('checked', ev.currentTarget.checked)
+                                $('#CA, #URE, #CRE, #GL, #CRP, #BC, #BHEP, #TSH, #BILCAOG, #EAL, #ALB, #BILT', document).prop('checked', ev.currentTarget.checked)
                                 $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
                                 break;
                             case "Bio_TCA":
@@ -1273,7 +1273,18 @@ function autoPresConsignesRapides(consignes){
             consignes.phase = 1
         } */
     } else {
-        let currentConsignes = {
+        let currentConsignes = prescrireConsignesAutorisees ?
+            {
+            affaires:{consigne:"", comment: ""},
+            appels:{consigne:"", comment: ""},
+            deplacements:{consigne:"", comment: ""},
+            tabagisme:{consigne:"", comment: ""},
+            vetements:{consigne:"", comment: ""},
+            visites:{consigne:"", comment: ""},
+            mode_hospit:{consigne:"SL", comment:""},
+            service:{consigne:"ouvert", comment:""}
+            }
+        : {
             affaires:{consigne:"autorise", comment: ""},
             appels:{consigne:"autorise", comment: ""},
             deplacements:{consigne:"autorise", comment: ""},
@@ -1683,7 +1694,7 @@ function presOutputConsignesRapides(ev){
                             if (consignesValides){
                                 $( this ).dialog( "close" );
                                 let nbToDelete = 0, toDelete = []
-                                listeConsignes.pasDeRestrictions = true
+                                listeConsignes.pasDeRestrictions = !prescrireConsignesAutorisees
                                 Object.keys(listeConsignes).forEach(el=>{
                                     listeConsignes.pasDeRestrictions == listeConsignes.pasDeRestrictions && ((el == "mode_hospit" && listeConsignes[el].consigne == "SL") || (el == "service" && listeConsignes[el].consigne == "ouvert") || listeConsignes[el].consigne == "autorise")
                                     if (el == "changeComment" || el == "pasDeRestrictions" || el == "duree_consignes"){
