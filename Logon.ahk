@@ -13,7 +13,7 @@ Menu, Tray, Tip, Logon Helper
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
 user = %username%
-password = 
+password =
 UF = 2848
 type = Planning Service
 planning = PSY PEA - ADO HJ
@@ -24,6 +24,17 @@ cs_int = Interne (PSYB)
 ;If !WinExist("ahk_exe chrome.exe")
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
 
+
+passkey(string)
+{
+    if !(DllCall("crypt32\CryptStringToBinary", "ptr", &string, "uint", 0, "uint", 0x1, "ptr", 0, "uint*", size, "ptr", 0, "ptr", 0))
+        throw Exception("CryptStringToBinary failed", -1)
+    VarSetCapacity(buf, size, 0)
+    if !(DllCall("crypt32\CryptStringToBinary", "ptr", &string, "uint", 0, "uint", 0x1, "ptr", &buf, "uint*", size, "ptr", 0, "ptr", 0))
+        throw Exception("CryptStringToBinary failed", -1)
+    return StrGet(&buf, size, "UTF-8")
+}
+
 ;#Include %A_ScriptDir%\Activite-EHLSA-Gui.ahk
 Hotkey, IfWinActive, 
 
@@ -31,9 +42,11 @@ RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Ru
 return
 
 
+
 Logon_Login:
 	ControlSetText, Edit1, %user%
-	ControlSetText, Edit2, %password%
+	;Tooltip, % passkey(password)
+	ControlSetText, Edit2, % passkey(password)
 	ControlFocus, Edit2
 	Sleep 10
 	Send {Enter}
@@ -47,6 +60,16 @@ Unit_1:
 	Sleep 10
 	Send {Enter}
 	return
+Unit_2:
+	WinWait Choix du planning ahk_exe unit.exe,, 10
+	WinActivate Choix du planning ahk_exe unit.exe
+	Send {tab 2}
+	Sleep 10
+	Send %UF%
+	Sleep 10
+	Send {enter}
+	return
+
 Cs_1:
 	WinWait Plan de travail ahk_exe logon.exe,, 10
 	Sleep 10
@@ -148,6 +171,17 @@ F8::
 ~LButton::
 	FormulaireWindow = Formulaire ahk_exe unit.exe
 	Gosub ResizeFormulaire
+	return
+#If
+
+#ifWinActive, Identification ahk_exe unit.exe
+~LButton::
+	WinGet, IdentifhWnd, ID
+	Winset, Style, -0x40000000, ahk_id %IdentifhWnd%
+	MouseGetPos,,,, CtrlhWnd, 2
+	;WinGetClass, bah, ahk_id %CtrlhWnd%
+	;Tooltip, bouh %CtrlhWnd% %bah%
+	Control, Enable,,, ahk_id %CtrlhWnd%
 	return
 #If
 
@@ -364,28 +398,18 @@ NoHotkey:
 #ifwinactive LOGON - M-Référence ahk_exe logon.exe
 ^r::Reload
 ²::
-	ControlSetText, Edit1, %user%
-	ControlSetText, Edit2, %password%
-	ControlFocus, Edit2
-	Sleep 10
-	Send {Enter}
-	WinWait Plan de travail ahk_exe logon.exe,, 10
-	Send {End}
-	Sleep 10
-	Send {Enter}
-	WinWait Choix du planning ahk_exe unit.exe
-	Send {tab 2}
-	Sleep 10
-	Send %UF%
-	Sleep 10
-	Send {enter}
+	GoSub Logon_Login
+	Gosub Unit_1
+	Gosub Unit_2
 	return
+
 #ifwinactive Plan de travail ahk_exe logon.exe
 ²::
 	Send {End}
 	Sleep 10
 	Send {Enter}
 	WinWait Choix du planning ahk_exe unit.exe,, 10
+	WinActivate Choix du planning ahk_exe unit.exe
 	Send {tab 2}
 	Sleep 10
 	Send %UF%
@@ -443,6 +467,7 @@ i::
 	Send {enter}
 	return
 	
+
 CRSynthSplitScreen:
 	Logon_1_Doc_HWND := WinExist("Liste des Documents - Volet CPT_RENDU ahk_exe unit.exe")
 	WinGet, Logon_1_PID, PID, ahk_id %Logon_1_Doc_HWND%
