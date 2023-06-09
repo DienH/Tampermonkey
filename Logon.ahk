@@ -13,7 +13,7 @@ Menu, Tray, Tip, Logon Helper
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
 user = %username%
-password =
+password = TERUOWptUnVt
 UF = 2848
 type = Planning Service
 planning = PSY PEA - ADO HJ
@@ -200,10 +200,12 @@ F8::
 
 ResizeFormulaire:
 	NR_temp =0 ; init
+	CopyAllMemoText := false
 	TimeOut = 100 ; milliseconds to wait before deciding it is not responding - 100 ms seems reliable under 100% usage
 	; WM_NULL =0x0000
 	; SMTO_ABORTIFHUNG =0x0002
-	MouseGetPos,,,,hControlText,2
+	MouseGetPos,,,hWinFormulaire,hControlText,2
+	WinGetTitle, FormulaireTitle, ahk_id %hWinFormulaire%
 	SendMessage, 0x30,,1,, ahk_id %hControlText% 
 	Loop 2
 	{
@@ -219,12 +221,29 @@ ResizeFormulaire:
 		}
 		Sleep 1000
 	}
-	ControlGet, hMemo, Hwnd, , TMemo2, %FormulaireWindow%
-	hPanel := DllCall("GetAncestor", uint, hMemo, uint, 1)
-	ControlGetPos, X_Memo, Y_Memo, W_Memo, H_Memo, TMemo2, %FormulaireWindow%
-	ControlGetPos, X_ScrollBox, Y_ScrollBox, W_ScrollBox, H_ScrollBox, TScrollBox1, %FormulaireWindow%
-	ControlMove,, , , , % H_ScrollBox - Y_Memo + 100, ahk_id %hPanel%
-	ControlMove, TMemo2, , , , 1000, ahk_id %hMemo%
+	if FormulaireTitle contains HOSP Entrée
+	{
+		CopyAllMemoText := true
+		ControlGet, hMemo, Hwnd, , TMemo7, %FormulaireWindow%
+		hPanel := DllCall("GetAncestor", uint, hMemo, uint, 1)
+		ControlGetPos, X_Memo, Y_Memo, W_Memo, H_Memo, TMemo7, %FormulaireWindow%
+		if (H_Memo < 87){
+			For a, N_Control in ["TPanel29", "TPanel28", "TPanel27", "TPanel26", "TPanel25", "TPanel8", "TPanel9", "TPanel11", "TPanel12", "TPanel10"]
+			{
+				ControlGetPos, X_Panel, Y_Panel, W_Panel, H_Panel, % N_Control, %FormulaireWindow%
+				ControlMove, % N_Control, , % Y_Panel + 100, , , %FormulaireWindow%
+			}
+			ControlMove,TPanel14, , , , 170, %FormulaireWindow%
+			ControlMove,TPanel13, , , , 170, %FormulaireWindow%
+		}
+	} else {
+		ControlGet, hMemo, Hwnd, , TMemo2, %FormulaireWindow%
+		hPanel := DllCall("GetAncestor", uint, hMemo, uint, 1)
+		ControlGetPos, X_Memo, Y_Memo, W_Memo, H_Memo, TMemo2, %FormulaireWindow%
+		ControlGetPos, X_ScrollBox, Y_ScrollBox, W_ScrollBox, H_ScrollBox, TScrollBox1, %FormulaireWindow%
+		ControlMove,, , , , % H_ScrollBox - Y_Memo + 100, ahk_id %hPanel%
+		ControlMove, TMemo2, , , , 1000, ahk_id %hMemo%
+	}
 	Hotkey, IfWinActive, %FormulaireWindow%
 	Loop, 75
 	{
@@ -252,12 +271,33 @@ SelectAllText:
 	return
 
 CopyCurrentMemo:
-	ControlGetText, Memo_text, , ahk_id %hMemo%
-	ToolTip
+	if CopyAllMemoText
+	{
+		ControlGetText, Memo_text_Motif, TMemo9, ahk_id %hWinFormulaire%
+		ControlGetText, Memo_text_ATCD, TMemo8, ahk_id %hWinFormulaire%
+		ControlGetText, Memo_text_MDV, TMemo7, ahk_id %hWinFormulaire%
+		ControlGetText, Memo_text_HDLM, TMemo6, ahk_id %hWinFormulaire%
+		ControlGetText, Memo_text_TTT, TMemo5, ahk_id %hWinFormulaire%
+		ControlGetText, Memo_text_Clinique, TMemo4, ahk_id %hWinFormulaire%
+		ControlGetText, Memo_text_Exam, TMemo3, ahk_id %hWinFormulaire%
+		ControlGetText, Memo_text_CAT, TMemo2, ahk_id %hWinFormulaire%
+	} else
+		ControlGetText, Memo_text, , ahk_id %hMemo%
 	return
 
 PasteCurrentMemo:
-	ControlSetText, , % Memo_text, ahk_id %hMemo%
+	if CopyAllMemoText
+	{
+		ControlSetText, TMemo9, % Memo_text_Motif, ahk_id %hWinFormulaire%
+		ControlSetText, TMemo8, % Memo_text_ATCD, ahk_id %hWinFormulaire%
+		ControlSetText, TMemo7, % Memo_text_MDV, ahk_id %hWinFormulaire%
+		ControlSetText, TMemo6, % Memo_text_HDLM, ahk_id %hWinFormulaire%
+		ControlSetText, TMemo5, % Memo_text_TTT, ahk_id %hWinFormulaire%
+		ControlSetText, TMemo4, % Memo_text_Clinique, ahk_id %hWinFormulaire%
+		ControlSetText, TMemo3, % Memo_text_Exam, ahk_id %hWinFormulaire%
+		ControlSetText, TMemo2, % Memo_text_CAT, ahk_id %hWinFormulaire%
+	} else
+		ControlSetText, , % Memo_text, ahk_id %hMemo%
 	return
 
 /*
@@ -330,7 +370,9 @@ F6::
 #IfWinActive, ahk_exe unit.exe
 ^r::Reload
 F7::Goto CRSynthSplitScreen
-	
+
+F6::Goto CopyAdminInfos
+
 F8::
 	SetTitlematchmode, 2
 	Send !v
@@ -489,3 +531,39 @@ CRSynthSplitScreen:
 ReloadScript:
 	Reload
 	Return
+	
+CopyAdminInfos:
+	Send, {Alt down}
+	Sleep 10
+	Send a
+	Sleep 10
+	Send r
+	Sleep 10
+	Send, {Alt up}
+	WinWait, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_Nom_naissance, TStaticText31, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_Nom_usage, TStaticText23, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_Prenom, TStaticText30, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_DDN, TStaticText29, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_Sexe, TStaticText27, Renseignements ahk_exe unit.exe
+	;ControlGetText, Info_TelPort, TElMaskEdit5, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_Tel, TElMaskEdit1, Renseignements ahk_exe unit.exe
+		Info_Tel := Join("", StrSplit(StrSplit(Info_Tel, " ")[1], "-"))
+	ControlGetText, Info_Adresse_Rue, TStaticText15, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_Adresse_CP, TStaticText12, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_Adresse_Ville, TStaticText11, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_NSS, TStaticText9, Renseignements ahk_exe unit.exe
+	WinClose, Renseignements ahk_exe unit.exe
+	;Tooltip, % Info_Tel
+	Infos := ""
+	For k, info in ["Nom_naissance", "Nom_usage", "Prenom", "DDN", "Sexe", "Tel", "Adresse_Rue", "Adresse_CP", "Adresse_Ville", "NSS"]
+		Infos .= Info_%info% . "`t"
+	;Tooltip, % Infos
+	Clipboard := Infos	
+	return
+
+Join(sep, params) {
+    for index,param in params
+        str .= param . sep
+    return StrLen(sep) > 0 ? SubStr(str, 1,  -StrLen(sep)) : str
+}
