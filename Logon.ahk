@@ -13,7 +13,7 @@ Menu, Tray, Tip, Logon Helper
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
 user = %username%
-password = TERUOWptUnVt
+password = 
 UF = 2848
 type = Planning Service
 planning = PSY PEA - ADO HJ
