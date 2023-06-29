@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.98
+// @version      0.3.00
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -190,11 +190,12 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                         $(el).clone("gwt-TabBarItem-wrapper-selected").removeClass('gwt-TabBarItem-wrapper-selected').attr('id', 'resetFavoritesUnits').appendTo($(el).parent()).find('.GP3D0Y0NPB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label').text('Onglets favoris').end().find('[src*=icons]').attr('src', "/m-eva/img/icons/star.png" ).end().find('.gwt-TabBarItem-selected').removeClass('gwt-TabBarItem-selected').end()
                             .click(ev=>{
                             window.dispatchEvent(new KeyboardEvent('keydown', {"keyCode":116}));
-                            let repaired_mR = `function mR(b, c, d) {var e, f, g, j;j = _kc();try {Ykc(j, b.d, b.i)} catch (a) {a = OIb(a);if (EX(a, 61)) {e = a;g = new AR(b.i);Cc(g, new yR(e.rb()));throw g} else throw NIb(a)}oR(b, j);b.e && (j.withCredentials = true,undefined);f = new gR(j,b.g,d);Zkc(j, new sR(f,d));try {if (c.search("name")+1 && c.search("critere")+1){`
+
+                            let repaired_mR = `function mR(b,c,d){var e,f,g,j;j=Clc();try{zlc(j,b.d,b.i)}catch(a){a=pJb(a);if(EX(a,61)){e=a;g=new AR(b.i);Cc(g,new yR(e.rb()));throw g}else throw oJb(a)}oR(b,j);b.e&&(j.withCredentials=true,undefined);f=new gR(j,b.g,d);Alc(j,new sR(f,d));try {console.log(c);if (c.search("name")+1 && c.search("critere")+1){`
                             +`c='7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|`
                             // Planning favoris
                             +`{"name":"Gravenoire", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000277#H"]}}|{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"]}}|{"name":"Gergovie / Pariou", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000276#H","XWAY#0000000274#H"]}}|{"name":"Domes / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000275#H","XWAY#0000000331#H"]}}|{"name":"PassAje / La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000340#H"]}}|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'`
-                            +`}j.send(c)} catch (a) {a = OIb(a);if (EX(a, 61)) {e = a;throw new yR(e.rb())} else{throw NIb(a)}}return f}`
+                            +`}j.send(c)}catch(a){a=pJb(a);if(EX(a,61)){e=a;throw new yR(e.rb())}else throw oJb(a)}return f}`
                             $('iframe').filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal')
                                 .each((i,el)=>{
                                 let script = el.contentDocument.createElement('script')
@@ -206,10 +207,11 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 }
 
                 // Ajout d'un icone pour sélectionner le jour actuel pour la liste des patients
-                let $dateInput = $('input.GOAX34LOXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error', SSSFrame.document).parent()
-                if (!$dateInput.siblings('[title*=Aujourd]').length){
+
+                let $dateInput = $('input.GP3D0Y0IYB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error', SSSFrame.document).parent()
+                if (!$dateInput.siblings('#todayIconPicker').length){
                     $dateInput.before(
-                        $(`<img title="Aujourd'hui" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsSAAALEgHS3X78AAAH+klEQVR42q1WeUyV2RU/3WKbph2t`+
+                        $(`<img id="todayIconPicker" title="Aujourd'hui" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsSAAALEgHS3X78AAAH+klEQVR42q1WeUyV2RU/3WKbph2t`+
                           `/3TqZCa109Tp1GmDog4dMHVQB5eIuBL3nVrRDooBcQsoaK0CimIELIvKVh4+HohjZR9UXOrXGFFwFwyKIPDYH8uv59z3PnwPGZwm/ZJfzv3ud+89v/u755z7EQCyR2u9hbKyjbRu3Toa+auRFBUeTWfP5FD`+
                           `/cYOiAxQbF0O+G33p/Q/epz+vW08+K/8y4Fjq7e2lnp5euv+4krKvJVN6QTx5ec6lPcF74lPOpOJPMz/7cn/CDsq5mkamsmS2qZQtKEvl9xQrriQrGC+foSxGasE/aOqUL+jLTX5UXFSC3`+
                           `/zuQ3j7eFJJWSGl5cdTdVW1ct7d3W0l0N7SSQlnT9Ds6NE0Mew9cp7xEeXmm/Iryx9gzKp3Az6Pepdc9g4nl7CfkUvoMPp07zCasHcoTdgzlMbveYfGh7xD40J+SuOCf6Ls2N1D6ZMvRtKR2HCqq2nAxx4jMCn4A`+
@@ -917,7 +919,7 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                 case "Echodoppler Arteriel":
                 case "Examen Echographique":
                 case "EEG":
-                    $('#autonomie_Chaise, #examen, #RV_service, #PC1, #EEG_lit_EEG_au_labo', document).click2()
+                    $('#autonomie, #examen, #RV_service, #PC1, #EEG_lit_EEG_au_labo', document).click2()
                     $('#Telephone, #TelService', document).val(GM_getValue('service').phone)
                     $('#region_ana', document).val('Crâne')
                     $('.sousTitreTableau:contains(2/ Contre Indications)', document).click(ev=>{
@@ -998,7 +1000,7 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                                 $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
                                 break;
                             case "Bio_Entree":
-                                $('#CA, #URE, #CRE, #GL, #CRP, #BC, #BHEP, #TSH, #BILCAOG, #EAL, #ALB, #BILT', document).prop('checked', ev.currentTarget.checked)
+                                $('#CA, #URE, #CRE, #GL, #CRP, #BC, #BHEP, #TSH, #BILCAOG, #EAL, #ALB, #BILT, #PPN', document).prop('checked', ev.currentTarget.checked)
                                 $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
                                 break;
                             case "Bio_TCA":
@@ -1567,6 +1569,8 @@ function presOutputConsignesRapides(ev){
    <select id="duree_consignes">
      <option value="">illimitée</option>
      <option value="48h">48h</option>
+     <option value="3j">3j</option>
+     <option value="5j">5j</option>
    </td>
   </tr>
   <tr>
@@ -2648,28 +2652,31 @@ function monitorClick(ev){
                 ev.view.document.querySelector('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button').click()
             }
         },500,ev.target)
-    } else if ($('.GOAX34LECB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormField-mandatory:visible', ev.view.document).has($(ev.target)).length && ev.target.classList.contains('gwt-Image')){
+    } else if ($(ev.target).is('[id=todayIconPicker]')){
+        //$('[class*=fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error]').val((new Date()).toLocaleDateString())
+        //$('[class*=fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button]:visible').click2()
+        //($('.GP3D0Y0IYB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-field_without_error:visible', ev.view.document).has($(ev.target)).length && ev.target.classList.contains('gwt-Image')){
         // click sur icone calendrier du jour
         if (ev.target.title=="Aujourd'hui"){
-            $('.GOAX34LLXB-fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-calendar_arrow', ev.target.parentElement).click2()
+            $('[class*=fr-mckesson-incubator-gwt-widgets-client-resources-FuzzyDateCss-calendar_arrow]', ev.target.parentElement).click2()
             $.waitFor('div.datePickerDayIsToday', ev.view.document).then($el=>{
                 if ($el.hasClass('datePickerDayIsValue')){
                     $el.up().prev().children().click2()
                     $(ev.target).click2()
                 }else{
                     $el.click2()
-                    $.waitFor('div.GOAX34LLLB-fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-BlockMaskTextDiv', ev.view.document).then($el2=>{
-                        $('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button', ev.view.document).click2()
+                    $.waitFor('div[class*=fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-BlockMaskPanel]', ev.view.document).then($el2=>{
+                        $('button[class*=fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button]', ev.view.document).click2()
                     })
                 }
                 //
             })
         } else {
-            $('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button', ev.view.document).click2()
+            $('button[class*=fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button]', ev.view.document).click2()
         }
-    } else if ((ev.isTrusted) && $(ev.target).parents('.GOAX34LOBB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-DatePicker').length){
-        $.waitFor('div.GOAX34LLLB-fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-BlockMaskTextDiv', ev.view.document).then($el2=>{
-            $('button.GOAX34LH3-fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button', ev.view.document).click2()
+    } else if ((ev.isTrusted) && $(ev.target).parents('[class*=fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-DatePicker]').length){
+        $.waitFor('div[class*=fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-BlockMaskPanel]', ev.view.document).then($el2=>{
+            $('button[class*=fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button]', ev.view.document).click2()
         })
     } else if ($(ev.target).is('.ui-button-icon-only.ui-dialog-titlebar-refresh') || $(ev.target).is('.ui-icon.ui-icon-arrowrefresh-1-s')){
         $('#meva2 iframe').attr("src", "/m-eva/m-eva.fwks")
