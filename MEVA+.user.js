@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.00
+// @version      0.3.01
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -835,7 +835,7 @@ $.expr[":"].containsI = function (a, i, m) {
                 $('a[onclick]:contains("(_) OK")', document).click2()
                 $('a[onclick]:contains("(x)")', document).each(()=>$('a[onclick]:contains("ENTREE")', document).click2())
             } else if (promptTitle == "Sélectionnez un item dans la liste") {
-
+                if (SSSFrame.repriseOldPres) delete SSSFrame.repriseOldPres
                 var listePrescriptionsEquivalent = {"tdm":"Demande d'Examen Tomodensitométrique",
                                                    "scanner":"Demande d'Examen Tomodensitométrique",
                                                    "irm":"Demande d'IRM",
@@ -1104,6 +1104,9 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                         })
                         $('div#Nursing, div#Laboratory, div[id="Pharmacy Scheduled Medications"]', document).click(ev=>{
                             $('tr[id="'+ev.target.id+'"] input', document).click2()
+                        })
+                        $('input[id=playbackOrders]', document).click(ev=>{
+                            SSSFrame.repriseOldPres = true
                         })
                     }
                     break
@@ -1381,9 +1384,8 @@ function presLaboPrincipaux(ev){
     }
     $('#panelOutput', SSSFrame.document).observe([], ev=>{
         setTimeout(($, ev, SSSFrame)=>{
-            console.log('bah')
             SSSFrame.output_Selector(1)
-            $(ev.target).disconnect()
+            $(ev[0].target).disconnect()
         }, 500, $, ev, SSSFrame)
     })
     $('#HEO_INPUT', SSSFrame.document).val("Principaux Examens Laboratoires")[0].dispatchEvent(ke)
@@ -2690,6 +2692,7 @@ function monitorClick(ev){
         delete SSSFrame.listingConsignes
         delete SSSFrame.listePresLabo
         delete SSSFrame.renouvellementIso
+        delete SSSFrame.repriseOldPres
     } else if (ev.target.innerText == "AHARRY"){
         ev.view.document.querySelector("input[name='mevaLockSessionWindowPwField']").value=Meva.password
         ev.view.document.querySelector("span.GLDWF15F0.GLDWF15PDB").click()
