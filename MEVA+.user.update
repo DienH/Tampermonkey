@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.2.89
+// @version      0.3.01
 // @description  Help with MEVA
 // @author       Me
-// @match        http*://meva/*
+// @match        http*://meva/m-eva/*
+// @match        http*://meva/heoclient-application-web/*
 // @match        http*://serv-cyberlab.chu-clermontferrand.fr/cyberlab/*
 // @match        http*://cyberlab.chu-clermontferrand.fr/cyberlab/*
 // @exclude      http*://meva/heoclient-application-web/shortStop.jsp
