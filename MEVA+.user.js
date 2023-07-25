@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.01
+// @version      0.3.02
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -478,13 +478,17 @@ $.expr[":"].containsI = function (a, i, m) {
                             SSSFrame.output_Selector()
                         }
                         SSSFrame.nouvellesConsignes.done=true
+                        //console.log(SSSFrame.nouvellesConsignes)
                         Object.keys(SSSFrame.nouvellesConsignes).forEach(cons=>{
-                            if (typeof SSSFrame.nouvellesConsignes[cons] == "object" && !SSSFrame.nouvellesConsignes[cons].done && !Array.isArray(SSSFrame.nouvellesConsignes[cons])){
+                            if (typeof SSSFrame.nouvellesConsignes[cons] == "object" && !SSSFrame.nouvellesConsignes[cons].done && !Array.isArray(SSSFrame.nouvellesConsignes[cons]) && SSSFrame.nouvellesConsignes[cons].consigne != "0"){
                                 SSSFrame.nouvellesConsignes.done=false
                                 SSSFrame[(SSSFrame.nouvellesConsignes[cons].changeComment ? "currentPres" : "output")+"_Selector"](cons == "mode_hospit" ? "consentement" : (cons == "service" && SSSFrame.nouvellesConsignes[cons].consigne == "ferme" ? "Service fermé" : [cons, SSSFrame.nouvellesConsignes[cons].consigne]))
                                 return false
                             }
                         })
+                        if (SSSFrame.nouvellesConsignes.done == "false"){
+                            SSSFrame.output_Selector()
+                        }
                     }
                     $('a:contains(« Retourner à la liste précédente)', document).click(ev=>{
                         delete SSSFrame.nouvellesConsignes
