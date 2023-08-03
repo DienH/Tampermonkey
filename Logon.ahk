@@ -17,8 +17,8 @@ password =
 UF = 2848
 type = Planning Service
 planning = Interne (Psyb)
-dr_1 = CHABERT Jo
-dr_2 = COLIN Jo
+dr_1 = 
+dr_2 = 
 cs_int = Interne (PSYB)
 ;If !WinExist("ahk_exe chrome.exe")
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
