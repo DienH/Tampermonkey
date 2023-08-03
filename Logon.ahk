@@ -16,10 +16,9 @@ user = %username%
 password = 
 UF = 2848
 type = Planning Service
-planning = PSY PEA - ADO HJ
-planning2 = PSY PEA - ADO CATTP
-dr_1 = MOREAU Myl
-dr_2 = FENEON Domi
+planning = Interne (Psyb)
+dr_1 = CHABERT Jo
+dr_2 = COLIN Jo
 cs_int = Interne (PSYB)
 ;If !WinExist("ahk_exe chrome.exe")
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
@@ -206,7 +205,7 @@ ResizeFormulaire:
 	; SMTO_ABORTIFHUNG =0x0002
 	MouseGetPos,,,hWinFormulaire,hControlText,2
 	WinGetTitle, FormulaireTitle, ahk_id %hWinFormulaire%
-	SendMessage, 0x30,,1,, ahk_id %hControlText% 
+	;SendMessage, 0x30,,1,, ahk_id %hControlText% 
 	Loop 2
 	{
 		Responding := DllCall("SendMessageTimeout", "UInt", WinExist(FormulaireWindow), "UInt", 0x0000, "Int", 0, "Int", 0, "UInt", 0x0002, "UInt", TimeOut, "UInt *", NR_temp)
@@ -253,12 +252,20 @@ ResizeFormulaire:
 	Hotkey, ~Enter, CopyCurrentMemo
 	Hotkey, ~Backspace, CopyCurrentMemo
 	Hotkey, ^+v, PasteCurrentMemo
+	Hotkey, ^s, SaveCurrentMemo
 	Hotkey, ^BackSpace, CtrlBackspace
 	Hotkey, ^a, SelectAllText
 	Hotkey, If
 	Control, Enable,, TDateTimePicker1, %FormulaireWindow%
 	;ToolTip, % Memo_text
 	return
+
+SaveCurrentMemo:
+	ControlClick, TMcKButton2, %FormulaireWindow%
+	Sleep 2000
+	ControlClick, TCwSpeedButton2, Modification de l'observation
+	return
+
 
 CtrlBackspace:
 	Send, ^+{Left}
@@ -439,6 +446,7 @@ NoHotkey:
 
 #ifwinactive LOGON - M-Référence ahk_exe logon.exe
 ^r::Reload
+@::
 ²::
 	GoSub Logon_Login
 	Gosub Unit_1
@@ -446,6 +454,7 @@ NoHotkey:
 	return
 
 #ifwinactive Plan de travail ahk_exe logon.exe
+@::
 ²::
 	Send {End}
 	Sleep 10
@@ -459,6 +468,13 @@ NoHotkey:
 	Send {enter}
 	return
 
+#ifwinactive Plan de travail ahk_exe logon.exe
+&::
+	GoSub Logon_Login
+	Gosub Cs_1
+	GoSub Cs_2
+	;Goto Cs_3_EHLSA
+	return
 #ifwinactive LOGON - Reference ahk_exe logon.exe
 &::
 	GoSub Logon_Login
@@ -541,8 +557,8 @@ CopyAdminInfos:
 	Sleep 10
 	Send, {Alt up}
 	WinWait, Renseignements ahk_exe unit.exe
-	ControlGetText, Info_Nom_naissance, TStaticText31, Renseignements ahk_exe unit.exe
-	ControlGetText, Info_Nom_usage, TStaticText23, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_Nom_naissance, TStaticText23, Renseignements ahk_exe unit.exe
+	ControlGetText, Info_Nom_usage, TStaticText31, Renseignements ahk_exe unit.exe
 	ControlGetText, Info_Prenom, TStaticText30, Renseignements ahk_exe unit.exe
 	ControlGetText, Info_DDN, TStaticText29, Renseignements ahk_exe unit.exe
 	ControlGetText, Info_Sexe, TStaticText27, Renseignements ahk_exe unit.exe
