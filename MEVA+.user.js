@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.02
+// @version      0.3.04
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -120,6 +120,9 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 
 
     if (location.pathname == "/m-eva/"){
+    navigator.permissions.query({name: "clipboard-read"}).then(result => {
+        console.log(result)
+    })
         /*
         document.querySelector('#SSSFrame').contentWindow.addEventListener('resize', (ev)=>{
             let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
@@ -178,6 +181,11 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                         labo_url = 'https://cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
                         '?Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
                     SSSFrame.labo_url = labo_url
+                }
+                if (!$('#openTrajectoire').length){
+                    $('[class*=GLDWF15O]:contains(Exploration)').each((i,el)=>{
+                        $(el).clone().insertAfter(el).find('[class*=GLDWF15P]').text('Trajectoire').attr('id', 'openTrajectoire')
+                    }).parent().css("width", "auto")
                 }
                 $(CS_AnestTitle).remove()
                 SSSFrame.dispatchEvent(new Event('resize'))
@@ -249,6 +257,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 }
                 // Menu flottant pour les prescriptions
                 if(!$('#hoverMenu_pres', SSSFrame.document).length){
+                    /*
                     $('#workbody', SSSFrame.document).append($(`
 <div id="hoverMenu_pres">
   <span title="Modifier" action="MODIFY"><img src="/heoclient-application-web/images/pencil.png" class="gwt-Image"></span>
@@ -259,7 +268,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
   <span title="Annuler arrêt & modifications" action="RESET_ORDER"><img src="/heoclient-application-web/button/arrow_undo.png" class="gwt-Image"></span>
 </div>
 `).hide()).addClass("mouseOver_monitored").on('mouseover mouseout', '.GD42JS-DOYB>.GD42JS-DK-B tr', monitorPresMouseOver)
-
+*/
                     let IPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains("IPP : ")', SSSFrame.document).text().split(" : ")[1]
                     if ((typeof SSSFrame.listingPrescriptions == "undefined" || (SSSFrame.listingPrescriptions.IPP != IPP) ) && $('#workbody').length){
                         delete SSSFrame.listingPrescriptions
@@ -326,7 +335,18 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
         })
         */
             }, 2000)
-
+        window.onmessage = function(message){
+            if(message.data == "trajectoireLogin" && message.origin == "https://trajectoire.sante-ra.fr"){
+                let Meva = GM_getValue('Meva',{"user":"", "password":""})
+                var trajectoireLoginCurrentAttempt = new Date()
+                if (window.trajectoireLoginLastAttempt || (trajectoireLoginCurrentAttempt - window.trajectoireLoginLastAttempt > 10000)){
+                        Meva.autoLogon = false
+                } else {
+                    Meva.autoLogon = true
+                }
+                $('#meva2 iframe')[0].contentWindow.postMessage(Meva, "https://trajectoire.sante-ra.fr/")
+            }
+        }
         if (!document.getElementById('SSSFrame_MevaStyle')){
             $('<style id="SSSFrame_MevaStyle">', document).html(`
 #HEO_POPUP .dialogMiddleCenter {background:#F5F5F5;}
@@ -385,7 +405,8 @@ button.ui-button.ui-button-validate.ui-corner-all.ui-widget {background: green;c
 .GOAX34LBNB-fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-TabPanel .gwt-TabPanelBottom {border-radius:8px;margin:0 1px;padding:5px!important;}
 .ui-dialog .ui-dialog-titlebar-refresh {position: absolute;right: 2em;top: 50%;width: 20px;margin: -10px 0 0 0;padding: 1px;height: 20px;}
 .ui-dialog.ui-dialog-full {width:100vw;height:100vh;top:0!important;left:0!important;}
-.ui-dialog-meva2 {height: calc(100% - 40px);padding: 0;}
+.ui-dialog-meva2 {top:40px!important;height: calc(100% - 40px);width:100vw;padding: 0!important;}
+.ui-dialog-content-meva2 {top:0px;height: calc(100% - 40px);padding: 0!important;}
 #meva2 iframe, #labo_frame iframe {width:calc(100% - 5px);height:calc(100% - 5px);}
 #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LOCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel-grid>tbody>tr:nth-of-type(3) {position:absolute;top:50px;right:15px;}
 #m_eva_Hospitalisation_fonc_complement_clinique_recherche_hospit_main .GOAX34LFCB-fr-mckesson-framework-gwt-widgets-client-resources-FormFamilyCss-fw-FormPanel {height:60px!important;}
@@ -1004,7 +1025,7 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                                 $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
                                 break;
                             case "Bio_Entree":
-                                $('#CA, #URE, #CRE, #GL, #CRP, #BC, #BHEP, #TSH, #BILCAOG, #EAL, #ALB, #BILT, #PPN', document).prop('checked', ev.currentTarget.checked)
+                                $('#CA, #URE, #CRE, #GL, #CRP, #BC, #BHEP, #TSH, #BILCAOG, #EAL, #ALB, #BILT, #PPN, #BF1', document).prop('checked', ev.currentTarget.checked)
                                 $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
                                 break;
                             case "Bio_TCA":
@@ -2587,7 +2608,7 @@ function monitorClick(ev){
     if (!ev.view){ev.view = unsafeWindow||window}
     let Meva = GM_getValue('Meva',{"user":"", "password":""})
     window.monitorClickEnabled = true
-    //console.log(ev.target)
+    console.log(ev.target)
     if ($('#contextMenu_patients:visible').length){
         if($('#contextMenu_patients').has(ev.target).length){
             let action = $(ev.target).text()
@@ -2685,7 +2706,7 @@ function monitorClick(ev){
             $('button[class*=fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button]', ev.view.document).click2()
         })
     } else if ($(ev.target).is('.ui-button-icon-only.ui-dialog-titlebar-refresh') || $(ev.target).is('.ui-icon.ui-icon-arrowrefresh-1-s')){
-        $('#meva2 iframe').attr("src", "/m-eva/m-eva.fwks")
+        $('#meva2 iframe').attr("src", "https://trajectoire.sante-ra.fr/Trajectoire/Pages/AccesLibre/Login.aspx?ReturnUrl=%2fTrajectoire%2fpages%2fAccesRestreint%2fAngular%2fApp.aspx%2fSanitaire%2fTDB%2fDemandeur")
     } else if (ev.target.title == "HEO - Prescrire" || $(ev.target).is('.GD42JS-DO5:contains(Oups)') || $(ev.target).is('.GD42JS-DO5:contains(Outlines)')){
         if(ev.target.title == "HEO - Prescrire" && !$(ev.target).is('.GD42JS-DFXB')){
             addAutoPrescriptor(ev)
@@ -2748,12 +2769,11 @@ function monitorClick(ev){
                 $(ev.target).parents('tr').removeClass('consigne-restreint')
             }
         }
-    }else if ($(ev.target).is('.context_user_text_style_name')){
+    }else if ($(ev.target).is('.context_user_text_style_name') || $(ev.target).is('#openTrajectoire')){
         if (!$('#meva2').dialog('open').length){
             if (window.parent == window.top){
-                $('<div id="meva2"><iframe src="/m-eva/m-eva.fwks"></iframe></div>').appendTo('body').dialog({classes:{"ui-dialog":"ui-dialog-full", "ui-dialog-content":"ui-dialog-meva2"},height:$(window).height(), width:$(window).width()})
+                $('<div id="meva2"><iframe src="https://trajectoire.sante-ra.fr/Trajectoire/Pages/AccesLibre/Login.aspx?ReturnUrl=%2fTrajectoire%2fpages%2fAccesRestreint%2fAngular%2fApp.aspx%2fSanitaire%2fTDB%2fDemandeur"></iframe></div>').appendTo('body').dialog({classes:{"ui-dialog":"ui-dialog-meva2", "ui-dialog-content":"ui-dialog-content-meva2"},height:$(window).height() - 40, width:$(window).width()})
                     .siblings(".ui-dialog-titlebar")
-                    .append('<button type="button" class="ui-button ui-corner-all ui-widget ui-button-icon-only ui-dialog-titlebar-refresh" title="Refresh"><span class="ui-button-icon ui-icon ui-icon-arrowrefresh-1-s"></span><span class="ui-button-icon-space"> </span>Refresh</button>')
             }
         }
     } else if ($(ev.target).is('.GD42JS-DO5:contains("Fermer")')||$(ev.target).is('.GD42JS-DO5:contains("Signer")')){
