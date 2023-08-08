@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.04
+// @version      0.3.05
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -120,9 +120,6 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
 
 
     if (location.pathname == "/m-eva/"){
-    navigator.permissions.query({name: "clipboard-read"}).then(result => {
-        console.log(result)
-    })
         /*
         document.querySelector('#SSSFrame').contentWindow.addEventListener('resize', (ev)=>{
             let SSSFrame = ev.target.name == "SSSFrame" ? ev.target : document.getElementById('SSSFrame').contentWindow
@@ -278,15 +275,13 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                         delete SSSFrame.listePresLabo
                         delete SSSFrame.renouvellementIso
                         $('#CONSIGNES-POPUP', SSSFrame.document).dialog('destroy').remove()
-                        $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2()
+                        $('table[name=HEOFRAME] button:contains(Arrêt)', SSSFrame.document).click2() // test-reprise prescriptions
                         //$('div.GD42JS-DLOB', SSSFrame.document).hide() // cacher la fenêtre popup MEVA à l'initialisation de la page
                         //$('body', SSSFrame.document).append('<div class="full_bg"><span>Préparation de la liste de prescription</span></div>')
                         //  .append('<style>.full_bg{position:fixed;top:0;left:0;width:100%;height:100%;background:black;opacity:0.2;</style>}')
                     }
                 }
                 $(`div.carousel_enabled_item:contains("Résultats"):not(.modified)`).addClass('modified').each((i,el)=>{
-                    console.log(el)
-                    console.log(SSSFrame.labo_url)
                     el.onclick=ev=>{open(SSSFrame.labo_url)}
                     /*
                     $(el).contextmenu(ev=>{
@@ -527,7 +522,10 @@ $.expr[":"].containsI = function (a, i, m) {
                     orderName = $('div.orderName', document).text().trim()
                     if (outputTitle == ""){
                         if ($('body>*:not(form):not(script):not(style)', document).text().length == 0){
-                            $HEO_INPUT.val('Prescriptions usuelles de psychiatrie adulte')[0].dispatchEvent(ke);
+                            if($('#HEO_POPUP', SSSFrame.document).is(':visible')){
+                            } else {
+                                $HEO_INPUT.val('Prescriptions usuelles de psychiatrie adulte')[0].dispatchEvent(ke);
+                            }
                         } else {
                             $('a[onclick]:has(div.orderDisplayNum:contains("1.")):has(div.orderableList:contains("Prescriptions Usuelles de Psychiatrie Adulte"))', document).click2()
                             if (SSSFrame.autoEnhancedPres){
