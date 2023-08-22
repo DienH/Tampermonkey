@@ -235,6 +235,18 @@ ResizeFormulaire:
 			ControlMove,TPanel14, , , , 170, %FormulaireWindow%
 			ControlMove,TPanel13, , , , 170, %FormulaireWindow%
 		}
+	} else if FormulaireTitle contains prescription transport
+	{
+		ControlGetPos, TransportX, TransportY, TransportW, , TPanel28, ahk_id %hWinFormulaire%
+		GuiControlGet, TransportGuiShown, Visible, TransportGuiV
+		
+		if (!WinExist("ahk_id " TransportGuihWnd)){
+			Gosub CreateTransportGui
+			Gui, Transport:+owner%hWinFormulaire% +Parent%hWinFormulaire%
+			TransportX := TransportX+TransportW+10
+			TransportY := TransportY - 30
+			Gui Transport:Show, x%TransportX%  y%TransportY% AutoSize, Window
+		}
 	} else {
 		ControlGet, hMemo, Hwnd, , TMemo2, %FormulaireWindow%
 		hPanel := DllCall("GetAncestor", uint, hMemo, uint, 1)
@@ -583,3 +595,54 @@ Join(sep, params) {
         str .= param . sep
     return StrLen(sep) > 0 ? SubStr(str, 1,  -StrLen(sep)) : str
 }
+
+CreateTransportGui:
+	Gui, Transport:New, -Border -Caption +hwndTransportGuihWnd
+	Gui, Transport:Add, GroupBox, x0 y0 w160 h165 vTransportGuiV, Remplissage rapide
+	Gui, Transport:Add, Radio, x5 y13 w150 h23 gTransportRaDVSL, Retour à domicile VSL
+	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportCHSM, CHSM Clermont
+	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportClementel, SSR Clémentel
+	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportLignon, SSR Chambon sur Lignon
+	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportGalmier, SSR Saint-Galmier
+	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportEntree, Entrée en Hospit
+	return
+
+TransportClementel:
+	Gosub TransportSortieCommun
+	ControlSetText, TMemo7, Transfert en SSR, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo5, % "Etab: SSR Clémentel`r`nAdresse: Enval (63)" , ahk_id %hWinFormulaire%
+	return
+TransportRadVSL:
+	Gosub TransportSortieCommun
+	Control, Check, , TGroupButton3, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo7, Sortie d'hospitalisation, ahk_id %hWinFormulaire%
+	return
+TransportCHSM:
+	Gosub TransportSortieCommun
+	ControlSetText, TMemo7, Transfert pour hospitalisation de secteur, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo5, % "Etab: CH Sainte-Marie`r`nAdresse: Clermont-Ferrand (63)" , ahk_id %hWinFormulaire%
+	return
+TransportLignon:
+	Gosub TransportSortieCommun
+	ControlSetText, TMemo7, Transfert en SSR, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo5, % "Etab: SSR Clinique Le Haut Lignon`r`nAdresse: 43400 Le Chambon-sur-Lignon" , ahk_id %hWinFormulaire%
+	return
+TransportGalmier:
+	Gosub TransportSortieCommun
+	ControlSetText, TMemo7, Transfert en SSR, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo5, % "Etab: SSR Centre Mutualiste d'Addictologie `r`nAdresse: 42330 Saint-Galmier" , ahk_id %hWinFormulaire%
+	return
+TransportSortieCommun:
+	Control, Check, , TCheckBox4, ahk_id %hWinFormulaire%
+	Control, Check, , TGroupButton26, ahk_id %hWinFormulaire%
+	Control, Check, , TGroupButton18, ahk_id %hWinFormulaire%
+	Control, Check, , TGroupButton1, ahk_id %hWinFormulaire%
+	Control, Check, , TGroupButton5, ahk_id %hWinFormulaire%
+	Control, Check, , TGroupButton9, ahk_id %hWinFormulaire%
+	return
+TransportEntree:
+	Gosub TransportSortieCommun
+	Control, Check, , TGroupButton20, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo7, Entrée en hospitalisation, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo5, % "Etab: SSR Centre Mutualiste d'Addictologie `r`nAdresse: 42330 Saint-Galmier" , ahk_id %hWinFormulaire%
+	return
