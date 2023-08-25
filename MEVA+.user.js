@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.05
+// @version      0.3.06
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -1619,7 +1619,7 @@ function presOutputConsignesRapides(ev){
    <td><input type="radio" name="deplacements" consigne="autorise"></td>
    <td><input type="radio" name="deplacements" consigne="interdit"></td>
    <td class="consigne-deplacements-restreints"><input type="radio" name="deplacements" consigne="restreint"></td>
-   <td><div contenteditable name="deplacements-com" placeholder="Descente sur temps court ?">Descente sur temps courts</div></td>
+   <td><div contenteditable name="deplacements-com" placeholder="Descente sur temps court ?">Prévention SSE</div></td>
   </tr>
   <tr class="consigne-deplacements-restriction">
    <td colspan="4">
@@ -2805,7 +2805,7 @@ function clickLogin(ev){
     if (document.querySelector("div.GJM-MUPPUB")){
         document.querySelector("div.GJM-MUPPUB").addEventListener('click', ev=>{
             //GM_setValue('service', {phone:""})
-            if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:"", nom:"", prenom:""});GM_setValue('service', {phone:""})}
+            if (!GM_getValue('Meva', false)){GM_setValue('Meva', {user:"",password:"", nom:"", prenom:"", trajectoirePassword:""});GM_setValue('service', {phone:""})}
             if (document.querySelector("input[name='j_username']")) document.querySelector("input[name='j_username']").value=Meva.user
             if (document.querySelector("input[type='password']")) document.querySelector("input[type='password']").value=Meva.password
             if (document.querySelector("button.GJM-MUPN-")) document.querySelector("button.GJM-MUPN-").click()
