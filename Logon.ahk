@@ -10,15 +10,16 @@ Menu, Tray, standard
 Menu, Tray, Default, Relancer
 Menu, Tray, Tip, Logon Helper
 
+
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
 user = %username%
 password = 
-UF = 2848
+UF = 
 type = Planning Service
 planning = Interne (Psyb)
-dr_1 = 
-dr_2 = 
+dr_1 = COLIN Jo
+dr_2 = CHABERT Jo
 cs_int = Interne (PSYB)
 ;If !WinExist("ahk_exe chrome.exe")
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
