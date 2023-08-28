@@ -645,5 +645,5 @@ TransportEntree:
 	Gosub TransportSortieCommun
 	Control, Check, , TGroupButton20, ahk_id %hWinFormulaire%
 	ControlSetText, TMemo7, Entrée en hospitalisation, ahk_id %hWinFormulaire%
-	ControlSetText, TMemo5, % "Etab: SSR Centre Mutualiste d'Addictologie `r`nAdresse: 42330 Saint-Galmier" , ahk_id %hWinFormulaire%
+	ControlSetText, TMemo5, % "Etab: Service Gravenoire,  CMP B, CHU Gabriel Montpied`r`nAdresse: 63000 Clermont-Ferrand" , ahk_id %hWinFormulaire%
 	return
