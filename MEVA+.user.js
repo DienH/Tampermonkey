@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.06
+// @version      0.3.07
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -199,7 +199,12 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                             let repaired_mR = `function mR(b,c,d){var e,f,g,j;j=Clc();try{zlc(j,b.d,b.i)}catch(a){a=pJb(a);if(EX(a,61)){e=a;g=new AR(b.i);Cc(g,new yR(e.rb()));throw g}else throw oJb(a)}oR(b,j);b.e&&(j.withCredentials=true,undefined);f=new gR(j,b.g,d);Alc(j,new sR(f,d));try {console.log(c);if (c.search("name")+1 && c.search("critere")+1){`
                             +`c='7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|`
                             // Planning favoris
-                            +`{"name":"Gravenoire", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000277#H"]}}|{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"]}}|{"name":"Gergovie / Pariou", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000276#H","XWAY#0000000274#H"]}}|{"name":"Domes / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000275#H","XWAY#0000000331#H"]}}|{"name":"PassAje / La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000340#H"]}}|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'`
+                            +`{"name":"Gravenoire", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000277#H"]}}|`
+                            +`{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"]}}|`
+                            +`{"name":"Pariou / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000331#H","XWAY#0000000274#H"]}}|`
+                            +`{"name":"Domes / UHDL", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000275#H","XWAY#0000007311#H"]}}|`
+                            +`{"name":"PassAje / La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000340#H"]}}`
+                            +`|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'`
                             +`}j.send(c)}catch(a){a=pJb(a);if(EX(a,61)){e=a;throw new yR(e.rb())}else throw oJb(a)}return f}`
                             $('iframe').filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal')
                                 .each((i,el)=>{
@@ -1023,7 +1028,7 @@ form[name=CFD_Essai_TOP30] .BandeauBoutons #btAnnuler {top:36px;background:#ffa5
                                 $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
                                 break;
                             case "Bio_Entree":
-                                $('#CA, #URE, #CRE, #GL, #CRP, #BC, #BHEP, #TSH, #BILCAOG, #EAL, #ALB, #BILT, #PPN, #BF1', document).prop('checked', ev.currentTarget.checked)
+                                $('#CA, #URE, #CRE, #GL, #CRP, #BC, #BHEP, #TSH, #BILCAOG, #EAL, #ALB, #BILT, #PPN', document).prop('checked', ev.currentTarget.checked)
                                 $('#IONO, #NFS', document).prop('checked', !ev.currentTarget.checked).click()
                                 break;
                             case "Bio_TCA":
