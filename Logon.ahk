@@ -17,10 +17,10 @@ user = %username%
 password = 
 UF = 
 type = Planning Service
-planning = Interne (Psyb)
-dr_1 = COLIN Jo
-dr_2 = CHABERT Jo
-cs_int = Interne (PSYB)
+planning =
+dr_1 =
+dr_2 =
+cs_int =
 ;If !WinExist("ahk_exe chrome.exe")
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
 
@@ -243,9 +243,10 @@ ResizeFormulaire:
 		
 		if (!WinExist("ahk_id " TransportGuihWnd)){
 			Gosub CreateTransportGui
-			Gui, Transport:+owner%hWinFormulaire% +Parent%hWinFormulaire%
+			ControlGet, hFormulaireTransportScroll, Hwnd,, TScrollBox1, ahk_id %hWinFormulaire%
+			Gui, Transport:+owner%hWinFormulaire% +Parent%hFormulaireTransportScroll%
 			TransportX := TransportX+TransportW+10
-			TransportY := TransportY - 30
+			TransportY := TransportY - 120
 			Gui Transport:Show, x%TransportX%  y%TransportY% AutoSize, Window
 		}
 	} else {
@@ -497,24 +498,24 @@ NoHotkey:
 	return
 
 #ifwinactive Plan de travail ahk_exe logon.exe
-h::
-	Gosub Cs_1
-	GoSub Cs_2
-	return
+;h::
+;	Gosub Cs_1
+;	GoSub Cs_2
+;	return
 
 t::
 	Gosub Cs_1
 	GoSub Cs_2_bis
 	return
 
-m::
+o::
 	Gosub Cs_1
 	Gosub Cs_2_dr_1
 	return
-;f::
-;	Gosub Cs_1
-;	Gosub Cs_2_dr_2
-;	return
+h::
+	Gosub Cs_1
+	Gosub Cs_2_dr_2
+	return
 	
 i::
 	Gosub Cs_1
@@ -599,13 +600,15 @@ Join(sep, params) {
 
 CreateTransportGui:
 	Gui, Transport:New, -Border -Caption +hwndTransportGuihWnd
-	Gui, Transport:Add, GroupBox, x0 y0 w160 h165 vTransportGuiV, Remplissage rapide
+	Gui, Transport:Add, GroupBox, x0 y0 w160 h180 vTransportGuiV, Remplissage rapide
 	Gui, Transport:Add, Radio, x5 y13 w150 h23 gTransportRaDVSL, Retour à domicile VSL
 	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportCHSM, CHSM Clermont
 	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportClementel, SSR Clémentel
 	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportLignon, SSR Chambon sur Lignon
 	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportGalmier, SSR Saint-Galmier
 	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportEntree, Entrée en Hospit
+	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportHdJ, HDJ addicto
+;	Gui, Transport:Add, DDL, x5 y15 w150 h23 R10 vTransportDDLChoice gTransportDDL AltSubmit, |Retour à domicile VSL|CHSM Clermont|SSR Clémentel|SSR Chambon sur Lignon|SSR Saint-Galmier|Entrée en Hospit|HDJ addicto
 	return
 
 TransportClementel:
@@ -646,4 +649,35 @@ TransportEntree:
 	Control, Check, , TGroupButton20, ahk_id %hWinFormulaire%
 	ControlSetText, TMemo7, Entrée en hospitalisation, ahk_id %hWinFormulaire%
 	ControlSetText, TMemo5, % "Etab: Service Gravenoire,  CMP B, CHU Gabriel Montpied`r`nAdresse: 63000 Clermont-Ferrand" , ahk_id %hWinFormulaire%
+	return
+TransportHdJ:
+	Gosub TransportSortieCommun
+	Control, Check, , TGroupButton20, ahk_id %hWinFormulaire%
+	Control, Check, , TGroupButton16, ahk_id %hWinFormulaire%
+	Control, Check, , TCheckbox3, ahk_id %hWinFormulaire%
+	ControlSetText, TEdit1, 6, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo7, Hopital de jour addictologie, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo5, % "Etab: HDJ addictologie, CHU Gabriel Montpied`r`nAdresse: 63000 Clermont-Ferrand" , ahk_id %hWinFormulaire%
+	return
+TransportDDL:
+	Gui, Transport:Submit, NoHide
+	Switch TransportDDLChoice
+	{
+		case 2:
+			Goto TransportRadVSL
+		case 3:
+			Goto TransportCHSM
+		case 4:
+			Goto TransportClementel
+		case 5:
+			Goto TransportLignon
+		case 6:
+			Goto TransportGalmier
+		case 7:
+			Goto TransportEntree
+		case 8:
+			Goto TransportHdJ
+		default:
+			return
+	}
 	return
