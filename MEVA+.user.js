@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.07
+// @version      0.3.08
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -1682,7 +1682,7 @@ function presOutputConsignesRapides(ev){
                     let currConsignes = autoPresConsignesRapides()
                     SSSFrame.listingConsignes = currConsignes
                     Object.keys(currConsignes).forEach(el=>{
-                        $('#CONSIGNES-POPUP input[name='+el+'][consigne='+currConsignes[el].consigne+']', SSSFrame.document).click2()
+                        $('#CONSIGNES-POPUP input[name='+el+']'+(currConsignes[el].consigne ? '[consigne='+currConsignes[el].consigne+']':''), SSSFrame.document).click2()
                         $('#CONSIGNES-POPUP div[contenteditable][name='+el+'-com]').text(currConsignes[el].comment)
                         if (el == "mode_hospit" && currConsignes[el].consigne == "SSC"){
                             $("#Type-SSC option[value="+currConsignes[el].comment+"]").prop('selected', true)
