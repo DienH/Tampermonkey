@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.08
+// @version      0.3.09
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -72,10 +72,33 @@ var prescrireConsignesAutorisees = true;
     if (location.href.search("cyberlab.chu-clermontferrand.fr")+1){
         let $
         if (!$ || !$.fn) {$ = µ.jQuery || µ.$ || window.jQuery };
-        $('tr[onclick]:first').click()
-        let creat = $('>td.clickable:first', $('.DTFC_scrollBody>table>tbody>tr').eq($('.DTFC_LeftBodyWrapper>table>tbody>tr:contains(Créatinine)').index('.DTFC_LeftBodyWrapper>table>tbody>tr'))).text().trim(),
-            CKDEPI = $('>td.clickable:first', $('.DTFC_scrollBody>table>tbody>tr').eq($('.DTFC_LeftBodyWrapper>table>tbody>tr:contains(Formule CKDEPI)').index('.DTFC_LeftBodyWrapper>table>tbody>tr'))).text().trim(),
-            IPP = $('.patientInformationLine td:contains(IPP):last').text().split('[IPP: ')[1].split(',')[0]
+        setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1500)
+        let creat = "", CKDEPI = "", IPP = ""
+        function checkCreat() {
+            IPP = $('.patientHeader span.identifiers:contains(IPP)').text()
+            if (IPP && IPP.split('[IPP: ').length>1){
+                IPP = IPP.split('[IPP: ')[1].split(',')[0]
+            }
+            let more_recent=1000, $tr, $td;
+            $('.DTFC_LeftBodyWrapper>table>tbody>tr:contains(Créatinine)').each((i,el)=>{
+                $tr = $('.DTFC_scrollBody>table>tbody>tr').eq($(el).index('.DTFC_LeftBodyWrapper>table>tbody>tr'))
+                $td=$tr.find('td.clickable:first');if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();creat=$td.text().trim()}})
+            more_recent=1000
+            $('.DTFC_LeftBodyWrapper>table>tbody>tr:contains("Formule CKDEPI")').each((i,el)=>{
+                $tr = $('.DTFC_scrollBody>table>tbody>tr').eq($(el).index('.DTFC_LeftBodyWrapper>table>tbody>tr'))
+                $td=$tr.find('td.clickable:first');if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();CKDEPI=$td.text().trim()}})
+            console.log(IPP + " - créat : " + creat + " - DFG : " + CKDEPI)
+            if (creat && CKDEPI){
+                GM_setValue("labo", {IPP:IPP,creat:creat, CKDEPI: CKDEPI, autoclose:false})
+                var listener = GM_addValueChangeListener("labo", function(name, oldValue, newValue, remote){
+                    if (newValue.autoclose){
+                        window.close()
+                        GM_removeValueChangeListener(listener)
+                    }
+                })
+                }
+        }
+        setTimeout(checkCreat, 2000)
         //console.log(creat, CKDEPI)
         if (creat && CKDEPI){
             GM_setValue("labo", {IPP:IPP,creat:creat, CKDEPI: CKDEPI, autoclose:false})
@@ -1369,6 +1392,7 @@ function autoPresConsignesRapides(consignes){
                 currentConsignes.mode_hospit.comment = ""
             }
         })
+        console.log(currentConsignes)
         return currentConsignes
     }
 }
@@ -1682,7 +1706,8 @@ function presOutputConsignesRapides(ev){
                     let currConsignes = autoPresConsignesRapides()
                     SSSFrame.listingConsignes = currConsignes
                     Object.keys(currConsignes).forEach(el=>{
-                        $('#CONSIGNES-POPUP input[name='+el+']'+(currConsignes[el].consigne ? '[consigne='+currConsignes[el].consigne+']':''), SSSFrame.document).click2()
+                        //$('#CONSIGNES-POPUP input[name='+el+']'+(currConsignes[el].consigne ? '[consigne='+currConsignes[el].consigne+']':''), SSSFrame.document).click2()
+                        currConsignes[el].consigne ? $('#CONSIGNES-POPUP input[name='+el+'][consigne='+currConsignes[el].consigne+']', SSSFrame.document).click2() : ''
                         $('#CONSIGNES-POPUP div[contenteditable][name='+el+'-com]').text(currConsignes[el].comment)
                         if (el == "mode_hospit" && currConsignes[el].consigne == "SSC"){
                             $("#Type-SSC option[value="+currConsignes[el].comment+"]").prop('selected', true)
