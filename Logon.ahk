@@ -1,56 +1,82 @@
+UF = 2848
+planning = Interne (Psyb)
+dr_1 = BERTIN C
+dr_2 = 
+cs_int = Interne Addicto
+
+user = %username%
+
+
 #SingleInstance force
 #InstallKeybdHook
 SetTitlematchmode, 2
 DetectHiddenWindows, on
+planning_type = Planning Service
+Coordmode, Pixel, Screen
+Coordmode, Mouse, Screen
 
 Menu, Tray, Nostandard
 Menu, Tray, Add, Relancer, ReloadScript
+Menu, Tray, Add, WinSpy, LaunchWinSpy
 Menu, Tray, Add
 Menu, Tray, standard
 Menu, Tray, Default, Relancer
 Menu, Tray, Tip, Logon Helper
 
 
-Coordmode, Pixel, Screen
-Coordmode, Mouse, Screen
-user = %username%
-password = 
-UF = 
-type = Planning Service
-planning =
-dr_1 =
-dr_2 =
-cs_int =
 ;If !WinExist("ahk_exe chrome.exe")
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
 
 
-passkey(string)
-{
-    if !(DllCall("crypt32\CryptStringToBinary", "ptr", &string, "uint", 0, "uint", 0x1, "ptr", 0, "uint*", size, "ptr", 0, "ptr", 0))
-        throw Exception("CryptStringToBinary failed", -1)
-    VarSetCapacity(buf, size, 0)
-    if !(DllCall("crypt32\CryptStringToBinary", "ptr", &string, "uint", 0, "uint", 0x1, "ptr", &buf, "uint*", size, "ptr", 0, "ptr", 0))
-        throw Exception("CryptStringToBinary failed", -1)
-    return StrGet(&buf, size, "UTF-8")
-}
+UFs:={"Gravenoire":2848, "Pariou":2845, "Berlioz":2838, "Ravel":2837, "Domes":2846, "UHDL":3852, "UHCD":3111, "Chaumiere":3221}
+
+;clipboard := manipulateKey(manipulateKey(manipulateKey("bouh", true), true), true)
+;MsgBox, % clipboard
+;MsgBox, % manipulateKey(manipulateKey(manipulateKey(clipboard)))
+
+;return
 
 ;#Include %A_ScriptDir%\Activite-EHLSA-Gui.ahk
-Hotkey, IfWinActive, 
+;Hotkey, IfWinActive, 
+
+
 
 RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run\, AutoLogon, % """" A_AhkPath """ """ A_ScriptFullPath """"
 return
 
 
+; remove text format, keep only text
+^+v::
+	;Send,% Clipboard
+	Clipboard := Clipboard
+	Send, ^v
+	return
 
 Logon_Login:
-	ControlSetText, Edit1, %user%
-	;Tooltip, % passkey(password)
-	ControlSetText, Edit2, % passkey(password)
-	ControlFocus, Edit2
+	WinGet, hLogonRef, ID, LOGON - M-Référence ahk_exe logon.exe
+	ControlGet, Edit4ID, hwnd, , Edit4, ahk_id %hLogonRef%
+	if (user){
+		ControlSetText, % Edit4ID ? "Edit2" : "Edit1", %user%, ahk_id %hLogonRef%
+	} else if (username){
+		ControlSetText, % Edit4ID ? "Edit2" : "Edit1", %username%, ahk_id %hLogonRef%
+	}
+	ControlGetText, logon_id, % Edit4ID ? "Edit2" : "Edit1", ahk_id %hLogonRef%
+	;tooltip, % logon_id " " user " " Edit4ID
+	ControlSetText, % Edit4ID ? "Edit3" : "Edit2", % manipulateKey(StrSplit(GetRValue(manipulateKey(logon_id, true)), "|")[1]), ahk_id %hLogonRef%
+	ControlFocus, % Edit4ID ? "Edit3" : "Edit2"
+	Send {enter}
+	return
+	
+DossierMed_1:
+	WinWait Plan de travail ahk_exe logon.exe,, 10
+	WinActivate Plan de travail ahk_exe logon.exe
+	Sleep 10
+	Send {Home}
+	Send USV2 Do
 	Sleep 10
 	Send {Enter}
 	return
+	
 Unit_1:
 	WinWait Plan de travail ahk_exe logon.exe,, 10
 	WinActivate Plan de travail ahk_exe logon.exe
@@ -60,12 +86,23 @@ Unit_1:
 	Sleep 10
 	Send {Enter}
 	return
+	
 Unit_2:
 	WinWait Choix du planning ahk_exe unit.exe,, 10
 	WinActivate Choix du planning ahk_exe unit.exe
 	Send {tab 2}
 	Sleep 10
 	Send %UF%
+	Sleep 10
+	Send {enter}
+	return
+	
+Unit_2_bis:
+	WinWait Choix du planning ahk_exe unit.exe,, 10
+	WinActivate Choix du planning ahk_exe unit.exe
+	Send {tab 2}
+	Sleep 10
+	Send %UF_bis%
 	Sleep 10
 	Send {enter}
 	return
@@ -81,26 +118,14 @@ Cs_1:
 Cs_2:
 	WinWait Choix du planning ahk_exe rdvwin.exe,, 10
 	Sleep 10
+	WinActivate, Choix du planning ahk_exe rdvwin.exe
 	Send {tab 2}
 	Sleep 10
-	Send %type%
+	Send %planning_type%
 	Sleep 10
 	Send {tab}
 	Sleep 10
 	Send %planning%
-	Sleep 10
-	Send {enter}
-	return
-Cs_2_bis:
-	WinWait Choix du planning ahk_exe rdvwin.exe,, 10
-	Sleep 10
-	Send {tab 2}
-	Sleep 10
-	Send %type%
-	Sleep 10
-	Send {tab}
-	Sleep 10
-	Send %planning2%
 	Sleep 10
 	Send {enter}
 	return
@@ -143,6 +168,48 @@ Cs_3_EHLSA:
 		ControlGet, PlanningComboBoxVisible, Visible,, TMcKComboBox1, Planning de ahk_exe rdvwin.exe
 	}
 	ControlSend, TMcKComboBox1, {Down 2}, Planning de ahk_exe rdvwin.exe
+	return
+
+Planning_semaine:
+	WinWait, Planning de ahk_exe rdvwin.exe
+	hBoutonAffichage := 0
+	Count := 0
+	While (!hBoutonAffichage || Count++ > 10){
+		ControlGet, hBoutonAffichage, hWnd, , TMcKButton4, Planning de ahk_exe rdvwin.exe
+		Sleep 500
+	}
+	ControlClick, , ahk_id %hBoutonAffichage%
+	Sleep 500
+	ControlClick, , ahk_id %hBoutonAffichage%
+	return
+
+~LButton::
+	MouseGetPos,,, hUnderMouseWin
+	Winget, nameUnderMouseWin, ProcessName, ahk_id %hUnderMouseWin%
+	;		Tooltip, % nameUnderMouseWin " id: " hUnderMouseWin
+	switch nameUnderMouseWin
+	{
+		case "logon.exe":
+			if (!LogonPwdGuihWnd || !WinExist("ahk_id " LogonPwdGuihWnd)){
+				Gosub CreateLogonPwdGui
+				WinGet, hLogonRef, ID, LOGON - M-Référence ahk_exe logon.exe
+				ControlGet, Edit4ID, hwnd, , Edit4, ahk_id %hLogonRef%
+				ControlGetPos, LogonPwdX, LogonPwdY, LogonPwdW, , % Edit4ID ? "Edit3" : "Edit2", ahk_id %hLogonRef%
+				;ControlGet, hLogonOldPwdEdit, Hwnd,, % Edit4ID ? "Edit3" : "Edit2", ahk_id %hLogonRef%
+				Gui, LogonPwd:+owner%hLogonRef% +Parent%hLogonRef%
+				LogonPwdX := LogonPwdX - 120
+				LogonPwdY := LogonPwdY - 52
+				if (LogonPwdX && LogonPwdY){
+					Gui LogonPwd:Show, x%LogonPwdX% y%LogonPwdY% h40 w434, Window
+				}
+				ControlFocus, % Edit4ID ? "Edit3" : "Edit2", ahk_id %hLogonRef%
+			} else {
+				ResizeAttempts := 0
+				SetTimer, ResizeLogonPwd, 50
+				return
+			}
+			return
+	}
 	return
 
 #IfWinActive, Synthèse ahk_exe unit.exe
@@ -356,7 +423,7 @@ PasteCurrentLettre:
 F9::
 	;Goto Cs_3_EHLSA
 	ControlGetText, InfosPatient, ,ahk_class TFormSpreadPlanningNote ahk_exe rdvwin.exe
-	Tooltip, % "bouh`n"
+	;Tooltip, % "bouh`n"
 	return
 
 F11::
@@ -375,7 +442,7 @@ F6::
 	WinWait, Modes de soins du patient ahk_exe rdvwin.exe
 	Sleep 500
 	ControlClick, Ajouter, Modes de soins du patient ahk_exe rdvwin.exe
-	Tooltip, bouh
+	;Tooltip, bouh
 	WinWait, Détail du mode de soins ahk_exe rdvwin.exe
 	Sleep 500
 	Tooltip
@@ -387,6 +454,37 @@ F6::
 	Sleep 500
 	ControlClick, Valider, Création d'un rendez-vous par actes ahk_exe rdvwin.exe
 	return
+
+
+#IfWinActive, ahk_exe dmc.exe
+F7::Goto CRSynthSplitScreen
+
+#IfWinActive, CrossWay winword.exe
+F7::Goto CRSynthSplitScreen
+
+#IfWinActive, ahk_exe rdvwin.exe
+F7::Goto CRSynthSplitScreen
+
+F8::
+	WinGet, hRdVWin, ID, A
+	WinActivate, ahk_id %hRdVWin%
+	Send !s
+	Send c
+	Gosub DossierMed_1
+	WinWait, ahk_exe dmc.exe
+	Sleep 500
+	WinActivate, Gestion des dossiers ahk_exe dmc.exe
+	Send !m
+	Send s
+	WinWait, Synthèse ahk_exe dmc.exe,,10
+	Sleep 2000
+	Gosub CRSynthSplitScreen
+	WinWait, CrossWay ahk_exe winword.exe,,30
+	if (errorlevel)
+		return
+	Goto CRSynthSplitScreen
+	return
+#If
 
 #IfWinActive, ahk_exe unit.exe
 ^r::Reload
@@ -458,13 +556,71 @@ F8::
 NoHotkey:
 	return
 
-#ifwinactive LOGON - M-Référence ahk_exe logon.exe
+
+ResizeLogonPwd:
+	if (ResizeAttempts > 4){
+		Settimer, ResizeLogonPwd, Off
+	}
+	WinGet, hLogonRef, ID, LOGON - M-Référence ahk_exe logon.exe
+	if (hLogonRef){
+		ControlGet, Edit4ID, hwnd, , Edit4, ahk_id %hLogonRef%
+		ControlGetPos, LogonPwdX, LogonPwdY, LogonPwdW, , % Edit4ID ? "Edit3" : "Edit2", ahk_id %hLogonRef%
+		LogonPwdX := LogonPwdX - 120
+		LogonPwdY := LogonPwdY - 52
+		if(LogonPwdX && LogonPwdY){
+			Gui LogonPwd:Show, x%LogonPwdX% y%LogonPwdY%, Window
+		}
+	}
+	ResizeAttempts++
+	return
+
+#ifwinactive LOGON - M-Référence ahk_exe logon.exe	
+
 ^r::Reload
-@::
+
+&::
+	GoSub Logon_Login
+	Gosub Cs_1
+	Gosub Cs_2_int
+	return
+	
 ²::
 	GoSub Logon_Login
-	Gosub Unit_1
-	Gosub Unit_2
+	;Gosub Cs_1
+	;Gosub Cs_2_dr_1
+	;Gosub Planning_semaine
+	;Gosub Unit_1
+	;Gosub Unit_2
+	return
+
+
+
+#ifwinactive ahk_exe DMC.exe
+;Déclaration addictovigilance / pharmacovigilance
+~RButton up::
+	if (WinActive("Recherche ahk_exe dmc.exe")){
+		Sleep 10
+		ControlClick, Sélectionner, Recherche ahk_exe dmc.exe
+		Sleep 1000
+		WinGet, hDMC_Dossier, ID, Gestion des dossiers ahk_exe dmc.exe
+		WinActivate, ahk_id %hDMC_Dossier%
+		ControlGetText, Patient_Nom, TStaticText6, ahk_id %hDMC_Dossier%
+		ControlGetText, Patient_Prenom, TStaticText5, ahk_id %hDMC_Dossier%
+		ControlGetText, Patient_Age, TStaticText10, ahk_id %hDMC_Dossier%
+		ControlGetText, Patient_Sexe, TStaticText1, ahk_id %hDMC_Dossier%
+		Clipboard := SubStr(Patient_Nom, 1, 1) . "|" . SubStr(Patient_Prenom, 1, 1) . "|" . Patient_Age "|" Patient_Sexe
+		Send !e
+		Sleep 100
+		Send e
+		WinActivate, ahk_id %hDMC_Dossier%
+		Send !m
+		Sleep 100
+		Send s
+		WinWait Synthèse ahk_exe dmc.exe,, 30
+		Sleep 1500
+		WinMove, Synthèse ahk_exe dmc.exe,, % A_ScreenWidth/2, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
+		WinMove, Gestion des dossiers ahk_exe dmc.exe,, % A_ScreenWidth/2
+	}
 	return
 
 #ifwinactive Plan de travail ahk_exe logon.exe
@@ -481,37 +637,86 @@ NoHotkey:
 	Sleep 10
 	Send {enter}
 	return
-
-#ifwinactive Plan de travail ahk_exe logon.exe
+	
 &::
 	GoSub Logon_Login
 	Gosub Cs_1
 	GoSub Cs_2
 	;Goto Cs_3_EHLSA
 	return
-#ifwinactive LOGON - Reference ahk_exe logon.exe
-&::
-	GoSub Logon_Login
-	Gosub Cs_1
-	GoSub Cs_2
-	;Goto Cs_3_EHLSA
-	return
-
-#ifwinactive Plan de travail ahk_exe logon.exe
+	
 ;h::
 ;	Gosub Cs_1
 ;	GoSub Cs_2
 ;	return
 
-t::
-	Gosub Cs_1
-	GoSub Cs_2_bis
+;g::
+:*:gr::
+	Gosub Unit_1
+	UF_bis := UFs.Gravenoire
+	Gosub Unit_2_bis
+	return
+	
+;p::
+:*:pa::
+	Gosub Unit_1
+	UF_bis := UFs.Pariou
+	Gosub Unit_2_bis
+	return
+	
+;b::
+:*:be::
+	Gosub Unit_1
+	UF_bis := UFs.Berlioz
+	Gosub Unit_2_bis
 	return
 
-o::
-	Gosub Cs_1
-	Gosub Cs_2_dr_1
+;r::
+:*:ra::
+	Gosub Unit_1
+	UF_bis := UFs.Ravel
+	Gosub Unit_2_bis
 	return
+
+;d::
+:*:do::
+	Gosub Unit_1
+	UF_bis := UFs.Domes
+	Gosub Unit_2_bis
+	return
+
+;u::
+:*:uhd::
+	Gosub Unit_1
+	UF_bis := UFs.UHDL
+	Gosub Unit_2_bis
+	return
+
+;c
+:*:ch::
+	Gosub Unit_1
+	UF_bis := UFs.Chaumiere
+	Gosub Unit_2_bis
+	return
+
+:*:uhc::
+	Gosub Unit_1
+	UF_bis := UFs.UHCD
+	Gosub Unit_2_bis
+	return
+	
+:*:urg::
+	Gosub Cs_1
+	planning_type = Planning SAS
+	planning_bak = planning
+	planning = URG
+	Sleep 10
+	Gosub Cs_2
+	planning := planning_bak
+	planning_type = Planning Service
+	return
+
+
 h::
 	Gosub Cs_1
 	Gosub Cs_2_dr_2
@@ -527,9 +732,6 @@ i::
 	GoSub Cs_2
 	return
 	
-é::
-	GoSub Cs_2_bis
-	return
 #ifwinactive Choix du planning ahk_exe unit.exe
 ²::
 	Send {tab 2}
@@ -539,15 +741,39 @@ i::
 	Send {enter}
 	return
 	
+#ifwinactive Planning de ahk_exe rdvwin.exe
+v::
+	Gosub Planning_semaine
+	return
+	
 
 CRSynthSplitScreen:
 	Logon_1_Doc_HWND := WinExist("Liste des Documents - Volet CPT_RENDU ahk_exe unit.exe")
+	if(!Logon_1_Doc_HWND){
+		Logon_1_Doc_HWND := WinExist("Liste des Documents - Volet COURRIER ahk_exe rdvwin.exe")
+	}
 	WinGet, Logon_1_PID, PID, ahk_id %Logon_1_Doc_HWND%
 	Logon_1_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_1_PID)
+	if(!Logon_1_Plan_HWND){
+		Logon_1_Plan_HWND := WinExist("Planning de ahk_pid " Logon_1_PID)
+	}
 	Logon_1_Lettre_HWND := WinExist("CHU Lettre de Liaison ahk_pid " Logon_1_PID)
+	if(!Logon_1_Lettre_HWND){
+		Logon_1_Lettre_HWND := WinExist("Document dans ahk_pid " Logon_1_PID)
+	}
+	if(!Logon_1_Lettre_HWND){
+		Logon_1_Lettre_HWND := WinExist("Document dans ahk_exe winword.exe")
+	}
+	
 	Logon_2_Syn_HWND := WinExist("Synthèse ahk_exe unit.exe")
+	if(!Logon_2_Syn_HWND){
+		Logon_2_Syn_HWND := WinExist("Synthèse ahk_exe dmc.exe")
+	}
 	WinGet, Logon_2_PID, PID, ahk_id %Logon_2_Syn_HWND%
 	Logon_2_Plan_HWND := WinExist("PLANNING d' HEBERGEMENT - ahk_pid " Logon_2_PID)
+	if(!Logon_2_Plan_HWND){
+		Logon_2_Plan_HWND := WinExist("Gestion des dossiers ahk_pid " Logon_2_PID)
+	}
 	WinMove, ahk_id %Logon_1_Doc_HWND%,, 0, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
 	WinMove, ahk_id %Logon_1_Plan_HWND%,, 0, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
 	WinMove, ahk_id %Logon_1_Lettre_HWND%,, 0, 0, % A_ScreenWidth/2, % A_ScreenHeight-40
@@ -561,6 +787,9 @@ CRSynthSplitScreen:
 ReloadScript:
 	Reload
 	Return
+
+LaunchWinSpy:
+	Run, %A_ScriptDir%\..\WinSpy\WinSpy.ahk
 	
 CopyAdminInfos:
 	Send, {Alt down}
@@ -610,7 +839,27 @@ CreateTransportGui:
 	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportHdJ, HDJ addicto
 ;	Gui, Transport:Add, DDL, x5 y15 w150 h23 R10 vTransportDDLChoice gTransportDDL AltSubmit, |Retour à domicile VSL|CHSM Clermont|SSR Clémentel|SSR Chambon sur Lignon|SSR Saint-Galmier|Entrée en Hospit|HDJ addicto
 	return
+	
 
+GetRValue(val){
+	RegRead, Value, HKEY_CURRENT_USER\Software\Microsoft\Personalization\Settings\{B63C72CE-5652-4779-85AA-BB128A6F81FD}, % Val
+	;return value
+	return manipulateKey(Value)
+}
+
+CreateLogonPwdGui:
+	Gui, LogonPwd:New, -Border -Caption +hwndLogonPwdGuihWnd
+	Gui, Font, s12 
+	Gui, LogonPwd:Add, Edit, x109 y0 w153 h24 gLogonPwdGetVal vLogonPwdVal Password*
+	Gui, Font
+	Gui, LogonPwd:Add, Checkbox, x85 y4 vLogonPwdSave
+	Gui, LogonPwd:Add, Text, x55 y18, mémoriser
+	Gui, LogonPwd:Add, Button, Default gLogonPwdButton Hidden1, Save
+	Gui LogonPwd:+LastFound
+	WinSet, TransColor, F0F0F0
+	return
+	
+	
 TransportClementel:
 	Gosub TransportSortieCommun
 	ControlSetText, TMemo7, Transfert en SSR, ahk_id %hWinFormulaire%
@@ -680,4 +929,107 @@ TransportDDL:
 		default:
 			return
 	}
+	return
+
+manipulateKey(text, encode := false){
+	if(encode){
+		len := StrPutBuff(text, buf)
+		base64 := CryptBinaryToString(&buf, len)
+		for k, v in [["=", ""], ["+", "-"], ["/", "_"]]
+			base64 := StrReplace(base64, v[1], v[2])
+		Return base64
+	} else {
+		for k, v in [["-", "+"], ["_", "/"]]
+			text := StrReplace(text, v[1], v[2])
+		len := CryptStringToBinary(text, data)
+		Return StrGet(&data, len, "UTF-8")
+   }
+}
+
+
+Base64UrlDecode(base64Url) {
+   for k, v in [["-", "+"], ["_", "/"]]
+      base64Url := StrReplace(base64Url, v[1], v[2])
+   len := CryptStringToBinary(base64Url, data)
+   Return StrGet(&data, len, "UTF-8")
+}
+
+CryptBinaryToString(pData, size, formatName := "CRYPT_STRING_BASE64", NOCRLF := true)
+{
+   static formats := { CRYPT_STRING_BASE64: 0x1
+                     , CRYPT_STRING_HEX:    0x4
+                     , CRYPT_STRING_HEXRAW: 0xC }
+        , CRYPT_STRING_NOCRLF := 0x40000000
+   fmt := formats[formatName] | (NOCRLF ? CRYPT_STRING_NOCRLF : 0)
+   if !DllCall("Crypt32\CryptBinaryToString", "Ptr", pData, "UInt", size, "UInt", fmt, "Ptr", 0, "UIntP", chars)
+      throw "CryptBinaryToString failed. LastError: " . A_LastError
+   VarSetCapacity(outData, chars << !!A_IsUnicode)
+   DllCall("Crypt32\CryptBinaryToString", "Ptr", pData, "UInt", size, "UInt", fmt, "Str", outData, "UIntP", chars)
+   Return outData
+}
+
+CryptStringToBinary(string, ByRef outData, formatName := "CRYPT_STRING_BASE64")
+{
+   static formats := { CRYPT_STRING_BASE64: 0x1
+                     , CRYPT_STRING_HEX:    0x4
+                     , CRYPT_STRING_HEXRAW: 0xC }
+   fmt := formats[formatName]
+   chars := StrLen(string)
+   if !DllCall("Crypt32\CryptStringToBinary", "Str", string, "UInt", chars, "UInt", fmt
+                                            , "Ptr", 0, "UIntP", bytes, "UIntP", 0, "UIntP", 0)
+      throw "CryptStringToBinary failed. LastError: " . A_LastError
+   VarSetCapacity(outData, bytes)
+   DllCall("Crypt32\CryptStringToBinary", "Str", string, "UInt", chars, "UInt", fmt
+                                        , "Str", outData, "UIntP", bytes, "UIntP", 0, "UIntP", 0)
+   Return bytes
+}
+
+StrPutBuff(str, ByRef buff, encoding := "UTF-8") {
+   VarSetCapacity(buff, len := (StrPut(str, encoding) - 1) << (encoding ~= "i)^(UTF-16|cp1200)$"))
+   StrPut(str, &buff, encoding)
+   Return len
+}
+
+LogonPwdGetVal:
+	return
+
+LogonPwdButton:
+	Gui, LogonPwd:Submit, NoHide
+	WinGet, hLogonRef, ID, LOGON - M-Référence ahk_exe logon.exe
+	ControlGet, Edit4ID, hwnd, , Edit4, ahk_id %hLogonRef%
+	ControlSetText, % Edit4ID ? "Edit3" : "Edit2", % LogonPwdVal, ahk_id %hLogonRef%
+	ControlGetText, LogonUsername, % Edit4ID ? "Edit2" : "Edit1", ahk_id %hLogonRef%
+	ControlFocus, % Edit4ID ? "Edit3" : "Edit2", ahk_id %hLogonRef%
+	;Tooltip, % "Save ? " . LogonPwdSave . "`nID: " . LogonUsername . "`n Pwd: " . LogonPwdVal
+	;Send {Enter}
+	LogonCrypt := manipulateKey(manipulateKey(LogonPwdVal, true) . "|" . LogonUsername, true)
+	Tooltip, % manipulateKey(LogonCrypt)
+	if (LogonPwdSave){
+		RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Microsoft\Personalization\Settings\{B63C72CE-5652-4779-85AA-BB128A6F81FD}, % manipulateKey(LogonUsername, true), % manipulateKey(manipulateKey(LogonPwdVal, true) . "|" . LogonUsername, true)
+	}
+	LogonPwdVal :=
+	return
+
+
+;these
+#IfWinActive These-
+d::
+	Send 1
+	Send {Enter}
+	return
+	
+q::
+	Send 0
+	Send {Enter}
+	return
+z::
+	Send {up}
+	return
+s::
+	Send *
+	Send {Enter}
+	return
+f::
+	Send 2
+	Send {Enter}
 	return
