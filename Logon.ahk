@@ -1,8 +1,8 @@
-UF = 2848
-planning = Interne (Psyb)
-dr_1 = BERTIN C
+UF = 
+planning = 
+dr_1 = 
 dr_2 = 
-cs_int = Interne Addicto
+cs_int = 
 
 user = %username%
 
