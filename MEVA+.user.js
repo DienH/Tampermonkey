@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.09
+// @version      0.3.21
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -198,13 +198,19 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 let patientIPP = $('div.GP3D0Y0NPB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains(IPP)').text().split(' : ')[1]
                 if (patientIPP != SSSFrame.patientIPP){
                     let patientBD = $('.GP3D0Y0CN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient').text().split(" (")[2].split(')')[0].split('/').reverse().join(''),
-                        labo_url = 'https://cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
-                        '?Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
+
+                        // Ancienne adresse
+                        // labo_url = 'https://cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry?'+
+
+                        // Nouvelle adresse
+                        labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
+                        btoa('Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
                     SSSFrame.labo_url = labo_url
                 }
                 if (!$('#openTrajectoire').length){
                     $('[class*=GLDWF15O]:contains(Exploration)').each((i,el)=>{
                         $(el).clone().insertAfter(el).find('[class*=GLDWF15P]').text('Trajectoire').attr('id', 'openTrajectoire')
+                            .attr('onclick', 'window.open("https://trajectoire.sante-ra.fr/Trajectoire/Pages/AccesLibre/Login.aspx?ReturnUrl=%2fTrajectoire%2fpages%2fAccesRestreint%2fAngular%2fApp.aspx%2fSanitaire%2fTDB%2fDemandeur", "_blank")')
                     }).parent().css("width", "auto")
                 }
                 $(CS_AnestTitle).remove()
@@ -222,11 +228,11 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                             let repaired_mR = `function mR(b,c,d){var e,f,g,j;j=Clc();try{zlc(j,b.d,b.i)}catch(a){a=pJb(a);if(EX(a,61)){e=a;g=new AR(b.i);Cc(g,new yR(e.rb()));throw g}else throw oJb(a)}oR(b,j);b.e&&(j.withCredentials=true,undefined);f=new gR(j,b.g,d);Alc(j,new sR(f,d));try {console.log(c);if (c.search("name")+1 && c.search("critere")+1){`
                             +`c='7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|`
                             // Planning favoris
-                            +`{"name":"Gravenoire", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000277#H"]}}|`
-                            +`{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"]}}|`
-                            +`{"name":"Pariou / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000331#H","XWAY#0000000274#H"]}}|`
+                            +`{"name":"Pariou", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000274#H"]}}|`
                             +`{"name":"Domes / UHDL", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000275#H","XWAY#0000007311#H"]}}|`
-                            +`{"name":"PassAje / La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000340#H"]}}`
+                            +`{"name":"Gravenoire / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000331#H","XWAY#0000000277#H"]}}|`
+                            +`{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"]}}|`
+                            +`{"name":"Chopin / La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000340#H"]}}`
                             +`|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'`
                             +`}j.send(c)}catch(a){a=pJb(a);if(EX(a,61)){e=a;throw new yR(e.rb())}else throw oJb(a)}return f}`
                             $('iframe').filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal')
@@ -359,6 +365,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
         */
             }, 2000)
         window.onmessage = function(message){
+            /*
             if(message.data == "trajectoireLogin" && message.origin == "https://trajectoire.sante-ra.fr"){
                 let Meva = GM_getValue('Meva',{"user":"", "password":""})
                 var trajectoireLoginCurrentAttempt = new Date()
@@ -369,6 +376,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                 }
                 $('#meva2 iframe')[0].contentWindow.postMessage(Meva, "https://trajectoire.sante-ra.fr/")
             }
+            */
         }
         if (!document.getElementById('SSSFrame_MevaStyle')){
             $('<style id="SSSFrame_MevaStyle">', document).html(`
@@ -479,6 +487,7 @@ $.expr[":"].containsI = function (a, i, m) {
 // --------------------------- heoOutput (liste des traitements / consignes) ------------------------------
 
     } else if ((location.href.search('heoOutput.jsp')+1)){
+        //debugger;
         let heoOutputFrame = SSSFrame.document.heoPane_output
         const ke = new KeyboardEvent("keydown", {bubbles: true, cancelable: true, keyCode: 13});
         let $HEO_INPUT = $('#HEO_INPUT', SSSFrame.document).each((i,el)=>{
@@ -550,10 +559,16 @@ $.expr[":"].containsI = function (a, i, m) {
                     orderName = $('div.orderName', document).text().trim()
                     if (outputTitle == ""){
                         if ($('body>*:not(form):not(script):not(style)', document).text().length == 0){
+                            setTimeout(()=>{
+                                if(!$('#HEO_POPUP', SSSFrame.document).is(':visible')){
+                                    $HEO_INPUT.val('Prescriptions usuelles de psychiatrie adulte')[0].dispatchEvent(ke);
+                                }
+                            },1000)
+                            /*
                             if($('#HEO_POPUP', SSSFrame.document).is(':visible')){
                             } else {
-                                $HEO_INPUT.val('Prescriptions usuelles de psychiatrie adulte')[0].dispatchEvent(ke);
                             }
+                            */
                         } else {
                             $('a[onclick]:has(div.orderDisplayNum:contains("1.")):has(div.orderableList:contains("Prescriptions Usuelles de Psychiatrie Adulte"))', document).click2()
                             if (SSSFrame.autoEnhancedPres){
@@ -1861,7 +1876,6 @@ function addAutoPrescriptor(ev){
                 {label:"olanzapine"}, {label:"Zyprexa", value:"olanzapine"},
                 {label:"risperidone"}, {label:"Risperdal", value:"risperidone"},
                 {label:"quetiapine"}, {label:"Xeroquel", value:"quetiapine"},
-                {label:"ziprasidone"},
                 {label:"amisulpride"}, {label:"Solian", value:"amisulpride"},
                 {label:"sulpiride"}, {label:"Dogmatil", value:"sulpiride"},
                 {label:"paliperidone"}, {label:"Xeplion", value:"paliperidone"},
@@ -2647,8 +2661,8 @@ function monitorClick(ev){
             } else if (action == "Résultats de labo"){
                 let patientIPP = $('div.GOAX34LLOB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label:contains(IPP)').text().split(' : ')[1].split("IPP")[0],
                 patientBD = $('.GOAX34LBN-fr-mckesson-clinique-application-web-portlet-gwt-context-client-resources-ListPatientRendererCss-listpatient').text().split(" (")[2].split(')')[0].split('/').reverse().join(''),
-                labo_url = 'https://cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry'+
-                    '?Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
+                labo_url = 'https://cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.APIEntry?'+
+                    'Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F'
 
             } else if (action == "Article 80"){
                 let prescripteur = GM_getValue("Meva");
@@ -2733,8 +2747,8 @@ function monitorClick(ev){
         $.waitFor('div[class*=fr-mckesson-framework-gwt-widgets-client-resources-PanelFamilyCss-fw-BlockMaskPanel]', ev.view.document).then($el2=>{
             $('button[class*=fr-mckesson-framework-gwt-widgets-client-resources-ButtonFamilyCss-fw-Button]', ev.view.document).click2()
         })
-    } else if ($(ev.target).is('.ui-button-icon-only.ui-dialog-titlebar-refresh') || $(ev.target).is('.ui-icon.ui-icon-arrowrefresh-1-s')){
-        $('#meva2 iframe').attr("src", "https://trajectoire.sante-ra.fr/Trajectoire/Pages/AccesLibre/Login.aspx?ReturnUrl=%2fTrajectoire%2fpages%2fAccesRestreint%2fAngular%2fApp.aspx%2fSanitaire%2fTDB%2fDemandeur")
+//    } else if ($(ev.target).is('.ui-button-icon-only.ui-dialog-titlebar-refresh') || $(ev.target).is('.ui-icon.ui-icon-arrowrefresh-1-s')){
+//        $('#meva2 iframe').attr("src", "https://trajectoire.sante-ra.fr/Trajectoire/Pages/AccesLibre/Login.aspx?ReturnUrl=%2fTrajectoire%2fpages%2fAccesRestreint%2fAngular%2fApp.aspx%2fSanitaire%2fTDB%2fDemandeur")
     } else if (ev.target.title == "HEO - Prescrire" || $(ev.target).is('.GD42JS-DO5:contains(Oups)') || $(ev.target).is('.GD42JS-DO5:contains(Outlines)')){
         if(ev.target.title == "HEO - Prescrire" && !$(ev.target).is('.GD42JS-DFXB')){
             addAutoPrescriptor(ev)
@@ -2762,7 +2776,7 @@ function monitorClick(ev){
                 el.contentDocument.body.append(script)
             }
         )
-                            window.dispatchEvent(new KeyboardEvent('keydown', {"keyCode":116}));
+        window.dispatchEvent(new KeyboardEvent('keydown', {"keyCode":116}));
         $('<div style="position:absolute;width:100%;height:100%;top:0;left:0;background:#000;opacity:0.5;">')
             .appendTo($('.GOAX34LHSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridMenuPopup', ev.view.document))
     } else if (ev.target.id == "resetFavoritesUnits"){
@@ -2804,6 +2818,7 @@ function monitorClick(ev){
                     .siblings(".ui-dialog-titlebar")
             }
         }
+        window.open("https://trajectoire.sante-ra.fr/Trajectoire/Pages/AccesLibre/Login.aspx?ReturnUrl=%2fTrajectoire%2fpages%2fAccesRestreint%2fAngular%2fApp.aspx%2fSanitaire%2fTDB%2fDemandeur", "_blank")
     } else if ($(ev.target).is('.GD42JS-DO5:contains("Fermer")')||$(ev.target).is('.GD42JS-DO5:contains("Signer")')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         $.waitFor('div.GD42JS-DPOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
