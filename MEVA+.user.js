@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.21
+// @version      0.3.22
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -1614,7 +1614,7 @@ function presOutputConsignesRapides(ev){
         if ($(ev.target).text().search('Sorties Temp')+1){
             ev.target.click()
         } else {
-            $("a[onclick*=2]:first", document).click2()
+            $("a[onclick*=3]:first", document).click2()
         }
     } else if ($(ev.target).text().search('Consignes')+1){
         if(!$('#CONSIGNES-POPUP', SSSFrame.document).dialog('open').length){
