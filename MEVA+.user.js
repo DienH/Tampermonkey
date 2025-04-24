@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.22
+// @version      0.3.23
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -228,7 +228,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                             let repaired_mR = `function mR(b,c,d){var e,f,g,j;j=Clc();try{zlc(j,b.d,b.i)}catch(a){a=pJb(a);if(EX(a,61)){e=a;g=new AR(b.i);Cc(g,new yR(e.rb()));throw g}else throw oJb(a)}oR(b,j);b.e&&(j.withCredentials=true,undefined);f=new gR(j,b.g,d);Alc(j,new sR(f,d));try {console.log(c);if (c.search("name")+1 && c.search("critere")+1){`
                             +`c='7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|`
                             // Planning favoris
-                            +`{"name":"Pariou", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000274#H"]}}|`
+                            +`{"name":"Pariou / HDJ Sismo-Esket", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000274#H", "XWAY#0000007791#H"]}}|`
                             +`{"name":"Domes / UHDL", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000275#H","XWAY#0000007311#H"]}}|`
                             +`{"name":"Gravenoire / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000331#H","XWAY#0000000277#H"]}}|`
                             +`{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"]}}|`
@@ -517,7 +517,7 @@ $.expr[":"].containsI = function (a, i, m) {
                             if (SSSFrame.nouvellesConsignes.pasDeRestrictions){
                                 $HEO_INPUT.val('Pas de consignes restrictives')[0].dispatchEvent(ke);
                             } else if (SSSFrame.nouvellesConsignes.phase = 1){
-                                SSSFrame.output_Selector(1)
+                                SSSFrame.output_Selector("Consignes d'Hébergement")
                             }
                         }
                     }
@@ -880,6 +880,169 @@ $.expr[":"].containsI = function (a, i, m) {
                     document.head.append(dateScript)
                     setTimeout(dateHourPres, 500)
                 }
+            } else if (promptTitle == "Fréquence"){
+                let allowedFrequencies = `1 F PAR J A 16H (16:00)
+1 F PAR J A 8H (08:00)
+1 FOIS / 3 SEM
+1 FOIS / J 10H (10:00)
+1 FOIS / J 11H (11:00)
+1 FOIS / J 14H (14:00)
+1 FOIS / J 8H (08:00)
+1 FOIS / MOIS
+1 FOIS / SEMAINE
+1 FOIS PAR TRIM
+1 JOUR SUR 2
+1 JOUR SUR 3
+1 MATIN PAR SEM (06:00)
+1 MATIN SUR 2 (08:00)
+1 MATIN SUR 3 (08:00)
+1 SOIR SUR 2 (18:00)
+1 SOIR SUR 2. (20:00)
+1 SOIR SUR 3 (18:00)
+2 FOIS / MOIS
+2 SOIRS SUR 3 (18:00)
+3 FOIS / J (08:00, 14:00, 20:00)
+3 SOIRS SUR 4 (18:00)
+6 MATINS SUR 7 (06:00)
+6 SOIRS SUR 7 (18:00)
+APRES EVENEMENT
+APRES LE REPAS (08:00, 13:00, 19:00)
+APRES-MIDI (16:00)
+AU COUCHER SB
+AV MOBILISATION
+AVANT EVENEMENT
+AVANT PANSEMENT (08:00)
+AVANT REPAS (11:00, 18:00)
+AVANT SOINS (06:00, 14:00, 22:00)
+AVANT TOILETTE (06:00)
+CONTIN
+COUCHER (22:00)
+EN CONTINU
+ENTR REPA MA SO (10:00, 21:00)
+ENTRE REPAS 2/J (15:00, 21:00)
+ENTRE REPAS 2XJ (10:00, 15:00)
+ENTRE REPAS 3/J (10:00, 15:00, 21:00)
+JOUR SS DIALYSE
+L MA J V D 18H (18:00)
+L ME J S D 18H (18:00)
+LMMJV MATIN (07:00)
+LMMJV SOIR (20:00)
+LU ME VE DI 18H (18:00)
+LUN - MER 06H00 (06:00)
+LUN-MER-VEN 16H (16:00)
+LUN-MER-VEN 1F/J (06:00)
+LUN-MER-VEN 2F/J (06:00, 18:00)
+LUN-MER-VEN 3F/J (06:00, 12:00, 18:00)
+LUN-MER-VEN 8H (08:00)
+LUN-VEN 8H (08:00)
+LUNDI-JEUDI 16H (16:00)
+LUNDI-VEND. 8H (08:00)
+MA MI APMI SO CO (06:00, 12:00, 16:00, 18:00, 20:00)
+MA-J-S-D 8H 20H (08:00, 20:00)
+MAINTENANT URG
+MAR - VEN 16H (16:00)
+MAR - VEN 18H (18:00)
+MAR-JEU-SAM 18H (18:00)
+MAR-JEU-SAM 1F/J (06:00)
+MAR-JEU-SAM 8H (08:00)
+MAT APMI COUCHER (06:00, 16:00, 22:00)
+MAT MIDI COUCHER (06:00, 12:00, 22:00)
+MAT SOIR COUCHER (06:00, 18:00, 22:00)
+MAT8H MIDI SOIR (08:00, 12:00, 18:00)
+MATIN (06:00)
+MATIN AP REPAS (10:00)
+MATIN AP-MI (06:00, 16:00)
+MATIN COUCHER (06:00, 22:00)
+MATIN MIDI (06:00, 12:00)
+MATIN MIDI 20H (06:00, 12:00, 20:00)
+MATIN MIDI AP-MI (06:00, 12:00, 16:00)
+MATIN MIDI SOIR (06:00, 12:00, 18:00)
+MATIN SF SAM/DIM (06:00)
+MATIN SOIR (06:00, 18:00)
+MATIN SOIR 20H (06:00, 20:00)
+MER - JEU 08H00 (08:00)
+MER-DIM 8H (08:00)
+MERCREDI 8H (08:00)
+MIDI (12:00)
+MIDI AP-MI (12:00, 16:00)
+MIDI SOIR (12:00, 18:00)
+MINUIT (00:00)
+MMS COUCHER (06:00, 12:00, 18:00, 22:00)
+PENDANT DIALYSE
+RETOUR DIALYSE
+SI BESOIN
+SI DIARRHEE
+SI DOULEURS
+SI FIEVRE
+SI NAUSEES
+SOIR (18:00)
+SOIR 20H (20:00)
+SOIR COUCHER (18:00, 22:00)
+TOUS LES 2 MOIS
+TOUS LES 3 MOIS
+TOUTES LES 10MN
+TOUTES LES 12H (08:00, 20:00)
+TOUTES LES 12H. (07:00, 19:00)
+TOUTES LES 12H.. (10:00, 22:00)
+TOUTES LES 15MN
+TOUTES LES 1H
+TOUTES LES 20MN
+TOUTES LES 2H (00:00, 02:00, 04:00, 06:00, 08:00, 10)
+TOUTES LES 2MN
+TOUTES LES 30MN
+TOUTES LES 3H (10:00, 13:00, 16:00, 19:00)
+TOUTES LES 4H (02:00, 06:00, 10:00, 14:00, 18:00, 22:00)
+TOUTES LES 4H. (00:00, 04:00, 08:00, 12:00, 16:00, 20:00)
+TOUTES LES 5MN
+TOUTES LES 6H (00:00, 06:00, 12:00, 18:00)
+TOUTES LES 6H. (02:00, 08:00, 14:00, 20:00)
+TOUTES LES 6H.. (04:00, 10:00, 16:00, 22:00)
+TOUTES LES 72H
+TOUTES LES 8H (06:00, 14:00, 22:00)
+TOUTES LES 8H. (00:00, 08:00, 16:00)
+TOUTES LES 8H.. (04:00, 12:00, 20:00)
+TS LES 10 JOURS
+TS LES 14 JOURS
+TS LES 28 JOURS
+TS LES 4 JOURS
+TTE 2H30 D6 7P (06:00, 08:30, 11:00, 13:30, 16:00, 18)
+TTE 2H30 D7 7P (07:00, 09:30, 12:00, 14:30, 17:00, 19)
+TTE 2H30 D8 6P (08:00, 10:30, 13:00, 15:30, 18:00, 20:30)
+TTE 3H30 D6 5P (06:00, 09:30, 13:00, 16:30, 20:00)
+TTE 3H30 D6 6P (06:00, 09:30, 13:00, 16:30, 20:00, 23:30)
+TTE 3H30 D7 5P (07:00, 10:30, 14:00, 17:30, 21:00)
+TTE 3H30 D8 5P (08:00, 11:30, 15:00, 18:30, 22:00)
+TTES 2H 8HA20H (08:00, 10:00, 12:00, 14:00, 16:00, 18)
+TTES 2H D6 9P (06:00, 08:00, 10:00, 12:00, 14:00, 16)
+TTES 2H D7 9P (07:00, 09:00, 11:00, 13:00, 15:00, 17)
+TTES 3H 8HA20H (08:00, 11:00, 14:00, 17:00, 20:00)
+TTES 3H D6 6P (06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
+TTES 3H D7 6P (07:00, 10:00, 13:00, 16:00, 19:00, 22:00)
+TTES 3H D8 6P (08:00, 11:00, 14:00, 17:00, 20:00, 23:00)
+TTES 4H 8HA20H (08:00, 12:00, 16:00, 20:00)
+TTES 4H D6 5P (06:00, 10:00, 14:00, 18:00, 22:00)
+TTES 4H D7 5P (07:00, 11:00, 15:00, 19:00, 23:00)
+TTES 4H D8 4P (08:00, 12:00, 16:00, 20:00)
+TTES LES 10 SEM
+TTES LES 10H
+TTES LES 12H
+TTES LES 1H30
+TTES LES 2H
+TTES LES 2H30
+TTES LES 3H
+TTES LES 3H30
+TTES LES 4H
+TTES LES 4H30
+TTES LES 5 SEMA
+TTES LES 6 SEMAI
+TTES LES 6H
+TTES LES 7 SEMA
+TTES LES 8 SEMAI
+TTES LES 8H
+TTES LES 9 SEMA
+UNE FOIS
+UNE FOIS / JOUR
+`
             } else if (promptTitle == 'Sélectionnez le motif de non prise en compte de cette alerte ou veuillez le saisir en texte libre') {
                 $HEO_INPUT.val('b')[0].dispatchEvent(ke);
             } else if (promptTitle == 'Priorité: (de votre prescription)') {
@@ -889,7 +1052,7 @@ $.expr[":"].containsI = function (a, i, m) {
                     setTimeout(()=>{$('#HEO_INPUT', SSSFrame.document).val('PLANIFIE') //[0].dispatchEvent(ke);
                                    }, 500)
                 }
-            }else if (promptTitle == 'Commentaires:'){
+            } else if (promptTitle == 'Commentaires:'){
                 if (SSSFrame.repriseOldPres){
                     $('a:contains(ENTREE)', document).click2()
                 }
@@ -1336,7 +1499,7 @@ function autoPresConsignesRapides(consignes){
     if (consignes){
         consignes.phase = 1
         $.waitFor('#HEO_POPUP:hidden', document).then($el=>{
-            window.output_Selector(1)
+            window.output_Selector("Consignes d'Hébergement")
         })
 /*        if(!consignes.phase){
             consignes.phase = 1
