@@ -1,5 +1,5 @@
-logon_version := "1.4.1" ; Numero de version
-;@Ahk2Exe-SetVersion 1.4.1.0
+logon_version := "1.6.0" ; Numero de version
+;@Ahk2Exe-SetVersion 1.6.0.0
 
 #SingleInstance off
 #InstallKeybdHook
@@ -14,6 +14,20 @@ if (A_IsCompiled){
 	Menu, Tray, Icon, %A_ScriptDir%\Logon.ico, 0
 }
 WinGet, ScriptIDList, List, % A_ScriptName " ahk_exe " (A_IsCompiled ? A_ScriptName : A_AhkExeName)
+
+
+;Verification version de Logon.ahk et MàJ auto
+;if (FileExist("\\serv-data2\partage2\Addictovigilance\Internes CEIP\Declarations\Scripts\Logon.ahk"))
+FileReadLine, Logon_dev_version, \\serv-data2\partage2\Addictovigilance\Internes CEIP\Declarations\Scripts\Logon.ahk, 1
+if (!ErrorLevel){
+	Logon_dev_version_A := StrSplit(Logon_dev_version, """")
+	Logon_dev_version := Logon_dev_version_A[2]
+	;Tooltip, % Logon_dev_version "`t" logon_version "`n" (logon_version < Logon_dev_version)
+	if (logon_version < Logon_dev_version){
+		FileCopy, \\serv-data2\partage2\Addictovigilance\Internes CEIP\Declarations\Scripts\Logon.ahk, %A_ScriptFullPath%, 1
+		Reload
+	}
+}
 
 ;MsgBox, % A_ScriptName "`n" ScriptIDList "`n" OldRunningScript " `t" A_ScriptHwnd "`n" ScriptIDList1 "`t " ScriptIDList2 "`t " ScriptIDList3
 if (ScriptIDList > 1)
@@ -76,6 +90,45 @@ CreateOpenByIPPProtocol()
 Coordmode, Pixel, Screen
 Coordmode, Mouse, Screen
 
+
+
+
+;Gestion du lecteur de code-bar
+
+;Create GUI to receive messages
+Gui, +LastFound
+hGui := WinExist()
+
+;Intercept WM_INPUT messages
+WM_INPUT := 0xFF
+;OnMessage(WM_INPUT, "CheckBarCodeReader")
+
+
+;Register Remote Control with RIDEV_INPUTSINK (so that data is received even in the background)
+r := AHKHID_Register(1, 6, hGui, RIDEV_INPUTSINK)
+iKeyList := ""
+
+; Fin gestion du lecteur de code-bar
+
+
+;     ___       _   _                 
+;    /___\_ __ | |_(_) ___  _ __  ___ 
+;   //  // '_ \| __| |/ _ \| '_ \/ __|
+;  / \_//| |_) | |_| | (_) | | | \__ \
+;  \___/ | .__/ \__|_|\___/|_| |_|___/
+;        |_|                          
+
+
+;   ██████  ██████  ████████ ██  ██████  ███    ██ ███████ 
+;  ██    ██ ██   ██    ██    ██ ██    ██ ████   ██ ██      
+;  ██    ██ ██████     ██    ██ ██    ██ ██ ██  ██ ███████ 
+;  ██    ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
+;   ██████  ██         ██    ██  ██████  ██   ████ ███████ 
+;                                                          
+;                                                          
+
+; Gestion du fichier d'option Logon_Options.ini
+
 auto_open = DMC
 
 UF_service =
@@ -103,44 +156,9 @@ auto_open_comment =
 
 
 
-
-;Verification version de Logon.ahk et MàJ auto
-;if (FileExist("\\serv-data2\partage2\Addictovigilance\Internes CEIP\Declarations\Scripts\Logon.ahk"))
-FileReadLine, Logon_dev_version, \\serv-data2\partage2\Addictovigilance\Internes CEIP\Declarations\Scripts\Logon.ahk, 1
-if (!ErrorLevel){
-	Logon_dev_version_A := StrSplit(Logon_dev_version, """")
-	Logon_dev_version := Logon_dev_version_A[2]
-	;Tooltip, % Logon_dev_version "`t" logon_version "`n" (logon_version < Logon_dev_version)
-	if (logon_version < Logon_dev_version){
-		FileCopy, \\serv-data2\partage2\Addictovigilance\Internes CEIP\Declarations\Scripts\Logon.ahk, %A_ScriptFullPath%, 1
-		Reload
-	}
-}
-
-
-;Gestion du lecteur de code-bar
-
-;Create GUI to receive messages
-Gui, +LastFound
-hGui := WinExist()
-
-;Intercept WM_INPUT messages
-WM_INPUT := 0xFF
-OnMessage(WM_INPUT, "CheckBarCodeReader")
-
-
-;Register Remote Control with RIDEV_INPUTSINK (so that data is received even in the background)
-r := AHKHID_Register(1, 6, hGui, RIDEV_INPUTSINK)
-iKeyList := ""
-
-; Fin gestion du lecteur de code-bar
-
-
-
-; Gestion du fichier d'option Logon_Options.ini
 if (!FileExist(A_ScriptDir "\Logon_Options.ini")){
 	FileAppend, % "[Options]`n", %A_ScriptDir%\Logon_Options.ini
-	for k, option in ["UF_service", "dr_1", "dr_2", "cs_int", "auto_open", "Douchette_VID", "Douchette_PID"]
+	for k, option in ["service", "dr_1", "dr_2", "cs_int", "auto_open", "Douchette_VID", "Douchette_PID"]
 	{
 		FileAppend, % option "=" %option% "`n", %A_ScriptDir%\Logon_Options.ini
 		;IniWrite, % %option%, %A_ScriptDir%\Logon_Options.ini, Options, % option
@@ -148,7 +166,7 @@ if (!FileExist(A_ScriptDir "\Logon_Options.ini")){
 		{
 			case "auto_open":
 				FileAppend, % auto_open_comment, %A_ScriptDir%\Logon_Options.ini
-			case "UF_service":
+			case "service":
 				FileAppend, % "; Code UF à ouvrir automatiquement si auto_open est sur 'service'`n", %A_ScriptDir%\Logon_Options.ini
 			case "cs_int":
 				FileAppend, % "; Nom du planning de CS à ouvrir si auto_open est sur 'cs_int'`n", %A_ScriptDir%\Logon_Options.ini
@@ -169,7 +187,7 @@ if (!FileExist(A_ScriptDir "\Logon_Options.ini")){
 
 Auto_open_Liste := {1:{friendly:"Aucun",short:""}
 	,2:{friendly:"DMC",short:"DMC"}
-	,3:{friendly:"Service",short:"UF_service"}
+	,3:{friendly:"Service",short:"service"}
 	,4:{friendly:"Ma consult",short:"cs_moi"}
 	,5:{friendly:"Consult " dr_1,short:"dr_1"}
 	,6:{friendly:"Consult " dr_2,short:"dr_2"}
@@ -195,8 +213,12 @@ for k,v in Douchette_Liste_A
 
 ;Menus
 
+
+menu, MenuPlandetravail_Services, Add, Mon service, PdT_AfficherService
+menu, MenuPlandetravail_Services, Add
 menu, MenuPlandetravail_Services, Add, Berlioz, PdT_AfficherService
 menu, MenuPlandetravail_Services, Add, Ravel, PdT_AfficherService
+menu, MenuPlandetravail_Services, Add, Chopin, PdT_AfficherService
 menu, MenuPlandetravail_Services, Add
 menu, MenuPlandetravail_Services, Add, Domes, PdT_AfficherService
 menu, MenuPlandetravail_Services, Add, Pariou, PdT_AfficherService
@@ -207,7 +229,6 @@ menu, MenuPlandetravail_Services, Add, Chaumière, PdT_AfficherService
 menu, MenuPlandetravail_Services, Add
 menu, MenuPlandetravail_Services, Add, Urgences, PdT_AfficherService
 menu, MenuPlandetravail_Services, Add, UHCD, PdT_AfficherService
-Menu, MenuPlandetravail, Add, Accéder au service, :MenuPlandetravail_Services
 
 Menu, MenuPlandetravail_Cs, Add, Tous les planning, PdT_AfficherCs
 Menu, MenuPlandetravail_Cs, Add, Ma consult, PdT_AfficherCs
@@ -220,7 +241,23 @@ if (dr_1)
 	Menu, MenuPlandetravail_Cs, Add, % dr_1, PdT_AfficherCs
 if (dr_2)
 	Menu, MenuPlandetravail_Cs, Add, % dr_2, PdT_AfficherCs
+if (Ambu_Service_1)
+	Menu, MenuPlandetravail_Cs, Add
+	Menu, MenuPlandetravail_Cs, Add, % Ambu_Service_1, PdT_AfficherCs
+if (Ambu_Service_2)
+	Menu, MenuPlandetravail_Cs, Add, % Ambu_Service_2, PdT_AfficherCs
+	
+	
+Menu, MenuPlandetravail, Add, Mon service, PdT_AfficherService
+Menu, MenuPlandetravail, Add, Ma consult, PdT_AfficherCs
+Menu, MenuPlandetravail, Add, Planning Sismo, PdT_AfficherCs
+Menu, MenuPlandetravail, Add, HdJ Sismo-Esket, PdT_AfficherService
+Menu, MenuPlandetravail, Add, CS Sismo-Esket, PdT_AfficherCs
+Menu, MenuPlandetravail, Add
+Menu, MenuPlandetravail, Add, Accéder au service, :MenuPlandetravail_Services
 Menu, MenuPlandetravail, Add, Planning de consultation, :MenuPlandetravail_Cs
+
+
 
 Menu, XWayApplications, Add, Logon, StartXWay
 Menu, XWayApplications, Add
@@ -247,6 +284,8 @@ Menu, SyntheseRdvwinMenu, Add, &Afficher la biologie, Rdvwin_BiologiePatient
 Menu, Tray, Nostandard
 Menu, Tray, Add, Relancer, ReloadScript
 Menu, Tray, Add, WinSpy, LaunchWinSpy
+if ((A_IsCompiled && InStr(A_AhkPath, "Internes CEIP")) || (!A_IsCompiled && InStr(A_ScriptFullPath, "Internes CEIP")))
+	Menu, Tray, Add, Copie locale, InstallLocalCopy
 Menu, Tray, Add
 Menu, Tray, Add, Applications XWay, :XWayApplications
 Menu, Tray, Add
@@ -270,7 +309,7 @@ StartXWay(XWayApp){
 ;	Run, %userprofile%\AppData\Local\Google\Chrome\Application\chrome.exe
 
 
-UFs:={"Gravenoire":2848, "Pariou":2845, "Berlioz":2838, "Ravel":2837, "Domes":2846, "UHDL":3852, "UHCD":3111, "Chaumiere":3221}
+UFs:={"Gravenoire":2848, "Pariou":2845, "Berlioz":2838, "Ravel":2837, "Domes":2846, "UHDL":3852, "UHCD":3111, "Chaumiere":3221, "Chopin":2835, "HDJ Sismo-Esket":3855}
 
 ;clipboard := manipulateKey(manipulateKey(manipulateKey("bouh", true), true), true)
 ;MsgBox, % clipboard
@@ -281,18 +320,25 @@ UFs:={"Gravenoire":2848, "Pariou":2845, "Berlioz":2838, "Ravel":2837, "Domes":28
 ;#Include %A_ScriptDir%\Activite-EHLSA-Gui.ahk
 ;Hotkey, IfWinActive, 
 
-
-
-RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run\, AutoLogon, % """" A_AhkPath """ """ A_ScriptFullPath """"
+AutoStartLogon:
+if (A_IsCompiled){
+	if (!InStr(A_AhkPath, "Internes CEIP")){
+		RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run\, AutoLogon, % """" A_AhkPath """"
+	}
+} else {
+	if (!InStr(A_ScriptFullPath, "Internes CEIP")){
+		RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run\, AutoLogon, % """" A_AhkPath """ """ A_ScriptFullPath """"
+	}
+}
 return
 
 
 ; remove text format, keep only text
-^+v::
-	;Send,% Clipboard
-	Clipboard := Clipboard
-	Send, ^v
-	return
+;^+v::
+;	;Send,% Clipboard
+;	Clipboard := Clipboard
+;	Send, ^v
+;	return
 
 Logon_Login:
 	WinGet, hLogonRef, ID, LOGON - M-Référence ahk_exe logon.exe
@@ -309,7 +355,9 @@ Logon_Login:
 		ControlFocus, % Edit4ID ? "Edit3" : "Edit2", ahk_id %hLogonRef%
 		Send {enter}
 	} else {
-		Exit
+		ControlGetText, logon_pwd, % Edit4ID ? "Edit3" : "Edit2", ahk_id %hLogonRef%
+		if (logon_pwd)
+			Send {Enter}
 	}
 	return
 	
@@ -323,7 +371,7 @@ DossierMed_1:
 	Sleep 10
 	Send {Enter}
 	return
-	
+
 Unit_1:
 	WinWait Plan de travail ahk_exe logon.exe,, 10
 	WinActivate Plan de travail ahk_exe logon.exe
@@ -370,7 +418,14 @@ Cs_2:
 	WinWaitActive Choix du planning ahk_exe rdvwin.exe
 	Send {tab 2}
 	Sleep 10
-	Send %planning_type%
+	if (planning_type == "Planning Service")
+		Send {down 3}
+	else if (planning_type == "Planning Médecin")
+	{}
+	else if (planning_type == "Planning SAS")
+		send {down 2}
+	else
+		Send %planning_type%
 	Sleep 10
 	Send {tab}
 	Sleep 10
@@ -448,7 +503,40 @@ Cs_3_EHLSA:
 	}
 	ControlSend, TMcKComboBox1, {Down 2}, Planning de ahk_exe rdvwin.exe
 	return
+	
+Auto_Ambu_Service_1:
+	Gosub Cs_1
+	planning_type = Planning Service
+	planning := Ambu_Service_1
+	Gosub CS_2
+	Gosub CS_3
+	return
 
+Auto_Ambu_Service_2:
+	Gosub Cs_1
+	planning_type = Planning Service
+	planning := Ambu_Service_2
+	Gosub CS_2
+	Gosub CS_3
+	return
+
+Auto_Ambu_Sismo_Planning:
+	Gosub Cs_1
+	planning_type = Planning Service
+	planning := "SISMO-"
+	Gosub CS_2
+	Gosub CS_3
+	return
+
+Auto_Ambu_Sismo_Consult:
+	Gosub Cs_1
+	planning_type = Planning Service
+	planning := "PSY - CS NEU"
+	Gosub CS_2
+	Gosub CS_3
+	return
+	
+	
 Planning_semaine:
 	WinWait, Planning de ahk_exe rdvwin.exe
 	hBoutonAffichage := 0
@@ -471,7 +559,7 @@ Planning_semaine:
 		case "logon.exe":
 			if (!LogonPwdGuihWnd || !WinExist("ahk_id " LogonPwdGuihWnd)){
 				Gosub CreateLogonPwdGui
-				Ttip(nameUnderMouseWin)
+				;Ttip(nameUnderMouseWin)
 				WinGet, hLogonRef, ID, LOGON - M-Référence ahk_exe logon.exe
 				ControlGet, Edit4ID, hwnd, , Edit4, ahk_id %hLogonRef%
 				ControlGetPos, LogonPwdX, LogonPwdY, LogonPwdW, , % Edit4ID ? "Edit3" : "Edit2", ahk_id %hLogonRef%
@@ -620,10 +708,12 @@ ResizeFormulaire:
 	Hotkey, ~Space, CopyCurrentMemo
 	Hotkey, ~Enter, CopyCurrentMemo
 	Hotkey, ~Backspace, CopyCurrentMemo
-	Hotkey, ^+v, PasteCurrentMemo
+	Hotkey, ^!v, PasteCurrentMemo
 	Hotkey, ^s, SaveCurrentMemo
 	Hotkey, ^BackSpace, CtrlBackspace
 	Hotkey, ^a, SelectAllText
+	Hotkey, ^Del, CtrlDel
+	Hotkey, ^+Del, CtrlMajDel
 	Hotkey, If
 	Control, Enable,, TDateTimePicker1, %FormulaireWindow%
 	;ToolTip, % Memo_text
@@ -640,6 +730,17 @@ CtrlBackspace:
 	Send, ^+{Left}
 	Send {Del}
 	return
+
+CtrlDel:
+	Send, ^+{Right}
+	Send {Del}
+	return
+
+CtrlMajDel:
+	Send, +{End}
+	Send {Del}
+	return
+	
 
 SelectAllText:
 	Send ^{Home}
@@ -754,16 +855,20 @@ F7::Goto CRSynthSplitScreen
 	Send r
 	return
 
-;  __/\\\\\\\\\\\\\____/\\\\\\____________________________________________/\\\\\\\\\\\\\\\__________________________________________________________________/\\\\\\____        
-;   _\/\\\/////////\\\_\////\\\___________________________________________\///////\\\/////__________________________________________________________________\////\\\____       
-;    _\/\\\_______\/\\\____\/\\\_________________________________________________\/\\\__________________________________________________________________/\\\____\/\\\____      
-;     _\/\\\\\\\\\\\\\/_____\/\\\_____/\\\\\\\\\_____/\\/\\\\\\___________________\/\\\________/\\/\\\\\\\___/\\\\\\\\\_____/\\\____/\\\__/\\\\\\\\\____\///_____\/\\\____     
-;      _\/\\\/////////_______\/\\\____\////////\\\___\/\\\////\\\__________________\/\\\_______\/\\\/////\\\_\////////\\\___\//\\\__/\\\__\////////\\\____/\\\____\/\\\____    
-;       _\/\\\________________\/\\\______/\\\\\\\\\\__\/\\\__\//\\\_________________\/\\\_______\/\\\___\///____/\\\\\\\\\\___\//\\\/\\\_____/\\\\\\\\\\__\/\\\____\/\\\____   
-;        _\/\\\________________\/\\\_____/\\\/////\\\__\/\\\___\/\\\_________________\/\\\_______\/\\\__________/\\\/////\\\____\//\\\\\_____/\\\/////\\\__\/\\\____\/\\\____  
-;         _\/\\\______________/\\\\\\\\\_\//\\\\\\\\/\\_\/\\\___\/\\\_________________\/\\\_______\/\\\_________\//\\\\\\\\/\\____\//\\\_____\//\\\\\\\\/\\_\/\\\__/\\\\\\\\\_ 
-;          _\///______________\/////////___\////////\//__\///____\///__________________\///________\///___________\////////\//______\///_______\////////\//__\///__\/////////__
+;     ___ _                   _        _                        _ _ 
+;    / _ \ | __ _ _ __     __| | ___  | |_ _ __ __ ___   ____ _(_) |
+;   / /_)/ |/ _` | '_ \   / _` |/ _ \ | __| '__/ _` \ \ / / _` | | |
+;  / ___/| | (_| | | | | | (_| |  __/ | |_| | | (_| |\ V / (_| | | |
+;  \/    |_|\__,_|_| |_|  \__,_|\___|  \__|_|  \__,_| \_/ \__,_|_|_|
+;                                                                   
 
+;  ██████  ██       █████  ███    ██     ██████  ███████     ████████ ██████   █████  ██    ██  █████  ██ ██      
+;  ██   ██ ██      ██   ██ ████   ██     ██   ██ ██             ██    ██   ██ ██   ██ ██    ██ ██   ██ ██ ██      
+;  ██████  ██      ███████ ██ ██  ██     ██   ██ █████          ██    ██████  ███████ ██    ██ ███████ ██ ██      
+;  ██      ██      ██   ██ ██  ██ ██     ██   ██ ██             ██    ██   ██ ██   ██  ██  ██  ██   ██ ██ ██      
+;  ██      ███████ ██   ██ ██   ████     ██████  ███████        ██    ██   ██ ██   ██   ████   ██   ██ ██ ███████ 
+;                                                                                                                 
+;                                                                                                                 
 
 #ifwinactive Plan de travail ahk_exe logon.exe
 ^r::Reload
@@ -772,7 +877,7 @@ F7::Goto CRSynthSplitScreen
 ²::
 	Gosub Auto_%auto_open%
 	return
-	
+
 &::
 	GoSub Logon_Login
 	Gosub Cs_1
@@ -784,14 +889,32 @@ RButton::
 	Menu, MenuPlandetravail, Show
 	return
 
+Auto_service:
+	PdT_AfficherService(UF_service)
+	return
+
 PdT_AfficherService(NomService){
-	global UFs, UF_bis
-	if (NomService == "Chaumière"){
-		NomService = Chaumiere
+	global UFs, UF_bis, OpenInCurrentWindow, UF_service
+	if(!(NomService > 0 && NomService < 10000)){
+		if (NomService == "Chaumière"){
+			NomService = Chaumiere
+		}
+		if (NomService == "Mon service"){
+			UF_bis := UF_service
+		} else
+			UF_bis := UFs[NomService]
+	} else {
+		UF_bis := NomService
 	}
-	UF_bis := UFs[NomService]
 	if (UF_bis){
-		Gosub Unit_1
+		if(!OpenInCurrentWindow){
+			Gosub Unit_1
+		} else {
+			OpenInCurrentWindow := false
+			Sleep 50
+			ControlClick, Planning, A		
+			Sleep 300
+		}
 		Gosub Unit_2_bis
 	} else {
 		if (NomService == "Urgences"){
@@ -816,6 +939,14 @@ PdT_AfficherCs(PlanningCs){
 		Gosub Auto_dr_2
 	else if (PlanningCs == "Ma consult")
 		GoSub Auto_cs_moi
+	else if (PlanningCs == Ambu_Service_1)
+		GoSub Auto_Ambu_Service_1
+	else if (PlanningCs == Ambu_Service_2)
+		GoSub Auto_Ambu_Service_2
+	else if (PlanningCs == "Sismo")
+		GoSub Auto_Ambu_Sismo_Planning
+	else if (PlanningCs == "CS Sismo-Esket")
+		GoSub Auto_Ambu_Sismo_Consult
 	else
 		Gosub Cs_1
 }
@@ -871,23 +1002,27 @@ ResizeLogonPwd:
 
 #if
 
-;  _____/\\\\\\\\\\\______________________________________________________________________________________________        
-;   ___/\\\/////////\\\____________________________________________________________________________________________       
-;    __\//\\\______\///______________________________________________/\\\___________________________________________      
-;     ___\////\\\_____________/\\\\\\\\___/\\/\\\\\\\___/\\\____/\\\_\///______/\\\\\\\\_____/\\\\\\\\___/\\\\\\\\\\_     
-;      ______\////\\\________/\\\/////\\\_\/\\\/////\\\_\//\\\__/\\\___/\\\___/\\\//////____/\\\/////\\\_\/\\\//////__    
-;       _________\////\\\____/\\\\\\\\\\\__\/\\\___\///___\//\\\/\\\___\/\\\__/\\\__________/\\\\\\\\\\\__\/\\\\\\\\\\_   
-;        __/\\\______\//\\\__\//\\///////___\/\\\___________\//\\\\\____\/\\\_\//\\\________\//\\///////___\////////\\\_  
-;         _\///\\\\\\\\\\\/____\//\\\\\\\\\\_\/\\\____________\//\\\_____\/\\\__\///\\\\\\\\__\//\\\\\\\\\\__/\\\\\\\\\\_ 
-;          ___\///////////_______\//////////__\///______________\///______\///_____\////////____\//////////__\//////////__
+;   __                 _               
+;  / _\ ___ _ ____   _(_) ___ ___  ___ 
+;  \ \ / _ \ '__\ \ / / |/ __/ _ \/ __|
+;  _\ \  __/ |   \ V /| | (_|  __/\__ \
+;  \__/\___|_|    \_/ |_|\___\___||___/
+;                                      
+;  ███████ ███████ ██████  ██    ██ ██  ██████ ███████ ███████ 
+;  ██      ██      ██   ██ ██    ██ ██ ██      ██      ██      
+;  ███████ █████   ██████  ██    ██ ██ ██      █████   ███████ 
+;       ██ ██      ██   ██  ██  ██  ██ ██      ██           ██ 
+;  ███████ ███████ ██   ██   ████   ██  ██████ ███████ ███████ 
+;                                                              
+;                                                              
 
 
 #ifwinactive Plan de travail ahk_exe logon.exe
-:*:gr::
+:*:gra::
 	PdT_AfficherService("Gravenoire")
 	return
 	
-:*:pa::
+:*:par::
 	PdT_AfficherService("Pariou")
 	return
 
@@ -895,11 +1030,11 @@ ResizeLogonPwd:
 	PdT_AfficherService("Berlioz")
 	return
 
-:*:ra::
+:*:rav::
 	PdT_AfficherService("Ravel")
 	return
 
-:*:do::
+:*:dom::
 	PdT_AfficherService("Domes")
 	return
 
@@ -907,12 +1042,20 @@ ResizeLogonPwd:
 	PdT_AfficherService("UHDL")
 	return
 
-:*:cha::
+:*:cho::
 	PdT_AfficherService("Chaumiere")
+	return
+
+:*:cha::
+	PdT_AfficherService("Chopin")
 	return
 
 :*:uhc::
 	PdT_AfficherService("UHCD")
+	return
+	
+:*:sis::
+	PdT_AfficherCs("Sismo")
 	return
 	
 auto_urg:
@@ -937,6 +1080,15 @@ auto_aucun:
 	return
 
 #if
+    
+
+;  ██████  ██████  ██    ██ ██     ██ ██ ███    ██ 
+;  ██   ██ ██   ██ ██    ██ ██     ██ ██ ████   ██ 
+;  ██████  ██   ██ ██    ██ ██  █  ██ ██ ██ ██  ██ 
+;  ██   ██ ██   ██  ██  ██  ██ ███ ██ ██ ██  ██ ██ 
+;  ██   ██ ██████    ████    ███ ███  ██ ██   ████ 
+;                                                  
+;                                                  
 ;  ____/\\\\\\\\\______/\\\\\\\\\\\\_____/\\\________/\\\__/\\\______________/\\\__/\\\\\\\\\\\__/\\\\\_____/\\\_        
 ;   __/\\\///////\\\___\/\\\////////\\\__\/\\\_______\/\\\_\/\\\_____________\/\\\_\/////\\\///__\/\\\\\\___\/\\\_       
 ;    _\/\\\_____\/\\\___\/\\\______\//\\\_\//\\\______/\\\__\/\\\_____________\/\\\_____\/\\\_____\/\\\/\\\__\/\\\_      
@@ -1096,7 +1248,7 @@ MButton::
 		ControlGetText, Patient_Sexe, TStaticText4, ahk_id %hSynthRdv%
 		Patient_Prenom := StrSplit(Patient_NomPrenom, ")")[3]
 		Patient_Nom := StrSplit(Patient_NomPrenom, " (")[1]
-		Clipboard := Trim(Patient_NomPrenom) . "|" . Format("{:T}",Trim(Patient_Prenom)) . "|" . Patient_Age "|" Patient_Sexe
+		Clipboard := Trim(Patient_Nom) . "|" . Format("{:T}",Trim(Patient_Prenom)) . "|" . Patient_Age "|" Patient_Sexe
 	}
 	return
 
@@ -1218,6 +1370,15 @@ ChoixRapideConsult(Nom_Medecin){
 	Send, h
 	return
 }
+
+
+;  ██████  ███    ███  ██████ 
+;  ██   ██ ████  ████ ██      
+;  ██   ██ ██ ████ ██ ██      
+;  ██   ██ ██  ██  ██ ██      
+;  ██████  ██      ██  ██████ 
+;                             
+;                             
 ;  __/\\\\\\\\\\\\_____/\\\\____________/\\\\________/\\\\\\\\\_        
 ;   _\/\\\////////\\\__\/\\\\\\________/\\\\\\_____/\\\////////__       
 ;    _\/\\\______\//\\\_\/\\\//\\\____/\\\//\\\___/\\\/___________      
@@ -1485,7 +1646,15 @@ AfficherSyntheseSelectionPatient:
 		Goto CopierInfosPatientDMC
 	}
 	return
-
+	
+	
+;  ██    ██ ███    ██ ██ ████████ 
+;  ██    ██ ████   ██ ██    ██    
+;  ██    ██ ██ ██  ██ ██    ██    
+;  ██    ██ ██  ██ ██ ██    ██    
+;   ██████  ██   ████ ██    ██    
+;                                 
+;                                 
 ;  __/\\\________/\\\__/\\\\\_____/\\\__/\\\\\\\\\\\__/\\\\\\\\\\\\\\\_        
 ;   _\/\\\_______\/\\\_\/\\\\\\___\/\\\_\/////\\\///__\///////\\\/////__       
 ;    _\/\\\_______\/\\\_\/\\\/\\\__\/\\\_____\/\\\___________\/\\\_______      
@@ -1508,8 +1677,10 @@ F8::
 	Send !v
 	Send m
 	WinWait, Valider modifier un mouvement ahk_exe unit.exe
-	Sleep 1500
+	WinActivate, Valider modifier un mouvement ahk_exe unit.exe
+	Sleep 100
 	ControlGetText, IEP, TEdit2, Valider modifier un mouvement ahk_exe unit.exe
+	Ttip(IEP)
 	if (!IEP)
 		return
 	WinClose
@@ -1550,6 +1721,22 @@ F8::
 		return
 	Goto CRSynthSplitScreen
 	return
+
+#IfWinActive, PLANNING ahk_exe unit.exe ;'
++RButton::
+~RButton::
+	MouseGetPos, , , hCurrentWindowUnderMouse, hCurrentControlUnderMouse, 2
+	ControlGetText, tCurrentControlUnderMouse, , ahk_id %hCurrentControlUnderMouse%
+	;WinGetTitle, tCurrentWindowUnderMouse, ahk_id %hCurrentWindowUnderMouse%
+	if (tCurrentControlUnderMouse == "Planning"){
+		OpenInCurrentWindow := !GetKeyState("Shift")
+;		if (OpenInCurrentWindow){
+;			Click
+;		}
+		Menu, MenuPlandetravail_Services, Show
+	}
+	return
+
 #If
 
 #IfWinActive, Synthèse ahk_exe unit.exe ;'
@@ -1624,7 +1811,13 @@ ReloadScript(){
 }
 
 LaunchWinSpy:
-	Run, %A_ScriptDir%\..\WinSpy\WinSpy.ahk
+	if (FileExist(A_ScriptDir . "\..\WinSpy\WinSpy.ahk"))
+		Run, %A_ScriptDir%\..\WinSpy\WinSpy.ahk
+	else if (FileExist(A_ScriptDir . "\WinSpy\WinSpy.ahk"))
+		Run, %A_ScriptDir%\WinSpy\WinSpy.ahk
+	else if (FileExist(A_ScriptDir . "\WinSpy.ahk"))
+		Run, %A_ScriptDir%\WinSpy.ahk
+	return
 	
 CopyAdminInfos:
 	Send, {Alt down}
@@ -1664,16 +1857,16 @@ Join(sep, params) {
 
 CreateTransportGui:
 	Gui, Transport:New, -Border -Caption +hwndTransportGuihWnd
-	Gui, Transport:Add, GroupBox, x0 y0 w160 h204 vTransportGuiV, Remplissage rapide
-	Gui, Transport:Add, Radio, x5 y13 w150 h23 gTransportRaDVSL, Retour à domicile VSL
-	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportCHSM, CHSM Clermont
-	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportClementel, SSR Clémentel
-	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportLignon, SSR Chambon sur Lignon
-	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportGalmier, SSR Saint-Galmier
-	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportEntree, Entrée en Hospit
-	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportHdJ, HDJ addicto
-	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportCETD, CETD
-;	Gui, Transport:Add, DDL, x5 y15 w150 h23 R10 vTransportDDLChoice gTransportDDL AltSubmit, |Retour à domicile VSL|CHSM Clermont|SSR Clémentel|SSR Chambon sur Lignon|SSR Saint-Galmier|Entrée en Hospit|HDJ addicto
+	Gui, Transport:Add, GroupBox, x0 y0 w160 h40 vTransportGuiV, Remplissage rapide
+;	Gui, Transport:Add, Radio, x5 y13 w150 h23 gTransportRaDVSL, Retour à domicile VSL
+;	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportCHSM, CHSM Clermont
+;	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportClementel, SSR Clémentel
+;	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportLignon, SSR Chambon sur Lignon
+;	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportGalmier, SSR Saint-Galmier
+;	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportEntree, Entrée en Hospit
+;	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportHdJ, HDJ addicto
+;	Gui, Transport:Add, Radio, x5 y+0 w150 h23 gTransportCETD, CETD
+	Gui, Transport:Add, DDL, x5 y15 w150 h23 R10 vTransportDDLChoice gTransportDDL AltSubmit, |Entrée en Hospit VSL|Retour à domicile VSL|HDJ Sismo|HDJ Esket|CHSM Clermont
 	return
 	
 
@@ -1725,7 +1918,7 @@ TransportSortieCommun:
 	ControlSetText, TEdit1, % "", ahk_id %hWinFormulaire%
 	Control, Check, , TGroupButton1, ahk_id %hWinFormulaire%
 	Control, Check, , TGroupButton6, ahk_id %hWinFormulaire%
-	Control, Check, , TGroupButton9, ahk_id %hWinFormulaire%
+	Control, Check, , TGroupButton10, ahk_id %hWinFormulaire%
 	return
 TransportClementel:
 	Gosub TransportSortieCommun
@@ -1756,7 +1949,7 @@ TransportEntree:
 	Gosub TransportSortieCommun
 	Control, Check, , TGroupButton20, ahk_id %hWinFormulaire%
 	ControlSetText, TMemo7, Entrée en hospitalisation, ahk_id %hWinFormulaire%
-	ControlSetText, TMemo5, % "Etab: Service Gravenoire,  CMP B, CHU Gabriel Montpied`r`nAdresse: 63000 Clermont-Ferrand" , ahk_id %hWinFormulaire%
+	ControlSetText, TMemo5, % "Etab: Service Pariou,  CMP B, CHU Gabriel Montpied`r`nAdresse: 63000 Clermont-Ferrand" , ahk_id %hWinFormulaire%
 	return
 TransportHdJ:
 	Gosub TransportSortieCommun
@@ -1766,6 +1959,24 @@ TransportHdJ:
 	ControlSetText, TEdit1, 6, ahk_id %hWinFormulaire%
 	ControlSetText, TMemo7, Hopital de jour addictologie, ahk_id %hWinFormulaire%
 	ControlSetText, TMemo5, % "Etab: HDJ addictologie, CHU Gabriel Montpied`r`nAdresse: 63000 Clermont-Ferrand" , ahk_id %hWinFormulaire%
+	return
+TransportHdJSismo:
+	Gosub TransportSortieCommun
+	Control, Check, , TGroupButton20, ahk_id %hWinFormulaire%
+	Control, Check, , TGroupButton16, ahk_id %hWinFormulaire%
+	Control, Check, , TCheckbox3, ahk_id %hWinFormulaire%
+	ControlSetText, TEdit1, 12, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo7, Hopital de jour Sismothérapie, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo5, % "Etab: HDJ Sismothérapie, CMP B, CHU Gabriel Montpied`r`nAdresse: 63000 Clermont-Ferrand" , ahk_id %hWinFormulaire%
+	return
+TransportHDJEsket:
+	Gosub TransportSortieCommun
+	Control, Check, , TGroupButton20, ahk_id %hWinFormulaire%
+	Control, Check, , TGroupButton16, ahk_id %hWinFormulaire%
+	Control, Check, , TCheckbox3, ahk_id %hWinFormulaire%
+	ControlSetText, TEdit1, 12, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo7, Hopital de jour Esketamine, ahk_id %hWinFormulaire%
+	ControlSetText, TMemo5, % "Etab: HDJ Esketamine, CMP B, CHU Gabriel Montpied`r`nAdresse: 63000 Clermont-Ferrand" , ahk_id %hWinFormulaire%
 	return
 TransportCETD:
 	Gosub TransportSortieCommun
@@ -1781,20 +1992,26 @@ TransportDDL:
 	Switch TransportDDLChoice
 	{
 		case 2:
-			Goto TransportRadVSL
-		case 3:
-			Goto TransportCHSM
-		case 4:
-			Goto TransportClementel
-		case 5:
-			Goto TransportLignon
-		case 6:
-			Goto TransportGalmier
-		case 7:
 			Goto TransportEntree
+		case 3:
+			Goto TransportRadVSL
+		case 4:
+			Goto TransportHDJSismo
+		case 5:
+			Goto TransportHDJEsket
+		case 6:
+			Goto TransportCHSM
+		case 7:
+			Goto TransportClementel
 		case 8:
-			Goto TransportHdJ
+			Goto TransportLignon
 		case 9:
+			Goto TransportGalmier
+		case 10:
+			Goto TransportEntree
+		case 11:
+			Goto TransportHdJ
+		case 12:
 			Goto TransportCETD
 		default:
 			return
@@ -1837,13 +2054,13 @@ Auto_open_selected:
 		case "Consult Interne":
 			auto_open := "cs_int"
 		case "Service":
-			auto_open := "UF_service"
+			auto_open := "service"
 		case "Planning Urgences":
 			auto_open := "urg"
 		default:
 			auto_open := auto_open_value
 	}
-	if (auto_open == "cs_int" || auto_open == "dr_1" || auto_open == "dr_2" || auto_open ==  "UF_service"){
+	if (auto_open == "cs_int" || auto_open == "dr_1" || auto_open == "dr_2" || auto_open ==  "service"){
 		GuiControl, LogonPwd:Show, BtnModifyOption 
 	} else {
 		GuiControl, LogonPwd:Hide, BtnModifyOption 
@@ -1858,7 +2075,7 @@ BtnModifyOptionAction:
 			BtnModifyOption_Prompt := "Nom du planning de consultation de l'interne"
 		case "dr_1", "dr_2":
 			BtnModifyOption_Prompt = NOM prénom du sénior
-		case "UF_service":
+		case "service":
 			BtnModifyOption_Prompt = Code UF du service
 	}
 	InputBox, BtnModifyOption_Value, % auto_open_value, % BtnModifyOption_Prompt,,200,140,,,Locale,, % %auto_open%
@@ -1907,7 +2124,9 @@ CopierInfosPatientDMC:
 	ControlGetText, Patient_Prenom, TStaticText5, ahk_id %hDMC_Dossier%
 	ControlGetText, Patient_IPP, TStaticText3, ahk_id %hDMC_Dossier%
 	ControlGetText, Patient_DDN, TStaticText11, ahk_id %hDMC_Dossier%
-	Clipboard := Trim(Patient_IPP) . "`t" . Trim(Patient_Nom) " " Format("{:T}",Trim(Patient_Prenom)) . "`t" . Trim(Patient_DDN) "`t?`t`t" 
+	ControlGetText, Patient_Age, TStaticText10, ahk_id %hDMC_Dossier%
+	ControlGetText, Patient_Sexe, TStaticText1, ahk_id %hDMC_Dossier%
+	Clipboard := Trim(Patient_Nom) . "|" . Format("{:T}",Trim(Patient_Prenom)) . "|" . Patient_Age "|" Patient_Sexe
 	return
 
 DMC_BiologiePatient:
@@ -1922,6 +2141,31 @@ Rdvwin_BiologiePatient:
 	WinMenuSelectItem, Planning de ahk_exe rdvwin.exe,, 11&, 23&
 	return
 
+
+InstallLocalCopy:
+	;Ttip(Userprofile "\Documents\AHK\" A_ScriptName)
+	if(FileExist(Userprofile "\Documents\AHK\") != "D")
+		FileCreateDir, % Userprofile "\Documents\AHK\"
+	FileCopy, % A_ScriptFullPath, % Userprofile "\Documents\AHK\" A_ScriptName
+	FileCopy, % A_ScriptDir "\AHKHID.ahk", % Userprofile "\Documents\AHK\"
+	FileCopy, % A_ScriptDir "\Logon.ico", % Userprofile "\Documents\AHK\"
+	FileCopy, % A_ScriptDir "\Logon_options.ini", % Userprofile "\Documents\AHK\"
+	if A_IsCompiled {
+		Run, % Userprofile "\Documents\AHK\" A_ScriptName
+	} else {
+		FileCopy, % A_AhkPath, % Userprofile "\Documents\AHK\" A_AhkExeName
+		Run, % A_AhkPath " """ Userprofile "\Documents\AHK\" A_ScriptName """"
+	}
+	ExitApp
+
+
+;  ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████ 
+;  ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██      
+;  █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████ 
+;  ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
+;  ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
+;                                                                            
+;                                                                            
 ;  __/\\\\\\\\\\\\\\\________________________________________________________________________________________________________        
 ;   _\/\\\///////////_________________________________________________________________________________________________________       
 ;    _\/\\\___________________________________________________________/\\\_______/\\\__________________________________________      
@@ -2049,7 +2293,7 @@ CheckBarCodeReader(wParam, lParam) {
 					Gosub WaitForBarcode
 				}
 			} else if (StrLen(iCharlist) = 10){
-				Run, https://cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Order&command=executeQuery&ord_Code=%iKeyList%&timeRange=none&automaticRefresh=T&onSelectOrder=resultConsultation&sortOrder=DESC&stateIndex=0&showResults=true&autoClose=5000
+				Run, https://cyberlab.chu-clermontferrand.fr/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Order&command=executeQuery&ord_Code=%iCharlist%&timeRange=none&automaticRefresh=T&onSelectOrder=resultConsultation&sortOrder=DESC&stateIndex=0&showResults=true&autoClose=5000
 			}
 			iCharlist =
 		} else if(iFlag == 1){
@@ -2100,12 +2344,15 @@ GuiButtonIcon(Handle, File, Index := 1, Options := "")
 
 
 CreateOpenByIPPProtocol() {
+	OpenByIPP_Version = 1.1
 	RegRead, OpenByIPP_OldCommand, HKEY_CURRENT_USER\Software\Classes\openbyipp\shell\open\command
+	RegRead, OpenByIPP_OldCommandVersion, HKEY_CURRENT_USER\Software\Classes\openbyipp, Version
 	OpenByIPP_Command := """" A_AhkPath (A_IsCompiled ? "" : """ """ A_ScriptFullPath ) """ ""%1"""
-	if (!OpenByIPP_OldCommand != OpenByIPP_Command){
+	if (OpenByIPP_OldCommand != OpenByIPP_Command || OpenByIPP_OldCommandVersion != OpenByIPP_Version){
 		; Créer la clé et définir la valeur par défaut
 		RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Classes\openbyipp, , % "URL:OpenByIPP Protocol"
-		RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Classes\openbyipp\URL Protocol,
+		RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Classes\openbyipp, URL Protocol
+		RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Classes\openbyipp, Version, % OpenByIPP_Version
 
 		; Définir l'icône par défaut
 		RegWrite, REG_SZ, HKEY_CURRENT_USER\Software\Classes\openbyipp\DefaultIcon, , % (A_IsCompiled ? A_ScriptName ",1" : "")
