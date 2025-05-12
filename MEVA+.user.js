@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.23
+// @version      0.3.26
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -220,27 +220,29 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                     .prependTo($('div.carousel_disabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("HEO - Prescrire")').parent())
 
                 if (!$('#resetFavoritesUnits').length){
+                    let repaired_mR = `function mR(b,c,d){var e,f,g,j;j=Clc();try{zlc(j,b.d,b.i)}catch(a){a=pJb(a);if(EX(a,61)){e=a;g=new AR(b.i);Cc(g,new yR(e.rb()));throw g}else throw oJb(a)}oR(b,j);b.e&&(j.withCredentials=true,undefined);f=new gR(j,b.g,d);Alc(j,new sR(f,d));try {console.log(c);if (c.search("name")+1 && c.search("critere")+1){`
+                    +`c='7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|`
+                    // Planning favoris
+                    +`{"name":"UHDL", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000007311#H"]}}|`
+                    +`{"name":"Pariou / HDJ Sismo-Esket / Domes", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000274#H", "XWAY#0000007791#H", "XWAY#0000000275#H"]}}|`
+                    +`{"name":"Gravenoire / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000331#H","XWAY#0000000277#H"]}}|`
+                    +`{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"]}}|`
+                    +`{"name":"Chopin / La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000340#H"]}}`
+                    +`|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'`
+                    +`}j.send(c)}catch(a){a=pJb(a);if(EX(a,61)){e=a;throw new yR(e.rb())}else throw oJb(a)}return f}`
+                    $('.gwt-PopupPanel.MevaNIAContextePopupPanel>div>table>tbody:not(:has())').append($('.gwt-PopupPanel tr:last').clone().find('div').text("Unités favorites").end())
                     $('.gwt-TabBarItem-wrapper-selected').each((i,el)=>{
                         $(el).clone("gwt-TabBarItem-wrapper-selected").removeClass('gwt-TabBarItem-wrapper-selected').attr('id', 'resetFavoritesUnits').appendTo($(el).parent()).find('.GP3D0Y0NPB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label').text('Onglets favoris').end().find('[src*=icons]').attr('src', "/m-eva/img/icons/star.png" ).end().find('.gwt-TabBarItem-selected').removeClass('gwt-TabBarItem-selected').end()
                             .click(ev=>{
-                            window.dispatchEvent(new KeyboardEvent('keydown', {"keyCode":116}));
 
-                            let repaired_mR = `function mR(b,c,d){var e,f,g,j;j=Clc();try{zlc(j,b.d,b.i)}catch(a){a=pJb(a);if(EX(a,61)){e=a;g=new AR(b.i);Cc(g,new yR(e.rb()));throw g}else throw oJb(a)}oR(b,j);b.e&&(j.withCredentials=true,undefined);f=new gR(j,b.g,d);Alc(j,new sR(f,d));try {console.log(c);if (c.search("name")+1 && c.search("critere")+1){`
-                            +`c='7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|`
-                            // Planning favoris
-                            +`{"name":"Pariou / HDJ Sismo-Esket", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000274#H", "XWAY#0000007791#H"]}}|`
-                            +`{"name":"Domes / UHDL", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000275#H","XWAY#0000007311#H"]}}|`
-                            +`{"name":"Gravenoire / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000331#H","XWAY#0000000277#H"]}}|`
-                            +`{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"]}}|`
-                            +`{"name":"Chopin / La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000340#H"]}}`
-                            +`|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'`
-                            +`}j.send(c)}catch(a){a=pJb(a);if(EX(a,61)){e=a;throw new yR(e.rb())}else throw oJb(a)}return f}`
                             $('iframe').filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal')
                                 .each((i,el)=>{
                                 let script = el.contentDocument.createElement('script')
                                 script.innerHTML = repaired_mR
                                 el.contentDocument.body.append(script)
                             })
+                            window.dispatchEvent(new KeyboardEvent('keydown', {"keyCode":116}));
+                            setTimeout(()=>{$('.GLDWF15N-:contains(Ok)').click2()}, 500)
                         })
                     })
                 }
@@ -505,8 +507,8 @@ $.expr[":"].containsI = function (a, i, m) {
                     delete SSSFrame.prescriptionIsoState
                     //$('button.GD42JS-DO5:contains(Oups)', SSSFrame.document).attr('disabled', true)
                     $('a:contains("Retourner à la liste")', document).remove()
-                    $('a:contains("Consignes")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Consignes rapides</a>').click(presOutputConsignesRapides))
-                    $('a:contains("Sorties Temp")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Permission rapide</a>').click(presOutputConsignesRapides))
+                    $('a:contains("Consignes")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Consignes rapides</a>').click(presOutputConsignesRapides).contextmenu(presOutputConsignesRapides))
+                    $('a:contains("Sorties Temp")', document).contextmenu(ev=>{ev.preventDefault();presOutputConsignesRapides(ev);}).before($('<a class="presPsy-rapide">Permission rapide</a>').click(presOutputConsignesRapides).contextmenu(presOutputConsignesRapides))
                     $('a:contains("Bilans Psychiatrie")', document).contextmenu(ev=>{ev.preventDefault();presLaboPrincipaux(ev);}).before($('<a class="presPsy-rapide">Bilan rapide</a>').click(presLaboPrincipaux_bis))
                     //$('a:contains("Bilans Psychiatrie")', document).contextmenu(ev=>{ev.preventDefault();presLaboRapide(ev);}).before($('<a class="presPsy-rapide">Bilan rapide</a>').click(presLaboRapide))
                     if (SSSFrame.nouvellesConsignes){
@@ -552,6 +554,8 @@ $.expr[":"].containsI = function (a, i, m) {
                     if (SSSFrame.autoPresPerm){
                         SSSFrame.autoPresPerm = false
                         $("a[onclick*=1]:first", document).click2()
+                    } else if (SSSFrame.autoPresPermRepeated){
+                        $("a[onclick*=2]:first", document).click2()
                     }
                     break
                 default:
@@ -573,8 +577,11 @@ $.expr[":"].containsI = function (a, i, m) {
                             $('a[onclick]:has(div.orderDisplayNum:contains("1.")):has(div.orderableList:contains("Prescriptions Usuelles de Psychiatrie Adulte"))', document).click2()
                             if (SSSFrame.autoEnhancedPres){
                                 SSSFrame.output_Selector(SSSFrame.autoEnhancedPres.nom+' '+SSSFrame.autoEnhancedPres.forme)
-                            } else if (SSSFrame.nouvellesConsignes && SSSFrame.nouvellesConsignes.pasDeRestrictions){
-                                $('a[onclick]:has(div.orderableList:contains("Pas de consignes restrictives"))', document).click2()
+                            } else if (SSSFrame.nouvellesConsignes && SSSFrame.nouvellesConsignes.pasDeRestrictions || SSSFrame.pasDeRestrictions){
+                                console.log('bouh')
+                                if(!$(`a[onclick="doSel('1');"]:has(div.orderableList:contains('MODIFICATION Pas de consignes restrictives'))`, document).length){
+                                    $(`a[onclick="doSel('1');"]:has(div.orderableList:contains('Pas de consignes restrictives'))`, document).click2()
+                                }
                             } else if (SSSFrame.listePresLabo){
                                 //console.log(SSSFrame.listePresLabo.current)
                                 SSSFrame.output_Selector(SSSFrame.listePresLabo.current)
@@ -751,12 +758,32 @@ $.expr[":"].containsI = function (a, i, m) {
                             $('a[onclick]:contains("ENTREE")', document).click2()
                             break
                     }
-                } else if(SSSFrame.nouvellesConsignes && $el.filter('.orderName:contains("Pas de consignes restrictives")').length) {
+                } else if((SSSFrame.nouvellesConsignes || SSSFrame.pasDeRestrictions ) && $el.filter('.orderName:contains("Pas de consignes restrictives")').length) {
                     switch (promptTitle){
                         case "Saisissez une date et heure de début":
                             $HEO_INPUT[0].dispatchEvent(ke);
-                            delete SSSFrame.nouvellesConsignes
+                            if(SSSFrame.nouvellesConsignes){delete SSSFrame.nouvellesConsignes}
+                            if(SSSFrame.pasDeRestrictions){delete SSSFrame.pasDeRestrictions}
                             $('button.GD42JS-DO5:contains(Outlines)', SSSFrame.document).click2()
+                            break
+                    }
+
+
+                    // ---------- Pres Labo auto -----------
+                    // ---------- Pres Labo auto -----------
+                    // ---------- Pres Labo auto -----------
+                    // ---------- Pres Labo auto -----------
+                } else if(SSSFrame.autoPresPermRepeated && $el.filter('.orderName:contains("Sortie Temporaire - Répétée")').length) {
+                    switch (promptTitle){
+                        case "Saisissez une date et heure de début":
+                            $HEO_INPUT.each((i,el)=>setTimeout(elm=>{elm.dispatchEvent(ke)}, 500, el))
+                            break
+                        case "Durée de la prescription: (avec une date et heure de fin optionnelle)":
+                            $HEO_INPUT.each((i,el)=>setTimeout(elm=>{elm.dispatchEvent(ke)}, 500, el))
+                            break
+                        case "Commentaires:":
+                            delete SSSFrame.autoPresPermRepeated
+                            $HEO_INPUT.each((i,el)=>setTimeout(elm=>{elm.value="OK permissions de journée à la demande"}, 500, el))
                             break
                     }
 
@@ -880,169 +907,177 @@ $.expr[":"].containsI = function (a, i, m) {
                     document.head.append(dateScript)
                     setTimeout(dateHourPres, 500)
                 }
-            } else if (promptTitle == "Fréquence"){
-                let allowedFrequencies = `1 F PAR J A 16H (16:00)
-1 F PAR J A 8H (08:00)
-1 FOIS / 3 SEM
-1 FOIS / J 10H (10:00)
-1 FOIS / J 11H (11:00)
-1 FOIS / J 14H (14:00)
-1 FOIS / J 8H (08:00)
-1 FOIS / MOIS
-1 FOIS / SEMAINE
-1 FOIS PAR TRIM
-1 JOUR SUR 2
-1 JOUR SUR 3
-1 MATIN PAR SEM (06:00)
-1 MATIN SUR 2 (08:00)
-1 MATIN SUR 3 (08:00)
-1 SOIR SUR 2 (18:00)
-1 SOIR SUR 2. (20:00)
-1 SOIR SUR 3 (18:00)
-2 FOIS / MOIS
-2 SOIRS SUR 3 (18:00)
-3 FOIS / J (08:00, 14:00, 20:00)
-3 SOIRS SUR 4 (18:00)
-6 MATINS SUR 7 (06:00)
-6 SOIRS SUR 7 (18:00)
-APRES EVENEMENT
-APRES LE REPAS (08:00, 13:00, 19:00)
-APRES-MIDI (16:00)
-AU COUCHER SB
-AV MOBILISATION
-AVANT EVENEMENT
-AVANT PANSEMENT (08:00)
-AVANT REPAS (11:00, 18:00)
-AVANT SOINS (06:00, 14:00, 22:00)
-AVANT TOILETTE (06:00)
-CONTIN
-COUCHER (22:00)
-EN CONTINU
-ENTR REPA MA SO (10:00, 21:00)
-ENTRE REPAS 2/J (15:00, 21:00)
-ENTRE REPAS 2XJ (10:00, 15:00)
-ENTRE REPAS 3/J (10:00, 15:00, 21:00)
-JOUR SS DIALYSE
-L MA J V D 18H (18:00)
-L ME J S D 18H (18:00)
-LMMJV MATIN (07:00)
-LMMJV SOIR (20:00)
-LU ME VE DI 18H (18:00)
-LUN - MER 06H00 (06:00)
-LUN-MER-VEN 16H (16:00)
-LUN-MER-VEN 1F/J (06:00)
-LUN-MER-VEN 2F/J (06:00, 18:00)
-LUN-MER-VEN 3F/J (06:00, 12:00, 18:00)
-LUN-MER-VEN 8H (08:00)
-LUN-VEN 8H (08:00)
-LUNDI-JEUDI 16H (16:00)
-LUNDI-VEND. 8H (08:00)
-MA MI APMI SO CO (06:00, 12:00, 16:00, 18:00, 20:00)
-MA-J-S-D 8H 20H (08:00, 20:00)
-MAINTENANT URG
-MAR - VEN 16H (16:00)
-MAR - VEN 18H (18:00)
-MAR-JEU-SAM 18H (18:00)
-MAR-JEU-SAM 1F/J (06:00)
-MAR-JEU-SAM 8H (08:00)
-MAT APMI COUCHER (06:00, 16:00, 22:00)
-MAT MIDI COUCHER (06:00, 12:00, 22:00)
-MAT SOIR COUCHER (06:00, 18:00, 22:00)
-MAT8H MIDI SOIR (08:00, 12:00, 18:00)
-MATIN (06:00)
-MATIN AP REPAS (10:00)
-MATIN AP-MI (06:00, 16:00)
-MATIN COUCHER (06:00, 22:00)
-MATIN MIDI (06:00, 12:00)
-MATIN MIDI 20H (06:00, 12:00, 20:00)
-MATIN MIDI AP-MI (06:00, 12:00, 16:00)
-MATIN MIDI SOIR (06:00, 12:00, 18:00)
-MATIN SF SAM/DIM (06:00)
-MATIN SOIR (06:00, 18:00)
-MATIN SOIR 20H (06:00, 20:00)
-MER - JEU 08H00 (08:00)
-MER-DIM 8H (08:00)
-MERCREDI 8H (08:00)
-MIDI (12:00)
-MIDI AP-MI (12:00, 16:00)
-MIDI SOIR (12:00, 18:00)
-MINUIT (00:00)
-MMS COUCHER (06:00, 12:00, 18:00, 22:00)
-PENDANT DIALYSE
-RETOUR DIALYSE
-SI BESOIN
-SI DIARRHEE
-SI DOULEURS
-SI FIEVRE
-SI NAUSEES
-SOIR (18:00)
-SOIR 20H (20:00)
-SOIR COUCHER (18:00, 22:00)
-TOUS LES 2 MOIS
-TOUS LES 3 MOIS
-TOUTES LES 10MN
-TOUTES LES 12H (08:00, 20:00)
-TOUTES LES 12H. (07:00, 19:00)
-TOUTES LES 12H.. (10:00, 22:00)
-TOUTES LES 15MN
-TOUTES LES 1H
-TOUTES LES 20MN
-TOUTES LES 2H (00:00, 02:00, 04:00, 06:00, 08:00, 10)
-TOUTES LES 2MN
-TOUTES LES 30MN
-TOUTES LES 3H (10:00, 13:00, 16:00, 19:00)
-TOUTES LES 4H (02:00, 06:00, 10:00, 14:00, 18:00, 22:00)
-TOUTES LES 4H. (00:00, 04:00, 08:00, 12:00, 16:00, 20:00)
-TOUTES LES 5MN
-TOUTES LES 6H (00:00, 06:00, 12:00, 18:00)
-TOUTES LES 6H. (02:00, 08:00, 14:00, 20:00)
-TOUTES LES 6H.. (04:00, 10:00, 16:00, 22:00)
-TOUTES LES 72H
-TOUTES LES 8H (06:00, 14:00, 22:00)
-TOUTES LES 8H. (00:00, 08:00, 16:00)
-TOUTES LES 8H.. (04:00, 12:00, 20:00)
-TS LES 10 JOURS
-TS LES 14 JOURS
-TS LES 28 JOURS
-TS LES 4 JOURS
-TTE 2H30 D6 7P (06:00, 08:30, 11:00, 13:30, 16:00, 18)
-TTE 2H30 D7 7P (07:00, 09:30, 12:00, 14:30, 17:00, 19)
-TTE 2H30 D8 6P (08:00, 10:30, 13:00, 15:30, 18:00, 20:30)
-TTE 3H30 D6 5P (06:00, 09:30, 13:00, 16:30, 20:00)
-TTE 3H30 D6 6P (06:00, 09:30, 13:00, 16:30, 20:00, 23:30)
-TTE 3H30 D7 5P (07:00, 10:30, 14:00, 17:30, 21:00)
-TTE 3H30 D8 5P (08:00, 11:30, 15:00, 18:30, 22:00)
-TTES 2H 8HA20H (08:00, 10:00, 12:00, 14:00, 16:00, 18)
-TTES 2H D6 9P (06:00, 08:00, 10:00, 12:00, 14:00, 16)
-TTES 2H D7 9P (07:00, 09:00, 11:00, 13:00, 15:00, 17)
-TTES 3H 8HA20H (08:00, 11:00, 14:00, 17:00, 20:00)
-TTES 3H D6 6P (06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
-TTES 3H D7 6P (07:00, 10:00, 13:00, 16:00, 19:00, 22:00)
-TTES 3H D8 6P (08:00, 11:00, 14:00, 17:00, 20:00, 23:00)
-TTES 4H 8HA20H (08:00, 12:00, 16:00, 20:00)
-TTES 4H D6 5P (06:00, 10:00, 14:00, 18:00, 22:00)
-TTES 4H D7 5P (07:00, 11:00, 15:00, 19:00, 23:00)
-TTES 4H D8 4P (08:00, 12:00, 16:00, 20:00)
-TTES LES 10 SEM
-TTES LES 10H
-TTES LES 12H
-TTES LES 1H30
-TTES LES 2H
-TTES LES 2H30
-TTES LES 3H
-TTES LES 3H30
-TTES LES 4H
-TTES LES 4H30
-TTES LES 5 SEMA
-TTES LES 6 SEMAI
-TTES LES 6H
-TTES LES 7 SEMA
-TTES LES 8 SEMAI
-TTES LES 8H
-TTES LES 9 SEMA
-UNE FOIS
-UNE FOIS / JOUR
-`
+            } else if (promptTitle == "Fréquence:"){
+                $(document.getElementById('preHeaderMarkup'))
+                     .append($('<input id="ChoixFreqInput" list="ListeFreq" style="margin-left: 15px;">')
+                             .on('change', (ev)=>{
+                     $HEO_INPUT.val(ev.target.value)[0].dispatchEvent(ke);
+                 }))
+                     .append($('<span><img width=12 style="margin-left: 6px;cursor:pointer;" alt="" src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3ZnLWljb24iIHN0eWxlPSJ3aWR0aDogMWVtOyBoZWlnaHQ6IDFlbTt2ZXJ0aWNhbC1hbGlnbjogbWlkZGxlO2ZpbGw6IGN1cnJlbnRDb2xvcjtvdmVyZmxvdzogaGlkZGVuOyIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0xMDE0LjY0MzQ5MyA4MjIuNjMyMjcxYzAgMCAwIDAtMC4wMjA0NzkgMGwtMzEwLjYyOTc0Ny0zMTAuNjI5NzQ3IDMxMC42Mjk3NDctMzEwLjYyOTc0N2MwIDAgMCAwIDAuMDIwNDc5IDAgMy4zMzgxMjMtMy4zMzgxMjMgNS43NTQ2NzgtNy4yNDk2NjYgNy4zMTExMDQtMTEuNDA2OTYgNC4yMzkyMTEtMTEuMzY2MDAxIDEuODIyNjU2LTI0LjY3NzUzNS03LjMzMTU4My0zMy44MzE3NzRsLTE0Ni43MzQwNTQtMTQ2LjczNDA1NGMtOS4xNTQyMzktOS4xNTQyMzktMjIuNDQ1MjkzLTExLjU3MDc5NC0zMy44MzE3NzQtNy4zMTExMDQtNC4xNTcyOTQgMS41NTY0MjUtOC4wNjg4MzcgMy45NzI5ODEtMTEuNDI3NDM5IDcuMzExMTA0IDAgMCAwIDAgMCAwbC0zMTAuNjI5NzQ3IDMxMC42NTAyMjYtMzEwLjYyOTc0Ny0zMTAuNjI5NzQ3YzAgMCAwIDAgMCAwLTMuMzM4MTIzLTMuMzM4MTIzLTcuMjQ5NjY2LTUuNzU0Njc4LTExLjQwNjk2LTcuMzExMTA0LTExLjM4NjQ4MS00LjIzOTIxMS0yNC42Nzc1MzUtMS44MjI2NTYtMzMuODMxNzc0IDcuMzExMTA0bC0xNDYuNzM0MDU0IDE0Ni43MzQwNTRjLTkuMTU0MjM5IDkuMTU0MjM5LTExLjU3MDc5NCAyMi40NDUyOTMtNy4zMzE1ODMgMzMuODMxNzc0IDEuNTU2NDI1IDQuMTU3Mjk0IDMuOTcyOTgxIDguMDY4ODM3IDcuMzExMTA0IDExLjQwNjk2IDAgMCAwIDAgMCAwbDMxMC42Mjk3NDcgMzEwLjYyOTc0Ny0zMTAuNjI5NzQ3IDMxMC42NTAyMjZjMCAwIDAgMCAwIDAtMy4zMzgxMjMgMy4zMzgxMjMtNS43NTQ2NzggNy4yNDk2NjYtNy4zMTExMDQgMTEuNDA2OTYtNC4yMzkyMTEgMTEuMzY2MDAxLTEuODIyNjU2IDI0LjY3NzUzNSA3LjMzMTU4MyAzMy44MzE3NzRsMTQ2LjczNDA1NCAxNDYuNzM0MDU0YzkuMTU0MjM5IDkuMTU0MjM5IDIyLjQ0NTI5MyAxMS41NzA3OTQgMzMuODMxNzc0IDcuMzMxNTgzIDQuMTU3Mjk0LTEuNTU2NDI1IDguMDY4ODM3LTMuOTcyOTgxIDExLjQwNjk2LTcuMzExMTA0IDAgMCAwIDAgMCAwbDMxMC42Mjk3NDctMzEwLjYyOTc0NyAzMTAuNjI5NzQ3IDMxMC42Mjk3NDdjMCAwIDAgMCAwLjAyMDQ3OSAwIDMuMzM4MTIzIDMuMzM4MTIzIDcuMjQ5NjY2IDUuNzU0Njc4IDExLjQwNjk2IDcuMzExMTA0IDExLjM4NjQ4MSA0LjIzOTIxMSAyNC42Nzc1MzUgMS44MjI2NTYgMzMuODMxNzc0LTcuMzMxNTgzbDE0Ni43MzQwNTQtMTQ2LjczNDA1NGM5LjE1NDIzOS05LjE1NDIzOSAxMS41NzA3OTQtMjIuNDQ1MjkzIDcuMzMxNTgzLTMzLjgzMTc3NC0xLjU1NjQyNS00LjE1NzI5NC0zLjk3Mjk4MS04LjA2ODgzNy03LjMxMTEwNC0xMS40MDY5NnoiICAvPjwvc3ZnPg==" /></span>')
+                             .click((ev=>{document.getElementById('ChoixFreqInput').value = ""})))
+                     .append(`<datalist id="ListeFreq"><option value="1 F PAR J A 16H">1 F PAR J A 16H (16:00)</option>
+<option value="1 F PAR J A 8H">1 F PAR J A 8H (08:00)</option>
+<option>1 FOIS / 3 SEM</option>
+<option value="1 FOIS / J 10H">1 FOIS / J 10H (10:00)</option>
+<option value="1 FOIS / J 11H">1 FOIS / J 11H (11:00)</option>
+<option value="1 FOIS / J 14H">1 FOIS / J 14H (14:00)</option>
+<option value="1 FOIS / J 8H">1 FOIS / J 8H (08:00)</option>
+<option>1 FOIS / MOIS</option>
+<option>1 FOIS / SEMAINE</option>
+<option>1 FOIS PAR TRIM</option>
+<option>1 JOUR SUR 2</option>
+<option>1 JOUR SUR 3</option>
+<option value="1 MATIN PAR SEM">1 MATIN PAR SEM (06:00)</option>
+<option value="1 MATIN SUR 2">1 MATIN SUR 2 (08:00)</option>
+<option value="1 MATIN SUR 3">1 MATIN SUR 3 (08:00)</option>
+<option value="1 SOIR SUR 2">1 SOIR SUR 2 (18:00)</option>
+<option value="1 SOIR SUR 2.">1 SOIR SUR 2. (20:00)</option>
+<option value="1 SOIR SUR 3">1 SOIR SUR 3 (18:00)</option>
+<option>2 FOIS / MOIS</option>
+<option value="2 SOIRS SUR 3">2 SOIRS SUR 3 (18:00)</option>
+<option value="3 FOIS / J">3 FOIS / J (08:00, 14:00, 20:00)</option>
+<option value="3 SOIRS SUR 4">3 SOIRS SUR 4 (18:00)</option>
+<option value="6 MATINS SUR 7">6 MATINS SUR 7 (06:00)</option>
+<option value="6 SOIRS SUR 7">6 SOIRS SUR 7 (18:00)</option>
+<option>APRES EVENEMENT</option>
+<option value="APRES LE REPAS">APRES LE REPAS (08:00, 13:00, 19:00)</option>
+<option value="APRES-MIDI">APRES-MIDI (16:00)</option>
+<option>AU COUCHER SB</option>
+<option>AV MOBILISATION</option>
+<option>AVANT EVENEMENT</option>
+<option value="AVANT PANSEMENT">AVANT PANSEMENT (08:00)</option>
+<option value="AVANT REPAS">AVANT REPAS (11:00, 18:00)</option>
+<option value="AVANT SOINS">AVANT SOINS (06:00, 14:00, 22:00)</option>
+<option value="AVANT TOILETTE">AVANT TOILETTE (06:00)</option>
+<option>CONTIN</option>
+<option value="COUCHER">COUCHER (22:00)</option>
+<option>EN CONTINU</option>
+<option value="ENTR REPA MA SO">ENTR REPA MA SO (10:00, 21:00)</option>
+<option value="ENTRE REPAS 2/J">ENTRE REPAS 2/J (15:00, 21:00)</option>
+<option value="ENTRE REPAS 2XJ">ENTRE REPAS 2XJ (10:00, 15:00)</option>
+<option value="ENTRE REPAS 3/J">ENTRE REPAS 3/J (10:00, 15:00, 21:00)</option>
+<option>JOUR SS DIALYSE</option>
+<option value="L MA J V D 18H">L MA J V D 18H (18:00)</option>
+<option value="L ME J S D 18H">L ME J S D 18H (18:00)</option>
+<option value="LMMJV MATIN">LMMJV MATIN (07:00)</option>
+<option value="LMMJV SOIR">LMMJV SOIR (20:00)</option>
+<option value="LU ME VE DI 18H">LU ME VE DI 18H (18:00)</option>
+<option value="LUN - MER 06H00">LUN - MER 06H00 (06:00)</option>
+<option value="LUN-MER-VEN 16H">LUN-MER-VEN 16H (16:00)</option>
+<option value="LUN-MER-VEN 1F/J">LUN-MER-VEN 1F/J (06:00)</option>
+<option value="LUN-MER-VEN 2F/J">LUN-MER-VEN 2F/J (06:00, 18:00)</option>
+<option value="LUN-MER-VEN 3F/J">LUN-MER-VEN 3F/J (06:00, 12:00, 18:00)</option>
+<option value="LUN-MER-VEN 8H">LUN-MER-VEN 8H (08:00)</option>
+<option value="LUN-VEN 8H">LUN-VEN 8H (08:00)</option>
+<option value="LUNDI-JEUDI 16H">LUNDI-JEUDI 16H (16:00)</option>
+<option value="LUNDI-VEND. 8H">LUNDI-VEND. 8H (08:00)</option>
+<option value="MA MI APMI SO CO">MA MI APMI SO CO (06:00, 12:00, 16:00, 18:00, 20:00)</option>
+<option value="MA-J-S-D 8H 20H">MA-J-S-D 8H 20H (08:00, 20:00)</option>
+<option>MAINTENANT URG</option>
+<option value="MAR - VEN 16H">MAR - VEN 16H (16:00)</option>
+<option value="MAR - VEN 18H">MAR - VEN 18H (18:00)</option>
+<option value="MAR-JEU-SAM 18H">MAR-JEU-SAM 18H (18:00)</option>
+<option value="MAR-JEU-SAM 1F/J">MAR-JEU-SAM 1F/J (06:00)</option>
+<option value="MAR-JEU-SAM 8H">MAR-JEU-SAM 8H (08:00)</option>
+<option value="MAT APMI COUCHER">MAT APMI COUCHER (06:00, 16:00, 22:00)</option>
+<option value="MAT MIDI COUCHER">MAT MIDI COUCHER (06:00, 12:00, 22:00)</option>
+<option value="MAT SOIR COUCHER">MAT SOIR COUCHER (06:00, 18:00, 22:00)</option>
+<option value="MAT8H MIDI SOIR">MAT8H MIDI SOIR (08:00, 12:00, 18:00)</option>
+<option value="MATIN">MATIN (06:00)</option>
+<option value="MATIN AP REPAS">MATIN AP REPAS (10:00)</option>
+<option value="MATIN AP-MI">MATIN AP-MI (06:00, 16:00)</option>
+<option value="MATIN COUCHER">MATIN COUCHER (06:00, 22:00)</option>
+<option value="MATIN MIDI">MATIN MIDI (06:00, 12:00)</option>
+<option value="MATIN MIDI 20H">MATIN MIDI 20H (06:00, 12:00, 20:00)</option>
+<option value="MATIN MIDI AP-MI">MATIN MIDI AP-MI (06:00, 12:00, 16:00)</option>
+<option value="MATIN MIDI SOIR">MATIN MIDI SOIR (06:00, 12:00, 18:00)</option>
+<option value="MATIN SF SAM/DIM">MATIN SF SAM/DIM (06:00)</option>
+<option value="MATIN SOIR">MATIN SOIR (06:00, 18:00)</option>
+<option value="MATIN SOIR 20H">MATIN SOIR 20H (06:00, 20:00)</option>
+<option value="MER - JEU 08H00">MER - JEU 08H00 (08:00)</option>
+<option value="MER-DIM 8H">MER-DIM 8H (08:00)</option>
+<option value="MERCREDI 8H">MERCREDI 8H (08:00)</option>
+<option value="MIDI">MIDI (12:00)</option>
+<option value="MIDI AP-MI">MIDI AP-MI (12:00, 16:00)</option>
+<option value="MIDI SOIR">MIDI SOIR (12:00, 18:00)</option>
+<option value="MINUIT">MINUIT (00:00)</option>
+<option value="MMS COUCHER">MMS COUCHER (06:00, 12:00, 18:00, 22:00)</option>
+<option>PENDANT DIALYSE</option>
+<option>RETOUR DIALYSE</option>
+<option>SI BESOIN</option>
+<option>SI DIARRHEE</option>
+<option>SI DOULEURS</option>
+<option>SI FIEVRE</option>
+<option>SI NAUSEES</option>
+<option value="SOIR">SOIR (18:00)</option>
+<option value="SOIR 20H">SOIR 20H (20:00)</option>
+<option value="SOIR COUCHER">SOIR COUCHER (18:00, 22:00)</option>
+<option>TOUS LES 2 MOIS</option>
+<option>TOUS LES 3 MOIS</option>
+<option>TOUTES LES 10MN</option>
+<option value="TOUTES LES 12H">TOUTES LES 12H (08:00, 20:00)</option>
+<option value="TOUTES LES 12H.">TOUTES LES 12H. (07:00, 19:00)</option>
+<option value="TOUTES LES 12H..">TOUTES LES 12H.. (10:00, 22:00)</option>
+<option>TOUTES LES 15MN</option>
+<option>TOUTES LES 1H</option>
+<option>TOUTES LES 20MN</option>
+<option value="TOUTES LES 2H">TOUTES LES 2H (00:00, 02:00, 04:00, 06:00, 08:00, 10)</option>
+<option>TOUTES LES 2MN</option>
+<option>TOUTES LES 30MN</option>
+<option value="TOUTES LES 3H">TOUTES LES 3H (10:00, 13:00, 16:00, 19:00)</option>
+<option value="TOUTES LES 4H">TOUTES LES 4H (02:00, 06:00, 10:00, 14:00, 18:00, 22:00)</option>
+<option value="TOUTES LES 4H.">TOUTES LES 4H. (00:00, 04:00, 08:00, 12:00, 16:00, 20:00)</option>
+<option>TOUTES LES 5MN</option>
+<option value="TOUTES LES 6H">TOUTES LES 6H (00:00, 06:00, 12:00, 18:00)</option>
+<option value="TOUTES LES 6H.">TOUTES LES 6H. (02:00, 08:00, 14:00, 20:00)</option>
+<option value="TOUTES LES 6H..">TOUTES LES 6H.. (04:00, 10:00, 16:00, 22:00)</option>
+<option>TOUTES LES 72H</option>
+<option value="TOUTES LES 8H">TOUTES LES 8H (06:00, 14:00, 22:00)</option>
+<option value="TOUTES LES 8H.">TOUTES LES 8H. (00:00, 08:00, 16:00)</option>
+<option value="TOUTES LES 8H..">TOUTES LES 8H.. (04:00, 12:00, 20:00)</option>
+<option>TS LES 10 JOURS</option>
+<option>TS LES 14 JOURS</option>
+<option>TS LES 28 JOURS</option>
+<option>TS LES 4 JOURS</option>
+<option value="TTE 2H30 D6 7P">TTE 2H30 D6 7P (06:00, 08:30, 11:00, 13:30, 16:00, 18)</option>
+<option value="TTE 2H30 D7 7P">TTE 2H30 D7 7P (07:00, 09:30, 12:00, 14:30, 17:00, 19)</option>
+<option value="TTE 2H30 D8 6P">TTE 2H30 D8 6P (08:00, 10:30, 13:00, 15:30, 18:00, 20:30)</option>
+<option value="TTE 3H30 D6 5P">TTE 3H30 D6 5P (06:00, 09:30, 13:00, 16:30, 20:00)</option>
+<option value="TTE 3H30 D6 6P">TTE 3H30 D6 6P (06:00, 09:30, 13:00, 16:30, 20:00, 23:30)</option>
+<option value="TTE 3H30 D7 5P">TTE 3H30 D7 5P (07:00, 10:30, 14:00, 17:30, 21:00)</option>
+<option value="TTE 3H30 D8 5P">TTE 3H30 D8 5P (08:00, 11:30, 15:00, 18:30, 22:00)</option>
+<option value="TTES 2H 8HA20H">TTES 2H 8HA20H (08:00, 10:00, 12:00, 14:00, 16:00, 18)</option>
+<option value="TTES 2H D6 9P">TTES 2H D6 9P (06:00, 08:00, 10:00, 12:00, 14:00, 16)</option>
+<option value="TTES 2H D7 9P">TTES 2H D7 9P (07:00, 09:00, 11:00, 13:00, 15:00, 17)</option>
+<option value="TTES 3H 8HA20H">TTES 3H 8HA20H (08:00, 11:00, 14:00, 17:00, 20:00)</option>
+<option value="TTES 3H D6 6P">TTES 3H D6 6P (06:00, 09:00, 12:00, 15:00, 18:00, 21:00)</option>
+<option value="TTES 3H D7 6P">TTES 3H D7 6P (07:00, 10:00, 13:00, 16:00, 19:00, 22:00)</option>
+<option value="TTES 3H D8 6P">TTES 3H D8 6P (08:00, 11:00, 14:00, 17:00, 20:00, 23:00)</option>
+<option value="TTES 4H 8HA20H">TTES 4H 8HA20H (08:00, 12:00, 16:00, 20:00)</option>
+<option value="TTES 4H D6 5P">TTES 4H D6 5P (06:00, 10:00, 14:00, 18:00, 22:00)</option>
+<option value="TTES 4H D7 5P">TTES 4H D7 5P (07:00, 11:00, 15:00, 19:00, 23:00)</option>
+<option value="TTES 4H D8 4P">TTES 4H D8 4P (08:00, 12:00, 16:00, 20:00)</option>
+<option>TTES LES 10 SEM</option>
+<option>TTES LES 10H</option>
+<option>TTES LES 12H</option>
+<option>TTES LES 1H30</option>
+<option>TTES LES 2H</option>
+<option>TTES LES 2H30</option>
+<option>TTES LES 3H</option>
+<option>TTES LES 3H30</option>
+<option>TTES LES 4H</option>
+<option>TTES LES 4H30</option>
+<option>TTES LES 5 SEMA</option>
+<option>TTES LES 6 SEMAI</option>
+<option>TTES LES 6H</option>
+<option>TTES LES 7 SEMA</option>
+<option>TTES LES 8 SEMAI</option>
+<option>TTES LES 8H</option>
+<option>TTES LES 9 SEMA</option>
+<option>UNE FOIS</option>
+<option>UNE FOIS / JOUR</option>
+</datalist>`)
+
             } else if (promptTitle == 'Sélectionnez le motif de non prise en compte de cette alerte ou veuillez le saisir en texte libre') {
                 $HEO_INPUT.val('b')[0].dispatchEvent(ke);
             } else if (promptTitle == 'Priorité: (de votre prescription)') {
@@ -1773,16 +1808,23 @@ function presOutputConsignesRapides(ev){
         SSSFrame = SSSFrame.parent
     }
     if ($(ev.target).text().search('Sorties Temp')+1 || $(ev.target).text().search('Permission rapide')+1){
-        SSSFrame.autoPresPerm = true
         if ($(ev.target).text().search('Sorties Temp')+1){
+            SSSFrame.autoPresPerm = true
             ev.target.click()
         } else {
+            if(ev.type == "click"){
+                SSSFrame.autoPresPerm = true
+            } else if(ev.type == "contextmenu"){
+                ev.preventDefault();
+                SSSFrame.autoPresPermRepeated = true
+            }
             $("a[onclick*=3]:first", document).click2()
         }
     } else if ($(ev.target).text().search('Consignes')+1){
-        if(!$('#CONSIGNES-POPUP', SSSFrame.document).dialog('open').length){
-            $('#CONSIGNES-POPUP', SSSFrame.document).dialog('destroy').remove()
-            $('<div id="CONSIGNES-POPUP"></div>', SSSFrame.document).append(`
+        if (ev.type =="click"){
+            if(!$('#CONSIGNES-POPUP', SSSFrame.document).dialog('open').length){
+                $('#CONSIGNES-POPUP', SSSFrame.document).dialog('destroy').remove()
+                $('<div id="CONSIGNES-POPUP"></div>', SSSFrame.document).append(`
 <table>
  <thead>
   <tr class="consigne-mode_hospit">
@@ -1872,103 +1914,108 @@ function presOutputConsignesRapides(ev){
    <td><input type="radio" name="service" consigne="ferme" id="service-ferme"><label for="service-ferme"><b>fermé</b></label></td>
   </tr>
 </tbody></table>`).dialog({
-                modal:true,
-                title:"Consignes d'hospitalisation",
-                minHeight:250,
-                minWidth:680,
-                width:800,
-                height:"auto",
-                resize:"auto",
-                autoResize:true,
-                open:function(ev, ui){
-                    let currConsignes = autoPresConsignesRapides()
-                    SSSFrame.listingConsignes = currConsignes
-                    Object.keys(currConsignes).forEach(el=>{
-                        //$('#CONSIGNES-POPUP input[name='+el+']'+(currConsignes[el].consigne ? '[consigne='+currConsignes[el].consigne+']':''), SSSFrame.document).click2()
-                        currConsignes[el].consigne ? $('#CONSIGNES-POPUP input[name='+el+'][consigne='+currConsignes[el].consigne+']', SSSFrame.document).click2() : ''
-                        $('#CONSIGNES-POPUP div[contenteditable][name='+el+'-com]').text(currConsignes[el].comment)
-                        if (el == "mode_hospit" && currConsignes[el].consigne == "SSC"){
-                            $("#Type-SSC option[value="+currConsignes[el].comment+"]").prop('selected', true)
-                        }
-                    })
-                },
-                buttons: [
-                    {
-                        text: "Valider",
-                        class: "ui-button ui-button-validate",
-                        click: function() {
-                            let listeConsignes={affaires:{consigne:"autorise", comment: ""},
-                                                appels:{consigne:"autorise", comment: ""},
-                                                deplacements:{consigne:"autorise", comment: ""},
-                                                tabagisme:{consigne:"autorise", comment: ""},
-                                                vetements:{consigne:"autorise", comment: ""},
-                                                visites:{consigne:"autorise", comment: ""},
-                                                mode_hospit:{consigne:"SL", comment:""},
-                                                service:{consigne:"ouvert", comment:""},
-                                                changeComment:[]},
-                                consignesValides=true
-                            $('#CONSIGNES-POPUP tbody tr').each((i,el)=>{
-                                if ($(el).hasClass('consigne-deplacements-restriction')){
-                                    listeConsignes.deplacements.restriction = $('input:checked', el).attr('descente')
-                                } else {
-                                    let currentConsigne = {"consigne": $('input:checked', el).attr('consigne') || "0", "comment":$('div[contenteditable]', el).text()},
-                                        nom_consigne = $('input:first', el).attr('name')
-                                    if (currentConsigne.consigne == "restreint" && currentConsigne.comment == "" && nom_consigne != "deplacements")
-                                    {
-                                        consignesValides = false
-                                        return false
-                                    }
-                                    listeConsignes[nom_consigne] = currentConsigne
-                                }
-                            })
-                            if (listeConsignes.deplacements.consigne == "restreint" && listeConsignes.deplacements.restriction == "seul" && listeConsignes.deplacements.comment == ""){
-                                consignesValides = false
+                    modal:true,
+                    title:"Consignes d'hospitalisation",
+                    minHeight:250,
+                    minWidth:680,
+                    width:800,
+                    height:"auto",
+                    resize:"auto",
+                    autoResize:true,
+                    open:function(ev, ui){
+                        let currConsignes = autoPresConsignesRapides()
+                        SSSFrame.listingConsignes = currConsignes
+                        Object.keys(currConsignes).forEach(el=>{
+                            //$('#CONSIGNES-POPUP input[name='+el+']'+(currConsignes[el].consigne ? '[consigne='+currConsignes[el].consigne+']':''), SSSFrame.document).click2()
+                            currConsignes[el].consigne ? $('#CONSIGNES-POPUP input[name='+el+'][consigne='+currConsignes[el].consigne+']', SSSFrame.document).click2() : ''
+                            $('#CONSIGNES-POPUP div[contenteditable][name='+el+'-com]').text(currConsignes[el].comment)
+                            if (el == "mode_hospit" && currConsignes[el].consigne == "SSC"){
+                                $("#Type-SSC option[value="+currConsignes[el].comment+"]").prop('selected', true)
                             }
-                            listeConsignes.duree = $('#CONSIGNES-POPUP #duree_consignes').val()
-                            $('#CONSIGNES-POPUP thead tr:first').each((i,el)=>{
-                                listeConsignes.mode_hospit={consigne:$('input:checked', el).attr('id').split('-')[1],comment:$('select',el).val()}
-                            })
-                            if (consignesValides){
-                                $( this ).dialog( "close" );
-                                let nbToDelete = 0, toDelete = []
-                                listeConsignes.pasDeRestrictions = !prescrireConsignesAutorisees
-                                Object.keys(listeConsignes).forEach(el=>{
-                                    listeConsignes.pasDeRestrictions == listeConsignes.pasDeRestrictions && ((el == "mode_hospit" && listeConsignes[el].consigne == "SL") || (el == "service" && listeConsignes[el].consigne == "ouvert") || listeConsignes[el].consigne == "autorise")
-                                    if (el == "changeComment" || el == "pasDeRestrictions" || el == "duree_consignes"){
-                                    } else if (SSSFrame.listingConsignes[el] && SSSFrame.listingConsignes[el].consigne == listeConsignes[el].consigne){
-                                        if(SSSFrame.listingConsignes[el].comment == listeConsignes[el].comment){
-                                            listeConsignes[el].done=true
-                                        } else {
-                                            listeConsignes[el].changeComment = true
-                                            listeConsignes.changeComment.push(el)
-                                        }
+                        })
+                    },
+                    buttons: [
+                        {
+                            text: "Valider",
+                            class: "ui-button ui-button-validate",
+                            click: function() {
+                                let listeConsignes={affaires:{consigne:"autorise", comment: ""},
+                                                    appels:{consigne:"autorise", comment: ""},
+                                                    deplacements:{consigne:"autorise", comment: ""},
+                                                    tabagisme:{consigne:"autorise", comment: ""},
+                                                    vetements:{consigne:"autorise", comment: ""},
+                                                    visites:{consigne:"autorise", comment: ""},
+                                                    mode_hospit:{consigne:"SL", comment:""},
+                                                    service:{consigne:"ouvert", comment:""},
+                                                    changeComment:[]},
+                                    consignesValides=true
+                                $('#CONSIGNES-POPUP tbody tr').each((i,el)=>{
+                                    if ($(el).hasClass('consigne-deplacements-restriction')){
+                                        listeConsignes.deplacements.restriction = $('input:checked', el).attr('descente')
                                     } else {
-                                        nbToDelete++
+                                        let currentConsigne = {"consigne": $('input:checked', el).attr('consigne') || "0", "comment":$('div[contenteditable]', el).text()},
+                                            nom_consigne = $('input:first', el).attr('name')
+                                        if (currentConsigne.consigne == "restreint" && currentConsigne.comment == "" && nom_consigne != "deplacements")
+                                        {
+                                            consignesValides = false
+                                            return false
+                                        }
+                                        listeConsignes[nom_consigne] = currentConsigne
                                     }
                                 })
-                                SSSFrame.nouvellesConsignes = listeConsignes
-                                if (nbToDelete){
-                                    $('table[name=HEOFRAME] button:contains(Arrêt)').click2()
-                                }else{
-                                    if (listeConsignes.pasDeRestrictions) {
-                                        $('#HEO_INPUT', SSSFrame.document).val("Pas de consignes restrictives")[0].dispatchEvent(ke)
-                                    } else {
-                                        $("a[onclick*='doSel(']:contains(Consignes d'Hébergement)",SSSFrame.document.heoPane_output.document).click2()
-                                    }
+                                if (listeConsignes.deplacements.consigne == "restreint" && listeConsignes.deplacements.restriction == "seul" && listeConsignes.deplacements.comment == ""){
+                                    consignesValides = false
                                 }
-                            } else {
-                                alert('Préciser les restrictions !')
+                                listeConsignes.duree = $('#CONSIGNES-POPUP #duree_consignes').val()
+                                $('#CONSIGNES-POPUP thead tr:first').each((i,el)=>{
+                                    listeConsignes.mode_hospit={consigne:$('input:checked', el).attr('id').split('-')[1],comment:$('select',el).val()}
+                                })
+                                if (consignesValides){
+                                    $( this ).dialog( "close" );
+                                    let nbToDelete = 0, toDelete = []
+                                    listeConsignes.pasDeRestrictions = !prescrireConsignesAutorisees
+                                    Object.keys(listeConsignes).forEach(el=>{
+                                        listeConsignes.pasDeRestrictions == listeConsignes.pasDeRestrictions && ((el == "mode_hospit" && listeConsignes[el].consigne == "SL") || (el == "service" && listeConsignes[el].consigne == "ouvert") || listeConsignes[el].consigne == "autorise")
+                                        if (el == "changeComment" || el == "pasDeRestrictions" || el == "duree_consignes"){
+                                        } else if (SSSFrame.listingConsignes[el] && SSSFrame.listingConsignes[el].consigne == listeConsignes[el].consigne){
+                                            if(SSSFrame.listingConsignes[el].comment == listeConsignes[el].comment){
+                                                listeConsignes[el].done=true
+                                            } else {
+                                                listeConsignes[el].changeComment = true
+                                                listeConsignes.changeComment.push(el)
+                                            }
+                                        } else {
+                                            nbToDelete++
+                                        }
+                                    })
+                                    SSSFrame.nouvellesConsignes = listeConsignes
+                                    if (nbToDelete){
+                                        $('table[name=HEOFRAME] button:contains(Arrêt)').click2()
+                                    }else{
+                                        if (listeConsignes.pasDeRestrictions) {
+                                            $('#HEO_INPUT', SSSFrame.document).val("Pas de consignes restrictives")[0].dispatchEvent(ke)
+                                        } else {
+                                            $("a[onclick*='doSel(']:contains(Consignes d'Hébergement)",SSSFrame.document.heoPane_output.document).click2()
+                                        }
+                                    }
+                                } else {
+                                    alert('Préciser les restrictions !')
+                                }
+                            }
+                        },
+                        {
+                            text: "Annuler",
+                            click: function() {
+                                $( this ).dialog( "close" );
                             }
                         }
-                    },
-                    {
-                        text: "Annuler",
-                        click: function() {
-                            $( this ).dialog( "close" );
-                        }
-                    }
-                ]
-            })
+                    ]
+                })
+            }
+        } else if(ev.type == "contextmenu"){
+            ev.preventDefault()
+            SSSFrame.pasDeRestrictions = true
+            $('#HEO_INPUT', SSSFrame.document).val("Pas de consignes restrictives")[0].dispatchEvent(ke)
         }
     }
 }
@@ -2917,9 +2964,11 @@ function monitorClick(ev){
             addAutoPrescriptor(ev)
         }
         let SSSFrame = window.top.SSSFrame || window.top[0]
-        delete SSSFrame.autoEnhancedPres
+        delete SSSFrame.autoPresPerm
+        delete SSSFrame.autoPresPermRepeated
         delete SSSFrame.nouvellesConsignes
         delete SSSFrame.listingConsignes
+        delete SSSFrame.pasDeRestrictions
         delete SSSFrame.listePresLabo
         delete SSSFrame.renouvellementIso
         delete SSSFrame.repriseOldPres
@@ -2974,7 +3023,8 @@ function monitorClick(ev){
                 $(ev.target).parents('tr').removeClass('consigne-restreint')
             }
         }
-    }else if ($(ev.target).is('.context_user_text_style_name') || $(ev.target).is('#openTrajectoire')){
+        /*
+    } else if ($(ev.target).is('.context_user_text_style_name') || $(ev.target).is('#openTrajectoire')){
         if (!$('#meva2').dialog('open').length){
             if (window.parent == window.top){
                 $('<div id="meva2"><iframe src="https://trajectoire.sante-ra.fr/Trajectoire/Pages/AccesLibre/Login.aspx?ReturnUrl=%2fTrajectoire%2fpages%2fAccesRestreint%2fAngular%2fApp.aspx%2fSanitaire%2fTDB%2fDemandeur"></iframe></div>').appendTo('body').dialog({classes:{"ui-dialog":"ui-dialog-meva2", "ui-dialog-content":"ui-dialog-content-meva2"},height:$(window).height() - 40, width:$(window).width()})
@@ -2982,6 +3032,7 @@ function monitorClick(ev){
             }
         }
         window.open("https://trajectoire.sante-ra.fr/Trajectoire/Pages/AccesLibre/Login.aspx?ReturnUrl=%2fTrajectoire%2fpages%2fAccesRestreint%2fAngular%2fApp.aspx%2fSanitaire%2fTDB%2fDemandeur", "_blank")
+        */
     } else if ($(ev.target).is('.GD42JS-DO5:contains("Fermer")')||$(ev.target).is('.GD42JS-DO5:contains("Signer")')){
         let SSSFrame = window.top.SSSFrame || window.top[0]
         $.waitFor('div.GD42JS-DPOB[style*="visibility: hidden"]', SSSFrame.document).then($el=>{
