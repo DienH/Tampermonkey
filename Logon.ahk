@@ -1,5 +1,5 @@
-logon_version := "1.6.0" ; Numero de version
-;@Ahk2Exe-SetVersion 1.6.0.0
+logon_version := "1.6.1" ; Numero de version
+;@Ahk2Exe-SetVersion 1.6.1.0
 
 #SingleInstance off
 #InstallKeybdHook
@@ -147,7 +147,7 @@ Douchette_Liste = VID_05F9&PID_221C VID_05E0&PID_1200
 auto_open_comment =
 (
 ; options : "DMC" pour la recherche de dossier médical patient
-; "service" pour ouvrir le service numéroté par la variable qui suit %UF_service%
+; "UF_service" pour ouvrir le service numéroté par la variable qui suit %UF_service%
 ; "cs_int" pour ouvrir le planning de consultation de l'interne (paramétrable par la variable %cs_int%)
 ; ou "dr_1" ou "dr_2" pour afficher les planning de sénior, dont les noms sont paramétrables par les variables %dr_1% et %dr_2%
 ; ou "cs_moi" pour son propre planning de consultation
@@ -158,7 +158,7 @@ auto_open_comment =
 
 if (!FileExist(A_ScriptDir "\Logon_Options.ini")){
 	FileAppend, % "[Options]`n", %A_ScriptDir%\Logon_Options.ini
-	for k, option in ["service", "dr_1", "dr_2", "cs_int", "auto_open", "Douchette_VID", "Douchette_PID"]
+	for k, option in ["UF_service", "dr_1", "dr_2", "cs_int", "auto_open", "Douchette_VID", "Douchette_PID"]
 	{
 		FileAppend, % option "=" %option% "`n", %A_ScriptDir%\Logon_Options.ini
 		;IniWrite, % %option%, %A_ScriptDir%\Logon_Options.ini, Options, % option
@@ -166,8 +166,8 @@ if (!FileExist(A_ScriptDir "\Logon_Options.ini")){
 		{
 			case "auto_open":
 				FileAppend, % auto_open_comment, %A_ScriptDir%\Logon_Options.ini
-			case "service":
-				FileAppend, % "; Code UF à ouvrir automatiquement si auto_open est sur 'service'`n", %A_ScriptDir%\Logon_Options.ini
+			case "UF_service":
+				FileAppend, % "; Code UF à ouvrir automatiquement si auto_open est sur 'UF_service'`n", %A_ScriptDir%\Logon_Options.ini
 			case "cs_int":
 				FileAppend, % "; Nom du planning de CS à ouvrir si auto_open est sur 'cs_int'`n", %A_ScriptDir%\Logon_Options.ini
 		}
@@ -175,6 +175,7 @@ if (!FileExist(A_ScriptDir "\Logon_Options.ini")){
 	}
 } else {
 	IniRead, Logon_Options, %A_ScriptDir%\Logon_Options.ini, Options
+	Ttip(A_ScriptDir "\Logon_Options.ini")
 	Loop, parse, Logon_Options, `n
 	{
 		option := StrSplit(A_LoopField, "=")
@@ -187,7 +188,7 @@ if (!FileExist(A_ScriptDir "\Logon_Options.ini")){
 
 Auto_open_Liste := {1:{friendly:"Aucun",short:""}
 	,2:{friendly:"DMC",short:"DMC"}
-	,3:{friendly:"Service",short:"service"}
+	,3:{friendly:"Service",short:"UF_service"}
 	,4:{friendly:"Ma consult",short:"cs_moi"}
 	,5:{friendly:"Consult " dr_1,short:"dr_1"}
 	,6:{friendly:"Consult " dr_2,short:"dr_2"}
@@ -889,7 +890,7 @@ RButton::
 	Menu, MenuPlandetravail, Show
 	return
 
-Auto_service:
+Auto_UF_service:
 	PdT_AfficherService(UF_service)
 	return
 
@@ -2054,13 +2055,13 @@ Auto_open_selected:
 		case "Consult Interne":
 			auto_open := "cs_int"
 		case "Service":
-			auto_open := "service"
+			auto_open := "UF_service"
 		case "Planning Urgences":
 			auto_open := "urg"
 		default:
 			auto_open := auto_open_value
 	}
-	if (auto_open == "cs_int" || auto_open == "dr_1" || auto_open == "dr_2" || auto_open ==  "service"){
+	if (auto_open == "cs_int" || auto_open == "dr_1" || auto_open == "dr_2" || auto_open ==  "UF_service"){
 		GuiControl, LogonPwd:Show, BtnModifyOption 
 	} else {
 		GuiControl, LogonPwd:Hide, BtnModifyOption 
@@ -2075,7 +2076,7 @@ BtnModifyOptionAction:
 			BtnModifyOption_Prompt := "Nom du planning de consultation de l'interne"
 		case "dr_1", "dr_2":
 			BtnModifyOption_Prompt = NOM prénom du sénior
-		case "service":
+		case "UF_service":
 			BtnModifyOption_Prompt = Code UF du service
 	}
 	InputBox, BtnModifyOption_Value, % auto_open_value, % BtnModifyOption_Prompt,,200,140,,,Locale,, % %auto_open%
