@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.26
+// @version      0.3.27
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -72,7 +72,7 @@ var prescrireConsignesAutorisees = true;
     if (location.href.search("cyberlab.chu-clermontferrand.fr")+1){
         let $
         if (!$ || !$.fn) {$ = µ.jQuery || µ.$ || window.jQuery };
-        setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1500)
+        setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
         let creat = "", CKDEPI = "", IPP = ""
         function checkCreat() {
             IPP = $('.patientHeader span.identifiers:contains(IPP)').text()
