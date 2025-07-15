@@ -1,5 +1,5 @@
-logon_version := "1.6.1" ; Numero de version
-;@Ahk2Exe-SetVersion 1.6.1.0
+logon_version := "1.6.2" ; Numero de version
+;@Ahk2Exe-SetVersion 1.6.2.0
 
 #SingleInstance off
 #InstallKeybdHook
@@ -335,11 +335,11 @@ return
 
 
 ; remove text format, keep only text
-;^+v::
-;	;Send,% Clipboard
-;	Clipboard := Clipboard
-;	Send, ^v
-;	return
+^+v::
+	;Send,% Clipboard
+	Clipboard := Clipboard
+	Send, ^v
+	return
 
 Logon_Login:
 	WinGet, hLogonRef, ID, LOGON - M-Référence ahk_exe logon.exe
@@ -609,15 +609,41 @@ F8::
 	Sleep 10
 	Send e
 	return
-#if
 
 #ifWinActive, Formulaire ahk_exe unit.exe
 ~LButton::
 	FormulaireWindow = Formulaire ahk_exe unit.exe
 	Gosub ResizeFormulaire
 	return
-#If
+	
+#ifWinActive, Modification de l'observation ahk_exe rdvwin.exe
+;'
+	Hotkey, IfWinActive, Modification de l'observation ahk_exe unit.exe
+	;'
+	Loop, 75
+	{
+		Hotkey, % "~" Chr(0x2F + A_Index), CopyCurrentObserv
+	}
+	Hotkey, ~Space, CopyCurrentObserv
+	Hotkey, ~Enter, CopyCurrentObserv
+	Hotkey, ~Backspace, CopyCurrentObserv
+	Hotkey, ^!v, PasteCurrentObserv
+	Hotkey, ^BackSpace, CtrlBackspace
+	;Hotkey, ^Del, CtrlDel
+	;Hotkey, ^+Del, CtrlMajDel
+	Hotkey, If
+	return
+	
+CopyCurrentObserv:
+	ControlGetText, Observ_text, TWPRichText1, Modification de l'observation ahk_exe unit.exe
+	;'
+	return
 
+PasteCurrentObserv:
+	ControlSetText, TWPRichText1, % Observ_text, Modification de l'observation ahk_exe unit.exe
+	;'
+	return
+	
 #ifWinActive, Identification ahk_exe unit.exe
 ~LButton::
 	WinGet, IdentifhWnd, ID
@@ -627,14 +653,14 @@ F8::
 	;Tooltip, bouh %CtrlhWnd% %bah%
 	Control, Enable,,, ahk_id %CtrlhWnd%
 	return
-#If
 
 #ifWinActive, Formulaire ahk_exe rdvwin.exe
 ~LButton::
 	FormulaireWindow = Formulaire ahk_exe rdvwin.exe
 	Gosub ResizeFormulaire
 	return
-#If
+	
+
 #ifWinActive, Formulaire ahk_exe crosspass.exe
 ~LButton::
 	FormulaireWindow = Formulaire ahk_exe crosspass.exe
@@ -909,7 +935,7 @@ PdT_AfficherService(NomService){
 	}
 	if (UF_bis){
 		if(!OpenInCurrentWindow){
-			Gosub Unit_1
+			Run, "n:\unit.exe"
 		} else {
 			OpenInCurrentWindow := false
 			Sleep 50
