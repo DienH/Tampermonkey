@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MEVA+
 // @namespace    http://tampermonkey.net/
-// @version      0.3.27
+// @version      0.3.29
 // @description  Help with MEVA
 // @author       Me
 // @match        http*://meva/m-eva/*
@@ -220,7 +220,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                     .prependTo($('div.carousel_disabled_item:contains("HEO - Prescrire"), div.carousel_enabled_item:contains("HEO - Prescrire")').parent())
 
                 if (!$('#resetFavoritesUnits').length){
-                    let repaired_mR = `function mR(b,c,d){var e,f,g,j;j=Clc();try{zlc(j,b.d,b.i)}catch(a){a=pJb(a);if(EX(a,61)){e=a;g=new AR(b.i);Cc(g,new yR(e.rb()));throw g}else throw oJb(a)}oR(b,j);b.e&&(j.withCredentials=true,undefined);f=new gR(j,b.g,d);Alc(j,new sR(f,d));try {console.log(c);if (c.search("name")+1 && c.search("critere")+1){`
+                    let repaired_mR = `function mR(b,c,d){var e,f,g,j;j=Dlc();try{Alc(j,b.d,b.i)}catch(a){a=qJb(a);if(EX(a,61)){e=a;g=new AR(b.i);Cc(g,new yR(e.rb()));throw g}else throw pJb(a)}oR(b,j);b.e&&(j.withCredentials=true,undefined);f=new gR(j,b.g,d);Blc(j,new sR(f,d));try{console.log(c);if (c.search("name")+1 && c.search("critere")+1){`
                     +`c='7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|`
                     // Planning favoris
                     +`{"name":"UHDL", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000007311#H"]}}|`
@@ -229,7 +229,7 @@ return this.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").index
                     +`{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"]}}|`
                     +`{"name":"Chopin / La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000340#H"]}}`
                     +`|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'`
-                    +`}j.send(c)}catch(a){a=pJb(a);if(EX(a,61)){e=a;throw new yR(e.rb())}else throw oJb(a)}return f}`
+                    +`}j.send(c)}catch(a){a=qJb(a);if(EX(a,61)){e=a;throw new yR(e.rb())}else throw pJb(a)}return f}`
                     $('.gwt-PopupPanel.MevaNIAContextePopupPanel>div>table>tbody:not(:has())').append($('.gwt-PopupPanel tr:last').clone().find('div').text("Unités favorites").end())
                     $('.gwt-TabBarItem-wrapper-selected').each((i,el)=>{
                         $(el).clone("gwt-TabBarItem-wrapper-selected").removeClass('gwt-TabBarItem-wrapper-selected').attr('id', 'resetFavoritesUnits').appendTo($(el).parent()).find('.GP3D0Y0NPB-fr-mckesson-framework-gwt-widgets-client-resources-SharedCss-fw-Label').text('Onglets favoris').end().find('[src*=icons]').attr('src', "/m-eva/img/icons/star.png" ).end().find('.gwt-TabBarItem-selected').removeClass('gwt-TabBarItem-selected').end()
@@ -900,7 +900,7 @@ $.expr[":"].containsI = function (a, i, m) {
                                    }, 500)
                     }
                 } else if (SSSFrame.repriseOldPres){
-                    $('a:contains(ENTREE)', document).click2()
+                   setTimeout(()=>{ $('a:contains(ENTREE)', document).click2()}, 200)
                 } else {
                     document.head.append(hourCSS)
                     document.head.append(hourScript)
@@ -1084,17 +1084,17 @@ $.expr[":"].containsI = function (a, i, m) {
                 if (SSSFrame.repriseOldPres || SSSFrame.renouvellementIso){
                     $('[id=preMultiChoiceMarkup]:contains(PLANIFIE)', document).click2()
                 } else {
-                    setTimeout(()=>{$('#HEO_INPUT', SSSFrame.document).val('PLANIFIE') //[0].dispatchEvent(ke);
-                                   }, 500)
+                    setTimeout(()=>{$('#HEO_INPUT', SSSFrame.document).val('PLANIFIE')[0].dispatchEvent(ke);
+                                   }, 200)
                 }
             } else if (promptTitle == 'Commentaires:'){
                 if (SSSFrame.repriseOldPres){
-                    $('a:contains(ENTREE)', document).click2()
+                    setTimeout(()=>$('a:contains(ENTREE)', document).click2(), 250)
                 }
             } else if (promptTitle == 'Alerte médicamenteuse'){
                 $('a[onclick]:contains("Avertissement pris en compte et validé")', document).click2()
             } else if (promptTitle == 'OK pour confirmer cette prescription ?') {
-                $HEO_INPUT[0].dispatchEvent(ke);
+                setTimeout(()=>$HEO_INPUT[0].dispatchEvent(ke), 500);
             } else if (promptTitle == "Médicament Hors Livret, continuer :"){
                 $('a[onclick]:contains("(_) OK")', document).click2()
                 $('a[onclick]:contains("(x)")', document).each(()=>$('a[onclick]:contains("ENTREE")', document).click2())
@@ -1494,7 +1494,7 @@ function output_Selector(sel, checkExists = false){
     if (typeof $ == "undefined" || typeof $.fn == "undefined"){var $ = window.$ || window.parent.$}
     let output = document.heoPane_output || window.parent.document.heoPane_output,
         MedocPasHorsLivret = ["diazepam", "olanzapine"]
-    if (!sel){sel = "Retourner"}
+    if (!sel){sel = "Retourner à la liste"}
     let filterString = "", pasHorsLivret = false
     if (typeof sel == "string" && sel.search(" ")+1){
         sel = sel.split(" ")
@@ -1516,7 +1516,10 @@ function output_Selector(sel, checkExists = false){
             let $selection = $(selector, out.document)
             //console.log($selection)
             if ($selection.length > 1){$selection = $selection.filter(pasHorsLivret ? ":not(:has(.HorsLivret))":"*")}
-            $selection.first().each((i,el)=>{setTimeout((el)=>{el.click()},250, el)})
+            $selection.first().each((i,el)=>{
+                //console.log("Sélection de : "el.innerText)
+                setTimeout((el)=>{el.click()},250, el)
+            })
         }, 250, sel, output)
     }
 }
@@ -2537,17 +2540,22 @@ if (!window.parent.autoExtendPerm){
  script = document.createElement('script')
  script.id = "autoPermScript"
  script.innerHTML = "autoExtendPerm = function(){"+
-   "console.log('ah 1');debugger;"+
    "document.heoPane_output.frameElement.onload=function(ev){"+
-    "console.log('ah 2');debugger;"+
-    "ev.path[0].onload=function(ev){"+
-     "console.log('ah 3');debugger;"+
-     "ev.path[0].onload=function(ev){ev.path[0].onload='';output_Selector();console.log('ah 4')};"+
-     "output_Selector(1)};"+
-    "output_Selector(2)};"+
-   "output_Selector()};"+
+    "console.log('2 '+ev.target.contentDocument.querySelector('.outlineTitle').innerText.trim());"+
+    "if(ev.target.contentDocument.querySelector('.outlineTitle').innerText.trim()=='Prescriptions Usuelles de Psychiatrie Adulte'){"+
+     "setTimeout(output_Selector, 500, 'Sorties Temporaires');"+
+     "ev.target.onload=function(ev){"+
+      "console.log('3 '+ev.target.contentDocument.querySelector('.outlineTitle').innerText.trim());"+
+      "ev.target.onload=function(ev){ev.target.onload='';setTimeout(output_Selector, 500);console.log('4 '+ev.target.contentDocument.querySelector('.outlineTitle').innerText.trim())};"+
+      "setTimeout(output_Selector, 500, 1)"+
+      "};"+
+    "}else{"+
+     "setTimeout(output_Selector, 500)"+
+     "}"+
+    "};"+
+   "console.log('1 '+document.heoPane_output.frameElement.contentDocument.querySelector('.outlineTitle').innerText.trim());setTimeout(output_Selector, 1500);};"+
   "quitPermPres = function(){document.heoPane_output.frameElement.onload=function(ev){"+
-    "output_Selector();ev.path[0].onload=''}}"
+    "output_Selector();ev.target.onload=''}}"
  window.parent.document.body.append(script)
 }
 if (window.parent.datePermRestante){
@@ -2991,10 +2999,46 @@ function monitorClick(ev){
         window.dispatchEvent(new KeyboardEvent('keydown', {"keyCode":116}));
         $('<div style="position:absolute;width:100%;height:100%;top:0;left:0;background:#000;opacity:0.5;">')
             .appendTo($('.GOAX34LHSB-fr-mckesson-framework-gwt-widgets-client-resources-TableFamilyCss-fw-GridMenuPopup', ev.view.document))
-    } else if (ev.target.id == "resetFavoritesUnits"){
+/*    } else if (ev.target.id == "resetFavoritesUnits"){
         console.log(ev)
         window.dispatchEvent(new KeyboardEvent('keydown', {"keyCode":116}));
-        let repaired_mR = `function mR(b, c, d) {var e, f, g, j;j = _kc();try {Ykc(j, b.d, b.i)} catch (a) {a = OIb(a);if (EX(a, 61)) {e = a;g = new AR(b.i);Cc(g, new yR(e.rb()));throw g} else throw NIb(a)}oR(b, j);b.e && (j.withCredentials = true,undefined);f = new gR(j,b.g,d);Zkc(j, new sR(f,d));try {if (c.search("name")+1 && c.search("critere")+1){c='7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|{"name":"La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000340#H"], "nombreJour":null, "startDay":"16/07/2022 10:18:42.797 +0200", "endDay":null}}|{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"], "nombreJour":null, "startDay":"16/07/2022 10:19:02.266 +0200", "endDay":null}}|{"name":"Gergovie / Pariou", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000276#H","XWAY#0000000274#H"], "nombreJour":null, "startDay":"16/07/2022 10:19:24.795 +0200", "endDay":null}}|{"name":"Domes / Gravenoire", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000275#H","XWAY#0000000277#H"], "nombreJour":null, "startDay":"16/07/2022 10:20:23.755 +0200", "endDay":null}}|{"name":"PassAje / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000331#H"], "nombreJour":null, "startDay":"16/07/2022 10:22:07.948 +0200", "endDay":null}}|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'}j.send(c)} catch (a) {a = OIb(a);if (EX(a, 61)) {e = a;throw new yR(e.rb())} else{throw NIb(a)}}return f}`
+        let repaired_mR = `function mR(b, c, d) {
+    var e, f, g, j;
+    j = Dlc();
+    try {
+        Alc(j, b.d, b.i)
+    } catch (a) {
+        a = qJb(a);
+        if (EX(a, 61)) {
+            e = a;
+            g = new AR(b.i);
+            Cc(g, new yR(e.rb()));
+            throw g
+        } else
+            throw pJb(a)
+    }
+    oR(b, j);
+    b.e && (j.withCredentials = true,
+    undefined);
+    f = new gR(j,b.g,d);
+    Blc(j, new sR(f,d));
+    try {
+    console.log(c, j)
+		if (c.search("name")+1 && c.search("critere")+1){
+			c = '7|0|17|http://meva/clinique-application-webapp/gwt/fr.mckesson.clinique.application.web.portlet.gwt.ClinicalGWTPortal/|F576A9E07F237AA43CDFD960BAFD2AF6|fr.mckesson.framework.gwt.preferences.client.IPreferencesServiceRPC|save|java.lang.String/2004016611|java.util.Collection|WEB:/clinique-application-webapp#MCW_MW#ClinicalPatientSearchByUnitPortlet:cliniquerecherchehospitInstance64|java.util.ArrayList/4159755760|fr.mckesson.framework.gwt.preferences.client.Preference/1117017927|#MCW_MW_LISTEHOSPIT_TABPANEL|fr.mckesson.framework.gwt.preferences.client.PortletPreferenceType/1287401409|[Ljava.lang.String;/2600011424|{"name":"La Chaumière", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000340#H"], "nombreJour":null, "startDay":"16/07/2022 10:18:42.797 +0200", "endDay":null}}|{"name":"Ravel / Berlioz", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000632#H","XWAY#0000000631#H"], "nombreJour":null, "startDay":"16/07/2022 10:19:02.266 +0200", "endDay":null}}|{"name":"Gergovie / Pariou", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000276#H","XWAY#0000000274#H"], "nombreJour":null, "startDay":"16/07/2022 10:19:24.795 +0200", "endDay":null}}|{"name":"Domes / Gravenoire", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000275#H","XWAY#0000000277#H"], "nombreJour":null, "startDay":"16/07/2022 10:20:23.755 +0200", "endDay":null}}|{"name":"PassAje / UHCD", "critere":{"typeUm":"Tous", "listePlanning":["XWAY#0000000629#H","XWAY#0000000331#H"], "nombreJour":null, "startDay":"16/07/2022 10:22:07.948 +0200", "endDay":null}}|1|2|3|4|2|5|6|7|8|1|9|10|0|11|0|12|5|13|14|15|16|17|'
+		}
+        j.send(c);
+    } catch (a) {
+        a = qJb(a);
+        if (EX(a, 61)) {
+            e = a;
+            throw new yR(e.rb())
+        } else
+            throw pJb(a)
+    }
+    return f
+}
+`
         $('iframe').filter('#fr\\.mckesson\\.clinique\\.application\\.web\\.portlet\\.gwt\\.ClinicalGWTPortal')
             .each((i,el)=>{
                 let script = el.contentDocument.createElement('script')
@@ -3002,6 +3046,7 @@ function monitorClick(ev){
                 el.contentDocument.body.append(script)
             }
         )
+        */
     } else if ($(ev.target).parents('#CONSIGNES-POPUP').length){
         if ($(ev.target).parents("tbody").length){
             if ($(ev.target).is('input[type=radio]')){
