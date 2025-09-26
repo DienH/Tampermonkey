@@ -8,6 +8,8 @@
 // @match        https://easilynlb-prod.chu-clermontferrand.fr/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=chu-clermontferrand.fr
 // @resource     DienJS https://raw.githubusercontent.com/DienH/Tampermonkey/master/Dien.js
+// @updateURL    https://github.com/DienH/Tampermonkey/raw/master/Easily%2B.user.js
+// @downloadURL  https://github.com/DienH/Tampermonkey/raw/master/Easily%2B.user.js
 // @grant        unsafeWindow
 // @grant        GM_getValue
 // @grant        GM_setValue
