@@ -55,6 +55,11 @@
             $('button.login__submitButton').click()
         } else if(location.pathname == '/cyberlab/servlet/be.mips.cyberlab.web.InitialLogin'){
             location.href = '/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'
+        } else if(location.pathname == 'cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'){
+            window.parent.postMessage("cyberlab-getIPP", "https://easily-prod.chu-clermontferrand.fr")
+            window.onmessage = msg=>{
+                console.log(msg)
+            }
         }
         setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
         let creat = "", CKDEPI = "", IPP = ""
@@ -103,6 +108,12 @@
 
 
 
+    window.onmessage = function(message){
+        console.log(message)
+        if(message.data == "cyberlab-getIPP" && message.origin == "https://cyberlab.chu-clermontferrand.fr"){
+            $('#cyberlabFrame')[0].contentWindow.postMessage(unsafeWindow._data.IPP, "https://cyberlab.chu-clermontferrand.fr")
+        }
+    }
 
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         if($(".titleContainer").text().trim() == "Vous n'êtes pas habilité(e) à visualiser ce module."){
@@ -114,7 +125,7 @@
 
        // auto-relogon
     $('.verrouillage-nom').click(ev=>{
-        $("#password-popup").val(EasilyInfos.password)
+        if(EasilyInfos.password_store){$("#password-popup").val(EasilyInfos.password).log()}
         $("button.deverrouillage-button").click()
     })
 
@@ -159,9 +170,8 @@
                         labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
                             btoa('Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
                         $.waitFor('#module-bioboxes-biologie:visible').then(el=>{
-                            $(el).html("").append('<iframe style="width:100%;height:100%" src="https://cyberlab.chu-clermontferrand.fr">')
+                            $(el).html("").append('<iframe id="cyberlabFrame" style="width:100%;height:100%" src="https://cyberlab.chu-clermontferrand.fr">')
                         })
-                        console.log(labo_url)
                         $('#module-bioboxes-biologie').addClass('cyberlab_frame')
                     }
                 }
@@ -187,6 +197,7 @@
 //
 
     window.addEventListener('contextmenu', (ev=>{
+        console.log('bah')
         switch(location.pathname.split("/")[1]){
             case "Medecin":
                 if($(ev.target).is('div.username')){
@@ -233,6 +244,7 @@
 //     ██████  ██         ██    ██  ██████  ██   ████ ███████
 //
 
+    if(location.pathname.split("/")[1] != "Login"){
     $('<div id="EasilyPlusPrefs"></div>').append(`
 <table>
  <thead>
@@ -247,11 +259,11 @@
    <td><input type="text" name="nom" value="${EasilyInfos.nom ?? $('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][A-Z]+/)+1).join(' ')}"></td>
   </tr>
   <tr class="option-info_firstname">
-   <td>Nom</td>
-   <td><input type="text" name="prenom" value="${EasilyInfos.username ?? $('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][a-z]+/)+1).join(' ')}"></td>
+   <td>Prénom</td>
+   <td><input type="text" name="prenom" value="${EasilyInfos.prenom ?? $('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][a-z]+/)+1).join(' ')}"></td>
   </tr>
   <tr class="option-info_username">
-   <td>Nom</td>
+   <td>Nom utilisateur</td>
    <td><input type="text" name="username" value="${EasilyInfos.username ?? ($('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][a-z]+/)+1).join('').slice(0,1) + ($('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][A-Z]+/)+1).join(''))).toLowerCase()}"></td>
   </tr>
   <tr class="option-info_password_store">
@@ -325,6 +337,7 @@
             }
         ]
     })
+    }
 
 
 //    ███████ ████████ ██    ██ ██      ███████
