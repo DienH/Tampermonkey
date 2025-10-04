@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251003
+// @version      1.0.251004
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -49,16 +49,19 @@
         let $
         if (!$ || !$.fn) {$ = µ.jQuery || µ.$ || window.jQuery };
         if(location.pathname == "/cyberlab/Login.jsp"){
-            console.log('bouh')
             $('#loginName').val(EasilyInfos.username)
             $('#password').val(EasilyInfos.password)
             $('button.login__submitButton').click()
         } else if(location.pathname == '/cyberlab/servlet/be.mips.cyberlab.web.InitialLogin'){
             location.href = '/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'
-        } else if(location.pathname == 'cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'){
+        } else if((location.pathname + location.search) == '/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'){
+            console.log('bouh')
             window.parent.postMessage("cyberlab-getIPP", "https://easily-prod.chu-clermontferrand.fr")
             window.onmessage = msg=>{
-                console.log(msg)
+                if(msg.data.IPP){
+                    $('#pat_Code').val(msg.data.IPP)
+                    $('span.menuLabel:contains(Chercher)').click()
+                }
             }
         }
         setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
@@ -107,11 +110,15 @@
     }
 
 
+    //modules
+    // Lancemodule: SYNTHESE_PAT;${IPP};LOGINAD=${username}   == Synthèse Logon
+    // Lancemodule: IMAGES_PATIENT;${IPP};LOGINAD=${username}     == PACS
+
 
     window.onmessage = function(message){
         console.log(message)
         if(message.data == "cyberlab-getIPP" && message.origin == "https://cyberlab.chu-clermontferrand.fr"){
-            $('#cyberlabFrame')[0].contentWindow.postMessage(unsafeWindow._data.IPP, "https://cyberlab.chu-clermontferrand.fr")
+            $('#cyberlabFrame')[0].contentWindow.postMessage({IPP:unsafeWindow._data.IPP}, "https://cyberlab.chu-clermontferrand.fr")
         }
     }
 
@@ -160,19 +167,23 @@
                         setTimeout(()=>$('#dropdownUF').val('string:'+EasilyInfos.UF).change(), 500)
                     //}
                 }
-                if($(ev.target).closest('.easily-container-area').length && $(ev.target).is('a:contains(Biologie)')){
-                    if(!$('#module-bioboxes-biologie').is('.cyberlab_frame')){
-                        if(!unsafeWindow._data.IPP){
-                            unsafeWindow._data.IPP = $('.infosPatient').text().split(' : ')[1]
+                if($(ev.target).closest('.easily-container-area').length){ // bandeau droite
+                    if ($(ev.target).is('a:contains(Imagerie)')){
+                        window.open(`Lancemodule: IMAGES_PATIENT;${unsafeWindow._data.IPP};LOGINAD=${EasilyInfos.username}`)
+                    } else if ($(ev.target).is('a:contains(Biologie)')){
+                        if(!$('#module-bioboxes-biologie').is('.cyberlab_frame')){
+                            if(!unsafeWindow._data.IPP){
+                                unsafeWindow._data.IPP = $('.infosPatient').text().split(' : ')[1]
+                            }
+                            patientIPP = unsafeWindow._data.IPP
+                            patientBD = $('.infosPatient').text().split('le ')[1].split(" (")[0].split('/').reverse().join('')
+                            labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
+                                btoa('Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
+                            $.waitFor('#module-bioboxes-biologie:visible').then(el=>{
+                                $(el).html("").append('<iframe id="cyberlabFrame" style="width:100%;height:100%" src="https://cyberlab.chu-clermontferrand.fr">')
+                            })
+                            $('#module-bioboxes-biologie').addClass('cyberlab_frame')
                         }
-                        patientIPP = unsafeWindow._data.IPP
-                        patientBD = $('.infosPatient').text().split('le ')[1].split(" (")[0].split('/').reverse().join('')
-                        labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
-                            btoa('Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
-                        $.waitFor('#module-bioboxes-biologie:visible').then(el=>{
-                            $(el).html("").append('<iframe id="cyberlabFrame" style="width:100%;height:100%" src="https://cyberlab.chu-clermontferrand.fr">')
-                        })
-                        $('#module-bioboxes-biologie').addClass('cyberlab_frame')
                     }
                 }
                 if($(ev.target).closest('#easily-univers').length){
@@ -256,15 +267,15 @@
  <tbody>
   <tr class="option-info_name">
    <td>Nom</td>
-   <td><input type="text" name="nom" value="${EasilyInfos.nom ?? $('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][A-Z]+/)+1).join(' ')}"></td>
+   <td><input type="text" name="nom" value="${EasilyInfos.nom ? EasilyInfos.nom : $('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][A-Z]+/)+1).join(' ')}"></td>
   </tr>
   <tr class="option-info_firstname">
    <td>Prénom</td>
-   <td><input type="text" name="prenom" value="${EasilyInfos.prenom ?? $('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][a-z]+/)+1).join(' ')}"></td>
+   <td><input type="text" name="prenom" value="${EasilyInfos.prenom ? EasilyInfos.prenom : $('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][a-z]+/)+1).join(' ')}"></td>
   </tr>
   <tr class="option-info_username">
    <td>Nom utilisateur</td>
-   <td><input type="text" name="username" value="${EasilyInfos.username ?? ($('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][a-z]+/)+1).join('').slice(0,1) + ($('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][A-Z]+/)+1).join(''))).toLowerCase()}"></td>
+   <td><input type="text" name="username" value="${EasilyInfos.username ? EasilyInfos.username : ($('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][a-z]+/)+1).join('').slice(0,1) + ($('div.username').attr('title').split(' ').filter((t,i) => t.search(/[A-Z][A-Z]+/)+1).join(''))).toLowerCase()}"></td>
   </tr>
   <tr class="option-info_password_store">
    <td>Enregistrer le MdP ?</td>
@@ -272,19 +283,19 @@
   </tr>
   <tr class="option-info_password">
    <td>Password</td>
-   <td><input type="password" name="password" value="${EasilyInfos.password ?? ""}"></td>
+   <td><input type="password" name="password" value="${EasilyInfos.password ? EasilyInfos.password : ""}"></td>
   </tr>
   <tr class="option-info_tel_service">
    <td>Téléphone service</td>
-   <td><input type="tel" pattern="[5-6][0-9]{4}" name="phone" value="${EasilyInfos.phone ?? ""}" placeholder="5XXXX ou 6XXXX"></td>
+   <td><input type="tel" pattern="[5-6][0-9]{4}" name="phone" value="${EasilyInfos.phone ? EasilyInfos.phone : ""}" placeholder="5XXXX ou 6XXXX"></td>
   </tr>
   <tr class="option-info_CR">
    <td>Numéro CR</td>
-   <td><input type="tel" pattern="[0-4][0-9]{3}[A-Z]" name="CR" value="${EasilyInfos.CR ?? ""}" placeholder="Ex : 1361U"></td>
+   <td><input type="tel" pattern="[0-4][0-9]{3}[A-Z]" name="CR" value="${EasilyInfos.CR ? EasilyInfos.CR : ""}" placeholder="Ex : 1361U"></td>
   </tr>
   <tr class="option-info_UF">
    <td>Numéro UF</td>
-   <td><input type="tel" pattern="[0-4][0-9]{3}" name="UF" value="${EasilyInfos.UF ?? ""}" placeholder="Ex : 2838"></td>
+   <td><input type="tel" pattern="[0-4][0-9]{3}" name="UF" value="${EasilyInfos.UF ? EasilyInfos.UF : ""}" placeholder="Ex : 2838"></td>
   </tr>
   <tr class="option-cacher_Bloc">
    <td>Menus à cacher</td>
