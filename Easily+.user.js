@@ -56,7 +56,7 @@
             location.href = '/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'
         } else if((location.pathname + location.search) == '/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'){
             console.log('bouh')
-            window.parent.postMessage("cyberlab-getIPP", "https://easily-prod.chu-clermontferrand.fr")
+            window.parent.postMessage("{command:'cyberlab-getIPP'}", "https://easily-prod.chu-clermontferrand.fr")
             window.onmessage = msg=>{
                 if(msg.data.IPP){
                     $('#pat_Code').val(msg.data.IPP)
@@ -115,12 +115,13 @@
     // Lancemodule: IMAGES_PATIENT;${IPP};LOGINAD=${username}     == PACS
 
 
-    window.onmessage = function(message){
-        console.log(message)
+    window.addEventListener('message', function(message){
+        let messageEvData = JSON.parse(message.data)
+        console.log(messageEvData.command)
         if(message.data == "cyberlab-getIPP" && message.origin == "https://cyberlab.chu-clermontferrand.fr"){
-            $('#cyberlabFrame')[0].contentWindow.postMessage({IPP:unsafeWindow._data.IPP}, "https://cyberlab.chu-clermontferrand.fr")
+            $('#cyberlabFrame')[0].contentWindow.postMessage(unsafeWindow._data.IPP, "https://cyberlab.chu-clermontferrand.fr")
         }
-    }
+    })
 
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         if($(".titleContainer").text().trim() == "Vous n'êtes pas habilité(e) à visualiser ce module."){
