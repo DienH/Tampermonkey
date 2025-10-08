@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251004
+// @version      1.0.251008
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
 // @match        https://easilynlb-prod.chu-clermontferrand.fr/*
 // @match        http*://serv-cyberlab.chu-clermontferrand.fr/cyberlab/*
 // @match        http*://cyberlab.chu-clermontferrand.fr/cyberlab/*
+// @match        http*://xplore.chu-clermontferrand.fr/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=chu-clermontferrand.fr
 // @resource     DienJS https://raw.githubusercontent.com/DienH/Tampermonkey/master/Dien.js
 // @updateURL    https://github.com/DienH/Tampermonkey/raw/master/Easily%2B.user.js
@@ -31,6 +32,7 @@
     let EasilyInfos = GM_getValue('EasilyInfos',{"user":"", "password":""})
     var µ = unsafeWindow
     var log = console.log
+    µ.currentPatient = {id:'', nom:'',prenom:'',ddn:'', IPP:''}
     if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.parent.jQuery || window.jQuery };
     if(!$('#DienScriptPlus', document).length){
         $('body', document)
@@ -55,8 +57,7 @@
         } else if(location.pathname == '/cyberlab/servlet/be.mips.cyberlab.web.InitialLogin'){
             location.href = '/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'
         } else if((location.pathname + location.search) == '/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'){
-            console.log('bouh')
-            window.parent.postMessage("{command:'cyberlab-getIPP'}", "https://easily-prod.chu-clermontferrand.fr")
+            window.parent.postMessage(JSON.stringify({command:'cyberlab-getIPP'}), "https://easily-prod.chu-clermontferrand.fr")
             window.onmessage = msg=>{
                 if(msg.data.IPP){
                     $('#pat_Code').val(msg.data.IPP)
@@ -81,7 +82,6 @@
                 $td=$tr.find('td.clickable:first');if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();CKDEPI=$td.text().trim()}})
             console.log(IPP + " - créat : " + creat + " - DFG : " + CKDEPI)
             if (creat && CKDEPI){
-                /*
                 GM_setValue("labo", {IPP:IPP,creat:creat, CKDEPI: CKDEPI, autoclose:false})
                 var listener = GM_addValueChangeListener("labo", function(name, oldValue, newValue, remote){
                     if (newValue.autoclose){
@@ -89,43 +89,42 @@
                         GM_removeValueChangeListener(listener)
                     }
                 })
-                */
             }
         }
         setTimeout(checkCreat, 2000)
-        //console.log(creat, CKDEPI)
-            /*
-        if (creat && CKDEPI){
-            GM_setValue("labo", {IPP:IPP,creat:creat, CKDEPI: CKDEPI, autoclose:false})
-            var listener = GM_addValueChangeListener("labo", function(name, oldValue, newValue, remote){
-                if (newValue.autoclose){
-                    window.close()
-                    GM_removeValueChangeListener(listener)
-                }
-            })
-        }
-        */
         setTimeout(()=>{µ.location.reload()},240000)
         return true
     }
 
+//    ██   ██ ██████  ██       ██████  ██████  ███████
+//     ██ ██  ██   ██ ██      ██    ██ ██   ██ ██
+//      ███   ██████  ██      ██    ██ ██████  █████
+//     ██ ██  ██      ██      ██    ██ ██   ██ ██
+//    ██   ██ ██      ███████  ██████  ██   ██ ███████
+//
+//
 
-    //modules
-    // Lancemodule: SYNTHESE_PAT;${IPP};LOGINAD=${username}   == Synthèse Logon
-    // Lancemodule: IMAGES_PATIENT;${IPP};LOGINAD=${username}     == PACS
-
-
-    window.addEventListener('message', function(message){
-        let messageEvData = JSON.parse(message.data)
-        console.log(messageEvData.command)
-        if(message.data == "cyberlab-getIPP" && message.origin == "https://cyberlab.chu-clermontferrand.fr"){
-            $('#cyberlabFrame')[0].contentWindow.postMessage(unsafeWindow._data.IPP, "https://cyberlab.chu-clermontferrand.fr")
+    if (location.href.search("xplore.chu-clermontferrand.fr")+1){
+        if (!$ || !$.fn) {$ = µ.jQuery || µ.$ || window.jQuery }
+        console.log((location.pathname + location.hash) == "/XaIntranet/#/UserLogin")
+        if((location.pathname + location.hash) == "/XaIntranet/#/UserLogin"){
+            $.waitFor('#txtUSERNAME input').then(el=>{
+                $(el).val(EasilyInfos.username).change()
+                $('#txpPASSWORD input').val(EasilyInfos.password).change()
+                $('#btnVALIDER>a').log().click2()
+            })
         }
-    })
+    }
+
+
+
+
+
+
 
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         if($(".titleContainer").text().trim() == "Vous n'êtes pas habilité(e) à visualiser ce module."){
-            window.parent.postMessage("allowASUR", "*")
+            window.parent.postMessage("{command:'allowASUR'}", "*")
         }
     } else if (location.hostname == "easily-prod.chu-clermontferrand.fr"){
         window.addEventListener("message", receiveMessage);
@@ -142,95 +141,106 @@
     .filter(':contains(pilotage)')[EasilyInfos.hide_pilotage ? 'hide':'show']().end()
     .filter(':contains(bloc)')[EasilyInfos.hide_bloc ? 'hide':'show']().end()
 
-    let patientIPP, patientBD, labo_url
 
-//     ██████ ██      ██  ██████ ██   ██     ███████ ██    ██ ███████ ███    ██ ████████
-//    ██      ██      ██ ██      ██  ██      ██      ██    ██ ██      ████   ██    ██
-//    ██      ██      ██ ██      █████       █████   ██    ██ █████   ██ ██  ██    ██
-//    ██      ██      ██ ██      ██  ██      ██       ██  ██  ██      ██  ██ ██    ██
-//     ██████ ███████ ██  ██████ ██   ██     ███████   ████   ███████ ██   ████    ██
+//    ███    ███  ██████  ██    ██ ███████ ███████     ███████ ██    ██ ███████ ███    ██ ████████ ███████
+//    ████  ████ ██    ██ ██    ██ ██      ██          ██      ██    ██ ██      ████   ██    ██    ██
+//    ██ ████ ██ ██    ██ ██    ██ ███████ █████       █████   ██    ██ █████   ██ ██  ██    ██    ███████
+//    ██  ██  ██ ██    ██ ██    ██      ██ ██          ██       ██  ██  ██      ██  ██ ██    ██         ██
+//    ██      ██  ██████   ██████  ███████ ███████     ███████   ████   ███████ ██   ████    ██    ███████
 //
 
-    window.addEventListener('click', (ev=>{
+    $(window).on('click contextmenu mouseup', (ev=>{
+        //console.log(ev)
         switch(location.pathname.split("/")[1]){
             case "Login":
                 // Auto-logon
-                if(EasilyInfos.password_store && $(ev.target).parents('.msg-accueil').length){
-                    $("input#username").val(EasilyInfos.username)
-                    $("input#password").val(EasilyInfos.password)
-                    $("button.login-submit").click()
+                if($(ev.type == "click")){
+                    if(EasilyInfos.password_store && $(ev.target).parents('.msg-accueil').length){
+                        $("input#username").val(EasilyInfos.username)
+                        $("input#password").val(EasilyInfos.password)
+                        $("button.login-submit").click()
+                    }
                 }
                 break;
             case "Medecin":
                 //auto-affiche hospit UF
-                if($(ev.target).parents('.message-center:visible:contains("Choisissez une UF")').length){
-                        $('#dropdownCR').val('string:'+EasilyInfos.CR).change()
-                        setTimeout(()=>$('#dropdownUF').val('string:'+EasilyInfos.UF).change(), 500)
-                    //}
-                }
-                if($(ev.target).closest('.easily-container-area').length){ // bandeau droite
-                    if ($(ev.target).is('a:contains(Imagerie)')){
-                        window.open(`Lancemodule: IMAGES_PATIENT;${unsafeWindow._data.IPP};LOGINAD=${EasilyInfos.username}`)
-                    } else if ($(ev.target).is('a:contains(Biologie)')){
-                        if(!$('#module-bioboxes-biologie').is('.cyberlab_frame')){
-                            if(!unsafeWindow._data.IPP){
-                                unsafeWindow._data.IPP = $('.infosPatient').text().split(' : ')[1]
-                            }
-                            patientIPP = unsafeWindow._data.IPP
-                            patientBD = $('.infosPatient').text().split('le ')[1].split(" (")[0].split('/').reverse().join('')
-                            labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
-                                btoa('Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+patientIPP+'&patientBirthDate='+patientBD+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
-                            $.waitFor('#module-bioboxes-biologie:visible').then(el=>{
-                                $(el).html("").append('<iframe id="cyberlabFrame" style="width:100%;height:100%" src="https://cyberlab.chu-clermontferrand.fr">')
-                            })
-                            $('#module-bioboxes-biologie').addClass('cyberlab_frame')
+                    if($(ev.target).parents('.message-center:visible:contains("Choisissez une UF")').length){
+                        if(ev.type == "click"){
+                            $('#dropdownCR').val('string:'+EasilyInfos.CR).change()
+                            setTimeout(()=>$('#dropdownUF').val('string:'+EasilyInfos.UF).change(), 500)
                         }
                     }
-                }
-                if($(ev.target).closest('#easily-univers').length){
-                    if($(ev.target).is('a:contains("urgences")')){
-                        $('li[title="ASUR (Urgences)"]').click()
-                    } else if($(ev.target).is('a:contains("hospitalisation")')){
-                        $('li[title="Patients hospitalisés (WorklistsHospitalisation)"]').click()
+                    if($(ev.target).closest('.easily-container-area').length){ // bandeau droite
+                        if ($(ev.target).is('a:contains(Imagerie)')){
+                            if(ev.type == "click"){
+                                window.open(`Lancemodule: IMAGES_PATIENT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`)
+                            }
+
+                            if(!$('#module-bioboxes-imagerie').is('.xplore_frame')){
+                                if(!µ.currentPatient.IPP){
+                                    µ.currentPatient.IPP = $('.infosPatient').text().split(' : ')[1]
+                                    µ.currentPatient.DDN = $('.infosPatient').text().split('le ')[1].split(" (")[0]
+                                }
+                                /*
+                                $.waitFor('#module-bioboxes-imagerie:visible').then(el=>{
+                                    $(el).html("").append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+µ.currentPatient.IPP+'">')
+                                })
+                                */
+                            }
+                            //https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2=${IPP}
+                        } else if ($(ev.target).is('a:contains(Biologie)')){
+                            if(!$('#module-bioboxes-biologie').is('.cyberlab_frame')){
+                                if(!µ.currentPatient.IPP){
+                                    µ.currentPatient.IPP = $('.infosPatient').text().split(' : ')[1]
+                                    µ.currentPatient.DDN = $('.infosPatient').text().split('le ')[1].split(" (")[0]
+                                }
+                                /*
+                            labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
+                                btoa('Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+µ._data.IPP+'&patientBirthDate='+µ.currentPatient.DDN.split('/').reverse().join('')+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
+                            */
+                                $.waitFor('#module-bioboxes-biologie:visible').then(el=>{
+                                    $(el).html("").append('<iframe id="cyberlabFrame" style="width:100%;height:100%" src="https://cyberlab.chu-clermontferrand.fr">')
+                                })
+                                $('#module-bioboxes-biologie').addClass('cyberlab_frame')
+                            }
+                        }
                     }
-                }
-                /*
-                    */
+                    if($(ev.target).closest('#easily-univers').length){
+                        if($(ev.target).is('a:contains("urgences")')){
+                            $('li[title="ASUR (Urgences)"]').click()
+                        } else if($(ev.target).is('a:contains("hospitalisation")')){
+                            $('li[title="Patients hospitalisés (WorklistsHospitalisation)"]').click()
+                        }
+                    }
+                    if($(ev.target).is('div.username')){
+                        if(ev.type == "contextmenu"){
+                            ev.preventDefault()
+                            $('#EasilyPlusPrefs').dialog('open')
+                        }
+                    }
                 break;
         }
     }))
 
 
-//     ██████  ██████  ███    ██ ████████ ███████ ██   ██ ████████     ███    ███ ███████ ███    ██ ██    ██
-//    ██      ██    ██ ████   ██    ██    ██       ██ ██     ██        ████  ████ ██      ████   ██ ██    ██
-//    ██      ██    ██ ██ ██  ██    ██    █████     ███      ██        ██ ████ ██ █████   ██ ██  ██ ██    ██
-//    ██      ██    ██ ██  ██ ██    ██    ██       ██ ██     ██        ██  ██  ██ ██      ██  ██ ██ ██    ██
-//     ██████  ██████  ██   ████    ██    ███████ ██   ██    ██        ██      ██ ███████ ██   ████  ██████
+
+//    ███    ███ ███████ ███████ ███████  █████   ██████  ███████     ███████ ██    ██ ███████ ███    ██ ████████
+//    ████  ████ ██      ██      ██      ██   ██ ██       ██          ██      ██    ██ ██      ████   ██    ██
+//    ██ ████ ██ █████   ███████ ███████ ███████ ██   ███ █████       █████   ██    ██ █████   ██ ██  ██    ██
+//    ██  ██  ██ ██           ██      ██ ██   ██ ██    ██ ██          ██       ██  ██  ██      ██  ██ ██    ██
+//    ██      ██ ███████ ███████ ███████ ██   ██  ██████  ███████     ███████   ████   ███████ ██   ████    ██
 //
-
-    window.addEventListener('contextmenu', (ev=>{
-        console.log('bah')
-        switch(location.pathname.split("/")[1]){
-            case "Medecin":
-                if($(ev.target).is('div.username')){
-                    ev.preventDefault()
-                    $('#EasilyPlusPrefs').dialog('open')
-                }
-                break;
-        }
-    }))
-
-
-//     █████  ███████ ██    ██ ██████
-//    ██   ██ ██      ██    ██ ██   ██
-//    ███████ ███████ ██    ██ ██████
-//    ██   ██      ██ ██    ██ ██   ██
-//    ██   ██ ███████  ██████  ██   ██
 //
+    function receiveMessage(message) {
+        let waitTime = 0, messageEvData = typeof message.data == "object" ? message.data : JSON.parse(message.data)
+        //console.log("Message : " + messageEvData.command)
+        switch(messageEvData.command){
 
-    function receiveMessage(event) {
-        let waitTime = 0
-        switch(event.data){
+//        _   ___ _   _ ___
+//       /_\ / __| | | | _ \
+//      / _ \\__ \ |_| |   /
+//     /_/ \_\___/\___/|_|_\
+//
             case "allowASUR":
                 $('[data-action=habilitation]').click2()
                 $.waitFor(`ul.nav>li:contains("Demandes d'habilitation"):visible a:contains("Faire une demande d'habilitation temporaire")`).then(el=>setTimeout((e)=>$(e).click(),300,el))
@@ -245,6 +255,34 @@
                     $.waitFor(`li[title="ASUR (Urgences)"]`).then(el2=>$(el2).click())
                 },300,el)
                 )
+                break
+//       ___     _             _      _
+//      / __|  _| |__  ___ _ _| |__ _| |__
+//     | (_| || | '_ \/ -_) '_| / _` | '_ \
+//      \___\_, |_.__/\___|_| |_\__,_|_.__/
+//          |__/
+            case "cyberlab-getIPP":
+                console.log('bhou', message)
+                if (message.origin == "https://cyberlab.chu-clermontferrand.fr"){
+                    $('#cyberlabFrame')[0].contentWindow.postMessage(unsafeWindow.currentPatient, "https://cyberlab.chu-clermontferrand.fr")
+                }
+                break
+        }
+
+//       ___ _                                     _                _   _         _
+//      / __| |_  __ _ _ _  __ _ ___ _ __  ___ _ _| |_   _ __  __ _| |_(_)___ _ _| |_
+//     | (__| ' \/ _` | ' \/ _` / -_) '  \/ -_) ' \  _| | '_ \/ _` |  _| / -_) ' \  _|
+//      \___|_||_\__,_|_||_\__, \___|_|_|_\___|_||_\__| | .__/\__,_|\__|_\___|_||_\__|
+//                         |___/                        |_|
+        if (µ._data.PatientId != µ.currentPatient.ID){
+            let infosPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
+            µ.currentPatient = infosPatient
+            µ.currentPatient.IPP = $('.infosPatient').text().split(' : ')[1]
+            µ.currentPatient.DDN = $('.infosPatient').text().split('le ')[1].split(" (")[0]
+            µ.currentPatient.sexe = µ._data.PatientSexe == "Femme" ? "f" : "m"
+            µ.currentPatient.ID = µ._data.PatientId
+            console.log('Changement de patient pour : ' + infosPatient.nom + " " + infosPatient.prenom, µ.currentPatient)
+            changementContextePatient()
         }
     }
 
@@ -256,7 +294,7 @@
 //     ██████  ██         ██    ██  ██████  ██   ████ ███████
 //
 
-    if(location.pathname.split("/")[1] != "Login"){
+    if(unsafeWindow == unsafeWindow.top && location.pathname.split("/")[1] != "Login"){
     $('<div id="EasilyPlusPrefs"></div>').append(`
 <table>
  <thead>
@@ -365,7 +403,18 @@
 
 
 
-
+function changementContextePatient(){
+    //<i class='fa fa-carret'></i>
+    let $ = unsafeWindow.jQuery
+    $('.area-carrousel-wrapper li>a:contains("Liens")').append("<i class='fa fa-caret-down' style='margin-left:5px;'></i>").parent().addClass("menu-links")
+        .append("<li class=''>")
+    $.waitFor('#module-bioboxes-imagerie').then(el=>{
+        $(el).html("").append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
+    })
+    //modules
+    // Lancemodule: SYNTHESE_PAT;${IPP};LOGINAD=${username}   == Synthèse Logon
+    // Lancemodule: IMAGES_PATIENT;${IPP};LOGINAD=${username}     == PACS
+}
 
 
 
