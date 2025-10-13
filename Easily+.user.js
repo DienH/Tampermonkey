@@ -77,6 +77,22 @@
                 }
             }
         }
+        if(window.name =="resultats"){
+            if(!$('#cyberlab_style').length){
+                $('<style id="cyberlab_style">').appendTo($('body').addClass('cyberlab_framed')).html(`
+                .cyberlab_framed .globalMenu, .cyberlab_framed .contextMenu, .cyberlab_framed #patientHeader {display:none}
+                body.cyberlab_framed {padding-top:0!important}
+                .cyberlab_framed .main {height: 100vh; margin: 0; }
+                .cyberlab_framed .main, .cyberlab_framed .dataTables_wrapper {width: calc(100vw - 1.5em)!important;}
+                .cyberlab_framed td {overflow:hidden}
+                `)
+            }
+            $('td.value.clickable').each((i,el)=>{
+                $(el).height($(el).height()).attr("title", $(el).text().trim())
+            })
+            $('.DTFC_scrollHead th').width(200)
+            $('.DTFC_scrollBody tr:first td').width(200)
+        }
         setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
         let creat = "", CKDEPI = "", IPP = ""
         function checkCreat() {
