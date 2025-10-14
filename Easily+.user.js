@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251009
+// @version      1.0.251014
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -80,7 +80,7 @@
         if(window.name =="resultats"){
             if(!$('#cyberlab_style').length){
                 $('<style id="cyberlab_style">').appendTo($('body').addClass('cyberlab_framed')).html(`
-                .cyberlab_framed .globalMenu, .cyberlab_framed .contextMenu, .cyberlab_framed #patientHeader {display:none}
+                .cyberlab_framed .globalMenu, .cyberlab_framed .contextMenu, .cyberlab_framed #patientHeader, .cyberlab_framed .blockingOverlayOnMobile {display:none}
                 body.cyberlab_framed {padding-top:0!important}
                 .cyberlab_framed .main {height: 100vh; margin: 0; }
                 .cyberlab_framed .main, .cyberlab_framed .dataTables_wrapper {width: calc(100vw - 1.5em)!important;}
@@ -456,7 +456,7 @@ function changementContextePatient(){
     $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
 
     $.waitFor('#module-bioboxes-imagerie').then(el=>{
-        $(el).html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
+        $(el).html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:calc(100% - 5px);height:calc(100% - 2px)" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
     })
     $.waitFor('#module-bioboxes-anapath').then(el=>{
         $(el).html("").addClass('pres-bio_frame').append('<iframe id="presBioFrame" style="width:100%;height:100%" src="https://cyberlab.chu-clermontferrand.fr">')
