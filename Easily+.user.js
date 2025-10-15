@@ -265,7 +265,16 @@
 //
 //
     function receiveMessage(message) {
-        let waitTime = 0, messageEvData = typeof message.data == "object" ? message.data : JSON.parse(message.data), frameOrigin
+        let waitTime = 0, messageEvData, frameOrigin
+        if (typeof message.data == "object"){
+            messageEvData = message.data
+        } else{
+            try {
+                messageEvData = JSON.parse(message.data)
+            }catch(e){
+                return null
+            }
+        }
         //console.log("Message : " + messageEvData.command)
         $('iframe').each((i,el)=>{
             if(el.contentWindow == message.source){
@@ -317,7 +326,7 @@
 //     | (__| ' \/ _` | ' \/ _` / -_) '  \/ -_) ' \  _| | '_ \/ _` |  _| / -_) ' \  _|
 //      \___|_||_\__,_|_||_\__, \___|_|_|_\___|_||_\__| | .__/\__,_|\__|_\___|_||_\__|
 //                         |___/                        |_|
-        if (µ._data.PatientId != µ.currentPatient.ID){
+        if (µ._data && µ._data.PatientId){
             let infosPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
             µ.currentPatient = infosPatient
             µ.currentPatient.IPP = $('.infosPatient').text().split(' : ')[1]
