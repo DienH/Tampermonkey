@@ -85,13 +85,30 @@
                 .cyberlab_framed .main {height: 100vh; margin: 0; }
                 .cyberlab_framed .main, .cyberlab_framed .dataTables_wrapper {width: calc(100vw - 1.5em)!important;}
                 .cyberlab_framed td {overflow:hidden}
+                .cyberlab_framed td.value.clickable, .cyberlab_framed .DTFC_scrollBody td:first-child {white-space:nowrap;}
+                .cyberlab_framed .DTFC_scrollBody td.column-result.first, .cyberlab_framed .DTFC_scrollBody td:first-child {height:fit-content!important}
+                .cyberlab_framed .DTFC_scroll {left:0!important;width:calc(100vw - 20px)!important;}
+                .cyberlab_framed .DTFC_scrollBody, .cyberlab_framed .DTFC_scrollHead {width:calc(100vw - 20px)!important;}
+                .cyberlab_framed .DTFC_scrollBody div.description {overflow:hidden;}
+                .cyberlab_framed .DTFC_LeftWrapper {display:none!important}
                 `)
             }
-            $('td.value.clickable').each((i,el)=>{
+            $('td.value.clickable, td.column-test').each((i,el)=>{
                 $(el).height($(el).height()).attr("title", $(el).text().trim())
             })
-            $('.DTFC_scrollHead th').width(200)
-            $('.DTFC_scrollBody tr:first td').width(200)
+            $('.DTFC_LeftHeadWrapper th').prependTo('.dataTables_scrollHeadInner tr')
+            $('.DTFC_LeftBodyWrapper tr>td').each((i,el)=>{
+                $(el).prependTo($('.DTFC_scrollBody>table>tbody>tr:eq('+i+')'))
+            })
+            $('.cyberlab_framed .DTFC_scrollBody div.description').each((i,el)=>{
+                if($(el).next().find('.icon').length){
+                    $(el).css('width','calc(100% - 20px)')
+                }
+            })
+            $('.DTFC_scrollHead th').css('width', 150)
+            $('.DTFC_scrollBody tr:first td').css('width', 150)
+            $('.DTFC_scrollBody td.column-result.first')
+            window.dispatchEvent(new Event('resize'))
         }
         setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
         let creat = "", CKDEPI = "", IPP = ""
@@ -465,13 +482,13 @@ function changementContextePatient(){
     $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
 
     $.waitFor('#module-bioboxes-imagerie').then(el=>{
-        $(el).html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:calc(100% - 5px);height:calc(100% - 2px)" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
+        $(el).html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
     })
     $.waitFor('#module-bioboxes-anapath').then(el=>{
-        $(el).html("").addClass('pres-bio_frame').append('<iframe id="presBioFrame" style="width:100%;height:100%" src="https://cyberlab.chu-clermontferrand.fr">')
+        $(el).html("").addClass('pres-bio_frame').append('<iframe id="presBioFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
     })
     $.waitFor('#module-bioboxes-biologie').then(el=>{
-        $(el).html("").addClass('cyberlab_frame').append('<iframe id="cyberlabFrame" style="width:100%;height:100%" src="https://cyberlab.chu-clermontferrand.fr">')
+        $(el).html("").addClass('cyberlab_frame').append('<iframe id="cyberlabFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
     })
 
     $('#area-carrousel-1>ul>li:last').after($('#area-carrousel-1>ul>li:last').clone().attr('id', '').find('a').text('Synthèse').attr('id','').attr('href', `Lancemodule: SYNTHESE_PAT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`).end())
@@ -480,6 +497,3 @@ function changementContextePatient(){
     // Lancemodule: SYNTHESE_PAT;${IPP};LOGINAD=${username}   == Synthèse Logon
     // Lancemodule: IMAGES_PATIENT;${IPP};LOGINAD=${username}     == PACS
 }
-
-
-
