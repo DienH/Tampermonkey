@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251015
+// @version      1.0.251020
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -169,7 +169,8 @@
 
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         if($(".titleContainer").text().trim() == "Vous n'êtes pas habilité(e) à visualiser ce module."){
-            window.parent.postMessage("{command:'allowASUR'}", "*")
+            //console.log("Pas d'habilitation au module ASUR")
+            window.parent.postMessage('{"command":"allowASUR"}', "*")
         }
     } else if (location.hostname == "easily-prod.chu-clermontferrand.fr"){
         window.addEventListener("message", receiveMessage);
@@ -259,7 +260,7 @@
                         if($(ev.target).is('a:contains("urgences")')){
                             $('li[title="ASUR (Urgences)"]').click()
                         } else if($(ev.target).is('a:contains("hospitalisation")')){
-                            $('li[title="Patients hospitalisés (WorklistsHospitalisation)"]').click()
+                            $('li[title="Patients en psy (WorklistsHospitalisation)"]').click()
                         }
                     }
                     if($(ev.target).is('div.username')){
@@ -283,22 +284,22 @@
 //
     function receiveMessage(message) {
         let waitTime = 0, messageEvData, frameOrigin
+        //console.log(message)
         if (typeof message.data == "object"){
             messageEvData = message.data
         } else{
             try {
                 messageEvData = JSON.parse(message.data)
             }catch(e){
+                console.log('Error parsing data', message.data)
                 return null
             }
         }
-        //console.log("Message : " + messageEvData.command)
         $('iframe').each((i,el)=>{
             if(el.contentWindow == message.source){
                 frameOrigin = el
             }
         })
-        //console.log(message.source)
         switch(messageEvData.command){
 
 //        _   ___ _   _ ___
@@ -308,7 +309,9 @@
 //
             case "allowASUR":
                 $('[data-action=habilitation]').click2()
-                $.waitFor(`ul.nav>li:contains("Demandes d'habilitation"):visible a:contains("Faire une demande d'habilitation temporaire")`).then(el=>setTimeout((e)=>$(e).click(),300,el))
+                $.waitFor(`ul.nav>li:contains("Demandes d'habilitation"):visible a:contains("Faire une demande d'habilitation temporaire")`).then($el=>{
+                    $.waitFor('h4:contains("Vous avez le rôle")').then(()=>$el.click())
+                })
                 $.waitFor(`label:contains("Choix des services"):visible`).then(el=>setTimeout((e)=>$(e).click(),300,el))
                 $.waitFor(`input[placeholder="rechercher un service par code ou libellé de..."]:visible`).then(el=>setTimeout((e)=>$(e).val("1361u").trigger("change"),300,el))
                 $.waitFor(`span[data-bind="click: rechercherServices"]:visible`).then(el=>setTimeout((e)=>$(e).click(),300,el))
@@ -320,6 +323,8 @@
                     $.waitFor(`li[title="ASUR (Urgences)"]`).then(el2=>$(el2).click())
                 },300,el)
                 )
+                /*
+                */
                 break
 //       ___     _             _      _
 //      / __|  _| |__  ___ _ _| |__ _| |__
@@ -477,7 +482,7 @@ function changementContextePatient(){
     let EasilyInfos = GM_getValue('EasilyInfos',{"user":"", "password":""})
     //<i class='fa fa-carret'></i>
     let $ = unsafeWindow.jQuery
-    $('.area-carrousel-wrapper li>a:contains("Liens")').append("<i class='fa fa-caret-down' style='margin-left:5px;'></i>").parent().addClass("menu-links")
+    $('.area-carrousel-wrapper li:not(.menu-links)>a:contains("Liens")').append("<i class='fa fa-caret-down' style='margin-left:5px;'></i>").parent().addClass("menu-links")
         .append("<li class='li_links'></li><li class='li_links'></li>")
     $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
 
