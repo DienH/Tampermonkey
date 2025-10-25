@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251025
+// @version      1.0.251026
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -215,8 +215,13 @@
     }
 
 
-
-
+//    ███████ ██  ██████ ██   ██ ███████         ██     ██████   ██████   ██████
+//    ██      ██ ██      ██   ██ ██             ██      ██   ██ ██    ██ ██
+//    █████   ██ ██      ███████ █████         ██       ██   ██ ██    ██ ██
+//    ██      ██ ██      ██   ██ ██           ██        ██   ██ ██    ██ ██
+//    ██      ██  ██████ ██   ██ ███████     ██         ██████   ██████   ██████
+//
+//
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         // Gestion des fiches du type Observation / FHR
         if(location.pathname == "/dominho/Fiche/Open" || location.pathname == "/Dominho/Fiche/Create"){
@@ -229,10 +234,25 @@
                     ev.preventDefault()
                 }
             })
+            window.parent.postMessage({'command':'create-FHR_Channel'}, "*")
+            window.onmessage = message=>{
+                let messageEvData
+                if (typeof message.data == "object"){
+                    messageEvData = message.data
+                } else{
+                    try {
+                        messageEvData = JSON.parse(message.data)
+                    }catch(e){
+                        console.log('Error parsing data', message.data)
+                        return null
+                    }
+                }
+                if(messageEvData.command == "FHR_channel-framePort"){
+                    console.log(message)
+                }
+            }
             switch(unsafeWindow._currentContext.FicheTitle){
                 case 'FHR Observation Médicale - Psychiatrie':
-
-
                     $('.header.headerScrolling>div:not([id])>div:first').clone().appendTo($('.header.headerScrolling>div:not([id])')).find('.ToolbarButtonImage').attr('class', 'ToolbarButtonImage image__envoyer-a-la-frappe_png').attr('icone', 'image__envoyer-a-la-frappe_png').siblings().remove().end()
                         .parent().attr({'onclick':'', 'Title': 'Remplissage auto de la fiche', 'id': '', 'ng-class':''}).click(async ev=>{
                         //let CB_content = await navigator.clipboard.readText()
@@ -304,8 +324,8 @@
             //console.log("Pas d'habilitation au module ASUR")
             window.parent.postMessage('{"command":"allowASUR"}', "*")
         }
-    } else if (location.hostname == "easily-prod.chu-clermontferrand.fr"){
-        window.addEventListener("message", receiveMessage);
+    } else if (location.hostname == "easily-prod.chu-clermontferrand.fr" && window.top == window.self){
+        window.addEventListener("message", receiveMessage_Main);
     }
 
        // auto-relogon
@@ -331,6 +351,7 @@
         //console.log(ev)
         if(location.href.search("https://easily-prod.chu-clermontferrand.fr/")+1){
             switch(location.pathname.split("/")[1]){
+                case "login":
                 case "Login":
                     // Auto-logon
                     if($(ev.type == "click")){
@@ -341,6 +362,7 @@
                         }
                     }
                     break;
+                case "medecin":
                 case "Medecin":
                     //auto-affiche hospit UF
                     if($(ev.target).parents('.message-center:visible:contains("Choisissez une UF")').length){
@@ -423,8 +445,8 @@
 //    ██      ██ ███████ ███████ ███████ ██   ██  ██████  ███████     ███████   ████   ███████ ██   ████    ██
 //
 //
-    function receiveMessage(message) {
-        let waitTime = 0, messageEvData, frameOrigin
+    function receiveMessage_Main(message) {
+        let waitTime = 0, messageEvData, frameOrigin, FHR_channel
         //console.log(message)
         if (typeof message.data == "object"){
             messageEvData = message.data
@@ -484,6 +506,24 @@
                     $(frameOrigin).each((i,el)=>el.contentWindow.postMessage(cyberlabData, "https://cyberlab.chu-clermontferrand.fr"))
                 }
                 break
+
+//    ___________.__       .__                  /\  ________
+//    \_   _____/|__| ____ |  |__   ____       / /  \______ \   ____   ____
+//     |    __)  |  |/ ___\|  |  \_/ __ \     / /    |    |  \ /  _ \_/ ___\
+//     |     \   |  \  \___|   Y  \  ___/    / /     |    `   (  <_> )  \___
+//     \___  /   |__|\___  >___|  /\___  >  / /     /_______  /\____/ \___  >
+//         \/            \/     \/     \/   \/              \/            \/
+            case "create-FHR_Channel":
+                //console.log('FHR Channel créé', frameOrigin)
+                // create a channel
+                FHR_channel = new MessageChannel()
+                // listen on one end
+                FHR_channel.port1.onmessage = ({data}) => {
+                    console.log("Message de FHR_channel: " + data); // 3
+                };
+                // send the other end
+                frameOrigin.contentWindow.postMessage(JSON.stringify({'command':'FHR_channel-framePort'}), '*', [FHR_channel.port2]); // 1
+                break
         }
 
 //       ___ _                                     _                _   _         _
@@ -493,7 +533,7 @@
 //                         |___/                        |_|
         if (µ._data && µ._data.PatientId){
             µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
-            Object.assign(µ.currentPatient, $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups())
+            Object.assign(µ.currentPatient, $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups)
             //µ.currentPatient.IPP = $('.infosPatient:visible:first').text().split(' : ')[1]
             //µ.currentPatient.DDN = $('.infosPatient:visible:first').text().split('le ')[1].split(" (")[0]
             µ.currentPatient.sexe = µ._data.PatientSexe == "Femme" ? "f" : "m"
@@ -645,7 +685,7 @@ function changementContextePatient(){
         $el.not(':has(#cyberlabFrame)').html("").addClass('cyberlab_frame').append('<iframe id="cyberlabFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
     })
 
-    $('#area-carrousel-1>ul>li:last:not(#synth_patient)').after($('#area-carrousel-1>ul>li:last').clone().attr('id', 'synth_patient').find('a').text('Synthèse').attr('id','').attr('href', `Lancemodule: SYNTHESE_PAT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`).end())
+    $('#area-carrousel-1>ul>li:last:not(#synth_patient)').after($('#area-carrousel-1>ul>li:last').clone().attr('id', 'synth_patient').find('a').text('XWay').attr('id','').attr('href', `Lancemodule: SYNTHESE_PAT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`).end())
 
     //modules
     // Lancemodule: SYNTHESE_PAT;${IPP};LOGINAD=${username}   == Synthèse Logon
