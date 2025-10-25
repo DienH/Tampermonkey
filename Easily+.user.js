@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251020
+// @version      1.0.251025
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -32,7 +32,7 @@
     let EasilyInfos = GM_getValue('EasilyInfos',{"user":"", "password":""})
     var µ = unsafeWindow
     var log = console.log
-    µ.currentPatient = {id:'', nom:'',prenom:'',ddn:'', IPP:''}
+    µ.currentPatient = {id:'', nom:'', prenom:'',ddn:'', IPP:''}
     if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.parent.jQuery || window.jQuery };
     if(!$('#DienScriptPlus', document).length){
         $('body', document)
@@ -55,8 +55,28 @@
             $('#password').val(EasilyInfos.password)
             $('button.login__submitButton').click()
         } else if(location.pathname == '/cyberlab/servlet/be.mips.cyberlab.web.InitialLogin'){
-            location.href = '/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'
+            //location.href = '/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'
+
+            window.parent.postMessage(JSON.stringify({'command':'cyberlab-getWindowName'}), "https://easily-prod.chu-clermontferrand.fr")
+
+            window.onmessage = msg=>{
+                window.name=msg.data.windowName ?? ""
+                console.log(msg.data)
+                if(msg.data.IPP){
+                    if(window.name == "resultats"){
+                        $('#pat_Code').val(msg.data.IPP)
+                        $('span.menuLabel:contains(Chercher)').click()
+                    }else if(window.name == "prescription"){
+                        $.post('/cyberlab/servlet/be.mips.cyberlab.web.APIEntry', `Class=Patient&Method=CreateOrder&LoginName=${EasilyInfos.username}&Password=Clermont63!&Object=${msg.data.IPP}&Visit=${msg.data.IEP}&Organization=CLERMONT&onClose=Login.jsp&application=CHU_PRESCR`, r=>{
+                            document.open()
+                            document.write(r)
+                            document.close()
+                        })
+                    }
+                }
+            }
         } else if((location.pathname + location.search) == '/cyberlab/servlet/be.mips.cyberlab.web.FrontDoor?module=Patient&command=initiateBrowsing&onSelectPatient=resultConsultation&stateIndex=0'){
+            /*
             window.parent.postMessage(JSON.stringify({command:'cyberlab-getName'}), "https://easily-prod.chu-clermontferrand.fr")
             window.onmessage = msg=>{
                 if(msg.data.IPP){
@@ -76,6 +96,7 @@
                     window.parent.postMessage(JSON.stringify({command:'cyberlab-getIPP', name:msg.data.name}), "https://easily-prod.chu-clermontferrand.fr")
                 }
             }
+            */
         }
         if(window.name =="resultats"){
             if(!$('#cyberlab_style').length){
@@ -87,19 +108,21 @@
                 .cyberlab_framed td {overflow:hidden}
                 .cyberlab_framed td.value.clickable, .cyberlab_framed .DTFC_scrollBody td:first-child {white-space:nowrap;}
                 .cyberlab_framed .DTFC_scrollBody td.column-result.first, .cyberlab_framed .DTFC_scrollBody td:first-child {height:fit-content!important}
-                .cyberlab_framed .DTFC_scroll {left:0!important;width:calc(100vw - 20px)!important;}
+                //.cyberlab_framed .DTFC_scroll {left:0!important;width:calc(100vw - 20px)!important;}
                 .cyberlab_framed .DTFC_scrollBody, .cyberlab_framed .DTFC_scrollHead {width:calc(100vw - 20px)!important;}
                 .cyberlab_framed .DTFC_scrollBody div.description {overflow:hidden;}
-                .cyberlab_framed .DTFC_LeftWrapper {display:none!important}
+                //.cyberlab_framed .DTFC_LeftWrapper {display:none!important}
                 `)
             }
             $('td.value.clickable, td.column-test').each((i,el)=>{
                 $(el).height($(el).height()).attr("title", $(el).text().trim())
             })
-            $('.DTFC_LeftHeadWrapper th').prependTo('.dataTables_scrollHeadInner tr')
+            //$('.DTFC_LeftHeadWrapper th').prependTo('.dataTables_scrollHeadInner tr')
+            /*
             $('.DTFC_LeftBodyWrapper tr>td').each((i,el)=>{
                 $(el).prependTo($('.DTFC_scrollBody>table>tbody>tr:eq('+i+')'))
             })
+            */
             $('.cyberlab_framed .DTFC_scrollBody div.description').each((i,el)=>{
                 if($(el).next().find('.icon').length){
                     $(el).css('width','calc(100% - 20px)')
@@ -161,13 +184,122 @@
         }
     }
 
+//    ██████  ██████  ███████ ███████
+//    ██   ██ ██   ██ ██      ██
+//    ██████  ██████  █████   ███████
+//    ██      ██   ██ ██           ██
+//    ██      ██   ██ ███████ ███████
+//
+//
+    else if(location.href.search("https://easilynlb-prod.chu-clermontferrand.fr/ePrescriptionWeb/")+1){
+        $(window).on('click', ev=>{
+            //console.log(ev)
 
+            //Cacher automatiquement l'alerte sur les EI des traitements
+            if(EasilyInfos.hide_warningTTT){
+                $.waitFor('#SyntheseSignaux', 3000).then($el=>{
+                    $el.find('#btnEnregistrer').click()
+                })
+            }
 
+            //Signature rapide
+            if($(ev.target).is('div.Alignement:contains(Mot de passe)')){
+                //console.log('bouh')
+                if($('#UtilisateurLogin').val() == EasilyInfos.username){
+                    $('#UtilisateurPassword').val(EasilyInfos.password)
+                    $('#SignatureBox #btnSigner').click2()
+                }
+            }
+        })
+        $('#btnEnregistrer:contains(Continuer)').click()
+    }
 
 
 
 
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
+        // Gestion des fiches du type Observation / FHR
+        if(location.pathname == "/dominho/Fiche/Open" || location.pathname == "/Dominho/Fiche/Create"){
+
+            //Expension des catégories "Contexte", "Sejour" et "Sortie" avec simple click
+            $('.fm_grid_cell.fm_group_header.fm_group_header_lightgray').off().click(ev=>{
+                //console.log($(ev.target).is('div.fm_group_header_expander'), $(ev.delegateTarget).find('div.fm_group_header_expander.image_expanded_png'))
+                if(!$(ev.target).is('div.fm_group_header_expander')){
+                    $(ev.delegateTarget).find('div.fm_group_header_expander').click()
+                    ev.preventDefault()
+                }
+            })
+            switch(unsafeWindow._currentContext.FicheTitle){
+                case 'FHR Observation Médicale - Psychiatrie':
+
+
+                    $('.header.headerScrolling>div:not([id])>div:first').clone().appendTo($('.header.headerScrolling>div:not([id])')).find('.ToolbarButtonImage').attr('class', 'ToolbarButtonImage image__envoyer-a-la-frappe_png').attr('icone', 'image__envoyer-a-la-frappe_png').siblings().remove().end()
+                        .parent().attr({'onclick':'', 'Title': 'Remplissage auto de la fiche', 'id': '', 'ng-class':''}).click(async ev=>{
+                        //let CB_content = await navigator.clipboard.readText()
+                        //console.log(CB_content)
+                        let observData = {}, $tmp
+                        $('.fm-label-mandatory-validate').closest('td.fm_grid_cell').each((i,el)=>{
+                            console.log($(el).text().trim(), $(el).next().find('input'))
+                            switch($(el).text().trim()){
+                                case "Sortie*":
+                                    $(el).next().find('input').val(new Date().toLocaleDateString())
+                                    break
+                                case "Motif entrée*":
+                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.motif ?? '.')
+                                    break
+                                case "Conclusion de l'examen clinique initial*":
+                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.examInit ?? '.')
+                                    break
+                                case "Périmètre abdominal*":
+                                case "Poids*":
+                                case "Taille*":
+                                    $tmp = $(el).next().find('input').val((i,v)=>v ? v : '1').end().next().next().find('input')
+                                    if(!$tmp.filter(':checked').length){
+                                        $tmp.first().click()
+                                    }
+                                    break
+                                case "Variation poids pré-hospit.*":
+                                   $(el).next().find('input:eq(1)').click()
+                                    break
+                                case "Traitement à l'entrée*":
+                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.tttInit ?? '.')
+                                    break
+                                case "*":
+                                    break
+                                case "Sortie *":
+                                    break
+                                case "Diagnostic de sortie*":
+                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.auTotal ?? '.')
+                                    break
+                                case "Destination du patient à la sortie*":
+                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('input:first').click()
+                                    break
+                                case "Prescription de sortie *":
+                                    $(el).closest('td.fm_group_header_default').parent().next().find('textarea').val(observData.tttSortie ?? '.')
+                                    break
+                                case "- Patient porteur/contact de BMR ou BHRe*":
+                                case "- Transfusion*":
+                                case "- Médicament dérivé du sang*":
+                                case "- Pose d'un dispositif médical implantable*":
+                                case "- Allergies au cours du séjour*":
+                                case "- Evènements indésirables / Complications*":
+                                case "- Déclaration de vigilance (Pharmacovigilance, etc...)*":
+                                case "- Autres*":
+                                case "- Remis en main propre*":
+                                   $(el).next().find('input:eq(1)').click()
+                                    break
+
+                            }
+                        })
+                    })
+                    console.log("Fiche FHR")
+                    break
+            }
+
+        }
+
+
+        // ASUR - absence d'habilitation
         if($(".titleContainer").text().trim() == "Vous n'êtes pas habilité(e) à visualiser ce module."){
             //console.log("Pas d'habilitation au module ASUR")
             window.parent.postMessage('{"command":"allowASUR"}', "*")
@@ -197,19 +329,20 @@
 
     $(window).on('click contextmenu mouseup', (ev=>{
         //console.log(ev)
-        switch(location.pathname.split("/")[1]){
-            case "Login":
-                // Auto-logon
-                if($(ev.type == "click")){
-                    if(EasilyInfos.password_store && $(ev.target).parents('.msg-accueil').length){
-                        $("input#username").val(EasilyInfos.username)
-                        $("input#password").val(EasilyInfos.password)
-                        $("button.login-submit").click()
+        if(location.href.search("https://easily-prod.chu-clermontferrand.fr/")+1){
+            switch(location.pathname.split("/")[1]){
+                case "Login":
+                    // Auto-logon
+                    if($(ev.type == "click")){
+                        if(EasilyInfos.password_store && $(ev.target).parents('.msg-accueil').length){
+                            $("input#username").val(EasilyInfos.username)
+                            $("input#password").val(EasilyInfos.password)
+                            $("button.login-submit").click()
+                        }
                     }
-                }
-                break;
-            case "Medecin":
-                //auto-affiche hospit UF
+                    break;
+                case "Medecin":
+                    //auto-affiche hospit UF
                     if($(ev.target).parents('.message-center:visible:contains("Choisissez une UF")').length){
                         if(ev.type == "click"){
                             $('#dropdownCR').val('string:'+EasilyInfos.CR).change()
@@ -261,6 +394,8 @@
                             $('li[title="ASUR (Urgences)"]').click()
                         } else if($(ev.target).is('a:contains("hospitalisation")')){
                             $('li[title="Patients en psy (WorklistsHospitalisation)"]').click()
+                        } else if($(ev.target).is('a:contains("consultation")')){
+                            $('li[title="Gestion des agendas (Agenda)"]').click()
                         }
                     }
                     if($(ev.target).is('div.username')){
@@ -269,7 +404,13 @@
                             $('#EasilyPlusPrefs').dialog('open')
                         }
                     }
-                break;
+                    break;
+            }
+        } else if(location.href.search("https://easilynlb-prod.chu-clermontferrand.fr/")+1){
+            switch(location.pathname){
+                case "/dominho/Fiche/Open":
+                    break
+            }
         }
     }))
 
@@ -336,9 +477,11 @@
                     $(frameOrigin).each((i,el)=>el.contentWindow.postMessage(unsafeWindow.currentPatient, "https://cyberlab.chu-clermontferrand.fr"))
                 }
                 break
-            case "cyberlab-getName":
+            case "cyberlab-getWindowName":
                 if (message.origin == "https://cyberlab.chu-clermontferrand.fr"){
-                    $(frameOrigin).each((i,el)=>el.contentWindow.postMessage({name:($(frameOrigin).is('#cyberlabFrame') ? "resultats" : "prescription")}, "https://cyberlab.chu-clermontferrand.fr"))
+                    let cyberlabData = unsafeWindow.currentPatient
+                    cyberlabData.windowName = ($(frameOrigin).is('#cyberlabFrame') ? "resultats" : "prescription")
+                    $(frameOrigin).each((i,el)=>el.contentWindow.postMessage(cyberlabData, "https://cyberlab.chu-clermontferrand.fr"))
                 }
                 break
         }
@@ -349,14 +492,14 @@
 //      \___|_||_\__,_|_||_\__, \___|_|_|_\___|_||_\__| | .__/\__,_|\__|_\___|_||_\__|
 //                         |___/                        |_|
         if (µ._data && µ._data.PatientId){
-            let infosPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
-            µ.currentPatient = infosPatient
-            µ.currentPatient.IPP = $('.infosPatient').text().split(' : ')[1]
-            µ.currentPatient.DDN = $('.infosPatient').text().split('le ')[1].split(" (")[0]
+            µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
+            Object.assign(µ.currentPatient, $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups())
+            //µ.currentPatient.IPP = $('.infosPatient:visible:first').text().split(' : ')[1]
+            //µ.currentPatient.DDN = $('.infosPatient:visible:first').text().split('le ')[1].split(" (")[0]
             µ.currentPatient.sexe = µ._data.PatientSexe == "Femme" ? "f" : "m"
             µ.currentPatient.ID = µ._data.PatientId
             µ.currentPatient.IEP = µ._data.VenueNumero
-            console.log('Changement de patient pour : ' + infosPatient.nom + " " + infosPatient.prenom, µ.currentPatient)
+            console.log('Changement de patient pour : ' + µ.currentPatient.nom + " " + µ.currentPatient.prenom)
             changementContextePatient()
         }
     }
@@ -417,6 +560,12 @@
     <label><input type="checkbox" name="hide_bloc" ${EasilyInfos.hide_bloc ? "checked" : ""}> Bloc</label>
     <label><input type="checkbox" name="hide_pilotage" ${EasilyInfos.hide_pilotage ? "checked" : ""}> Pilotage</label>
     <label><input type="checkbox" name="hide_parametres" ${EasilyInfos.hide_parametres ? "checked" : ""}> Paramétrage</label>
+   </td>
+  </tr>
+  <tr class="option-warningTTT">
+   <td>Cacher Warning TTT</td>
+   <td>
+    <input type="checkbox" name="hide_warningTTT" ${EasilyInfos.hide_warningTTT ? "checked" : ""}>
    </td>
   </tr>
 </tbody></table>`).dialog({
@@ -486,17 +635,17 @@ function changementContextePatient(){
         .append("<li class='li_links'></li><li class='li_links'></li>")
     $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
 
-    $.waitFor('#module-bioboxes-imagerie').then(el=>{
-        $(el).html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
+    $.waitFor('#module-bioboxes-imagerie').then($el=>{
+    $el.not(':has(#xploreFrame)').html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
     })
-    $.waitFor('#module-bioboxes-anapath').then(el=>{
-        $(el).html("").addClass('pres-bio_frame').append('<iframe id="presBioFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
+    $.waitFor('#module-bioboxes-anapath').then($el=>{
+        $el.not(':has(#presBioFrame)').html("").addClass('pres-bio_frame').append('<iframe id="presBioFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
     })
-    $.waitFor('#module-bioboxes-biologie').then(el=>{
-        $(el).html("").addClass('cyberlab_frame').append('<iframe id="cyberlabFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
+    $.waitFor('#module-bioboxes-biologie').then($el=>{
+        $el.not(':has(#cyberlabFrame)').html("").addClass('cyberlab_frame').append('<iframe id="cyberlabFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
     })
 
-    $('#area-carrousel-1>ul>li:last').after($('#area-carrousel-1>ul>li:last').clone().attr('id', '').find('a').text('Synthèse').attr('id','').attr('href', `Lancemodule: SYNTHESE_PAT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`).end())
+    $('#area-carrousel-1>ul>li:last:not(#synth_patient)').after($('#area-carrousel-1>ul>li:last').clone().attr('id', 'synth_patient').find('a').text('Synthèse').attr('id','').attr('href', `Lancemodule: SYNTHESE_PAT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`).end())
 
     //modules
     // Lancemodule: SYNTHESE_PAT;${IPP};LOGINAD=${username}   == Synthèse Logon
