@@ -274,7 +274,7 @@
                             µ.clipData = clipData
                             try{
                                 log(clipData.match(/Motif hospitalisation \:\s?(?<mh>.*?)\r?\n/).groups)
-                                log(clipData.match(/Motif hospitalisation \:\s?(?<mh>.*?)\r?\n(.|\n)*ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?\r?\nATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?\r?\nATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?\r?\nAllergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?\r?\nTraitement/).groups)
+                                log(clipData.match(/Motif hospitalisation \:\s?(?<mh>.*?)\r?\n(.|\n|\r)*ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?\r?\nATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?\r?\nATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?\r?\nAllergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?\r?\nTraitement/).groups)
                             }catch(e){
                                 log(typeof clipData, clipData.length)
                                 log(e)
