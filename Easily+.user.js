@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251026
+// @version      1.0.251025
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -243,11 +243,12 @@
                     try {
                         messageEvData = JSON.parse(message.data)
                     }catch(e){
-                        console.log('Error parsing data', message.data)
+                        console.error('Error parsing data', message.data)
                         return null
                     }
                 }
                 if(messageEvData.command == "FHR_channel-framePort"){
+                    window.FHR_parentPort = messageEvData.ports[0]
                     console.log(message)
                 }
             }
@@ -259,7 +260,6 @@
                         //console.log(CB_content)
                         let observData = {}, $tmp
                         $('.fm-label-mandatory-validate').closest('td.fm_grid_cell').each((i,el)=>{
-                            console.log($(el).text().trim(), $(el).next().find('input'))
                             switch($(el).text().trim()){
                                 case "Sortie*":
                                     $(el).next().find('input').val(new Date().toLocaleDateString())
@@ -284,10 +284,6 @@
                                 case "Traitement à l'entrée*":
                                     $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.tttInit ?? '.')
                                     break
-                                case "*":
-                                    break
-                                case "Sortie *":
-                                    break
                                 case "Diagnostic de sortie*":
                                     $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.auTotal ?? '.')
                                     break
@@ -305,10 +301,13 @@
                                 case "- Evènements indésirables / Complications*":
                                 case "- Déclaration de vigilance (Pharmacovigilance, etc...)*":
                                 case "- Autres*":
-                                case "- Remis en main propre*":
                                    $(el).next().find('input:eq(1)').click()
                                     break
-
+                                case "- Remis en main propre*":
+                                   $(el).next().find('input:eq(0)').click()
+                                    break
+                                default:
+                                    break
                             }
                         })
                     })
