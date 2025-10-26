@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251025
+// @version      1.0.251026
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -248,8 +248,19 @@
                     }
                 }
                 if(messageEvData.command == "FHR_channel-framePort"){
-                    window.FHR_parentPort = messageEvData.ports[0]
-                    console.log(message)
+                    µ.FHR_parentPort = message.ports[0]
+                    µ.getFHR_Clipboard = ()=>new Promise((resolve, reject)=>{
+                        message.ports[0].onmessage = ({data}) =>{
+                            //console.log("Message de FHR - Parent : " + data)
+                            if(data){
+                                resolve(data)
+                            }else{
+                                reject('No data')
+                            }
+                        }
+                        message.ports[0].postMessage('FHR_getClipboard')
+                    })
+                console.log(µ.getFHR_Clipboard)
                 }
             }
             switch(unsafeWindow._currentContext.FicheTitle){
@@ -258,6 +269,17 @@
                         .parent().attr({'onclick':'', 'Title': 'Remplissage auto de la fiche', 'id': '', 'ng-class':''}).click(async ev=>{
                         //let CB_content = await navigator.clipboard.readText()
                         //console.log(CB_content)
+                        µ.getFHR_Clipboard().then(clipData=>{
+                            //log(clipData)
+                            µ.clipData = clipData
+                            try{
+                                log(clipData.match(/Motif hospitalisation \:\s?(?<mh>.*?)\r?\n/).groups)
+                                log(clipData.match(/Motif hospitalisation \:\s?(?<mh>.*?)\r?\n(.|\n)*ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?\r?\nATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?\r?\nATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?\r?\nAllergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?\r?\nTraitement/).groups)
+                            }catch(e){
+                                log(typeof clipData, clipData.length)
+                                log(e)
+                            }
+                        })
                         let observData = {}, $tmp
                         $('.fm-label-mandatory-validate').closest('td.fm_grid_cell').each((i,el)=>{
                             switch($(el).text().trim()){
@@ -311,7 +333,7 @@
                             }
                         })
                     })
-                    console.log("Fiche FHR")
+                    //console.log("Fiche FHR")
                     break
             }
 
@@ -445,7 +467,7 @@
 //
 //
     function receiveMessage_Main(message) {
-        let waitTime = 0, messageEvData, frameOrigin, FHR_channel
+        let waitTime = 0, messageEvData, frameOrigin, FHR_channel, clipboardContent
         //console.log(message)
         if (typeof message.data == "object"){
             messageEvData = message.data
@@ -517,8 +539,12 @@
                 // create a channel
                 FHR_channel = new MessageChannel()
                 // listen on one end
-                FHR_channel.port1.onmessage = ({data}) => {
-                    console.log("Message de FHR_channel: " + data); // 3
+                FHR_channel.port1.onmessage = async ({data}) => {
+                    //console.log("Message de FHR_channel: " + data); // 3
+                    if(data == "FHR_getClipboard"){
+                        //clipboardContent = await navigator.clipboard.readText()
+                        FHR_channel.port1.postMessage(await navigator.clipboard.readText())
+                    }
                 };
                 // send the other end
                 frameOrigin.contentWindow.postMessage(JSON.stringify({'command':'FHR_channel-framePort'}), '*', [FHR_channel.port2]); // 1
