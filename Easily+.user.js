@@ -311,57 +311,81 @@
                                 log(typeof clipData, clipData.length)
                                 log(e)
                             }
-                        })
-                        $('.fm-label-mandatory-validate').closest('td.fm_grid_cell').each((i,el)=>{
-                            switch($(el).text().trim()){
-                                case "Sortie*":
-                                    $(el).next().find('input').val(new Date().toLocaleDateString())
-                                    break
-                                case "Motif entrée*":
-                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.motif ?? '.')
-                                    break
-                                case "Conclusion de l'examen clinique initial*":
-                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.diagEntree ?? '.')
-                                    break
-                                case "Périmètre abdominal*":
-                                case "Poids*":
-                                case "Taille*":
-                                    $tmp = $(el).next().find('input').val((i,v)=>v ? v : '1').end().next().next().find('input')
-                                    if(!$tmp.filter(':checked').length){
-                                        $tmp.first().click()
-                                    }
-                                    break
-                                case "Variation poids pré-hospit.*":
-                                   $(el).next().find('input:eq(1)').click()
-                                    break
-                                case "Traitement à l'entrée*":
-                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.tttEntree ?? '.')
-                                    break
-                                case "Diagnostic de sortie*":
-                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.auTotal ?? '.')
-                                    break
-                                case "Destination du patient à la sortie*":
-                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('input:first').click()
-                                    break
-                                case "Prescription de sortie *":
-                                    $(el).closest('td.fm_group_header_default').parent().next().find('textarea').val(observData.tttSortie ?? '.')
-                                    break
-                                case "- Patient porteur/contact de BMR ou BHRe*":
-                                case "- Transfusion*":
-                                case "- Médicament dérivé du sang*":
-                                case "- Pose d'un dispositif médical implantable*":
-                                case "- Allergies au cours du séjour*":
-                                case "- Evènements indésirables / Complications*":
-                                case "- Déclaration de vigilance (Pharmacovigilance, etc...)*":
-                                case "- Autres*":
-                                   $(el).next().find('input:eq(1)').click()
-                                    break
-                                case "- Remis en main propre*":
-                                   $(el).next().find('input:eq(0)').click()
-                                    break
-                                default:
-                                    break
-                            }
+                            //Histoire de la maladie
+                            $('.fm_grid_cell:contains(Histoire de la maladie):last').each((i,el)=>{
+                                let $elem=$(el)
+                                while(!$elem.find('iframe').length){
+                                    $elem=$elem.parent().closest('.fm_grid_cell')
+                                }
+                                $elem.find('iframe').each((j,el2)=>{$('body', el2.contentDocument).html('<pre>'+(observData.hdlm ?? '') + '</pre>')})
+                            })
+                            //Synthèse de séjour / commentaire
+                            $('.fm_grid_cell:contains(Synthèse de séjour):last').each((i,el)=>{
+                                let $elem=$(el)
+                                while(!$elem.find('iframe').length){
+                                    $elem=$elem.parent().closest('.fm_grid_cell')
+                                }
+                                $elem.find('iframe').each((j,el2)=>{$('body', el2.contentDocument).html('<pre>'+(observData.commentaire ?? '') + '</pre>')})
+                            })
+                            //Mode de vie
+                            $('.fm_grid_cell:contains(Mode de vie):last').each((i,el)=>{
+                                let $elem=$(el)
+                                while(!$elem.find('textarea').length){
+                                    $elem=$elem.parent().closest('.fm_grid_cell')
+                                }
+                                $elem.find('textarea').val(observData.mdv ?? '').trigger('keyup')
+                            })
+                            $('.fm-label-mandatory-validate').closest('td.fm_grid_cell').each((i,el)=>{
+                                switch($(el).text().trim()){
+                                    case "Sortie*":
+                                        $(el).next().find('input').val(new Date().toLocaleDateString())
+                                        break
+                                    case "Motif entrée*":
+                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.motif ?? ( t ?? '.'))
+                                        break
+                                    case "Conclusion de l'examen clinique initial*":
+                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.diagEntree ?? ( t ?? '.'))
+                                        break
+                                    case "Périmètre abdominal*":
+                                    case "Poids*":
+                                    case "Taille*":
+                                        $tmp = $(el).next().find('input').val((i,v)=>v ? v : '1').end().next().next().find('input')
+                                        if(!$tmp.filter(':checked').length){
+                                            $tmp.first().click()
+                                        }
+                                        break
+                                    case "Variation poids pré-hospit.*":
+                                        $(el).next().find('input:eq(1)').click()
+                                        break
+                                    case "Traitement à l'entrée*":
+                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.tttEntree ?? ( t ?? '.'))
+                                        break
+                                    case "Diagnostic de sortie*":
+                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.auTotal ?? ( t ?? '.'))
+                                        break
+                                    case "Destination du patient à la sortie*":
+                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('input:first').click()
+                                        break
+                                    case "Prescription de sortie *":
+                                        $(el).closest('td.fm_group_header_default').parent().next().find('textarea').val((i,t)=>observData.tttSortie ?? ( t ?? '.'))
+                                        break
+                                    case "- Patient porteur/contact de BMR ou BHRe*":
+                                    case "- Transfusion*":
+                                    case "- Médicament dérivé du sang*":
+                                    case "- Pose d'un dispositif médical implantable*":
+                                    case "- Allergies au cours du séjour*":
+                                    case "- Evènements indésirables / Complications*":
+                                    case "- Déclaration de vigilance (Pharmacovigilance, etc...)*":
+                                    case "- Autres*":
+                                        $(el).next().find('input:eq(1)').click()
+                                        break
+                                    case "- Remis en main propre*":
+                                        $(el).next().find('input:eq(0)').click()
+                                        break
+                                    default:
+                                        break
+                                }
+                            })
                         })
                     })
                     //console.log("Fiche FHR")
