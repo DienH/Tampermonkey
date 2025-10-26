@@ -225,15 +225,15 @@
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         // Gestion des fiches du type Observation / FHR
         if(location.pathname == "/dominho/Fiche/Open" || location.pathname == "/Dominho/Fiche/Create"){
-
+            if(!unsafeWindow._currentContext){return}
             //Expension des catégories "Contexte", "Sejour" et "Sortie" avec simple click
-            $('.fm_grid_cell.fm_group_header.fm_group_header_lightgray').off().click(ev=>{
+            $('.fm_grid_cell.fm_group_header.fm_group_header_lightgray, .fm_grid_cell.fm_group_header.fm_group_header_default').off().click(ev=>{
                 //console.log($(ev.target).is('div.fm_group_header_expander'), $(ev.delegateTarget).find('div.fm_group_header_expander.image_expanded_png'))
                 if(!$(ev.target).is('div.fm_group_header_expander')){
                     $(ev.delegateTarget).find('div.fm_group_header_expander').click()
                     ev.preventDefault()
                 }
-            })
+            }).css('cursor','pointer').filter('.fm_group_header_default:contains(Histoire de la maladie)').add('.fm_grid_cell.fm_group_header.fm_group_header_warning').click()
             window.parent.postMessage({'command':'create-FHR_Channel'}, "*")
             window.onmessage = message=>{
                 let messageEvData
@@ -260,7 +260,7 @@
                         }
                         message.ports[0].postMessage('FHR_getClipboard')
                     })
-                console.log(µ.getFHR_Clipboard)
+                //console.log(µ.getFHR_Clipboard)
                 }
             }
             switch(unsafeWindow._currentContext.FicheTitle){
@@ -269,18 +269,49 @@
                         .parent().attr({'onclick':'', 'Title': 'Remplissage auto de la fiche', 'id': '', 'ng-class':''}).click(async ev=>{
                         //let CB_content = await navigator.clipboard.readText()
                         //console.log(CB_content)
+                        let observData = {}, $tmp, FHR_regex
                         µ.getFHR_Clipboard().then(clipData=>{
                             //log(clipData)
                             µ.clipData = clipData
                             try{
-                                log(clipData.match(/Motif hospitalisation \:\s?(?<mh>.*?)\r?\n/).groups)
-                                log(clipData.match(/Motif hospitalisation \:\s?(?<mh>.*?)\r?\n(.|\n|\r)*ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?\r?\nATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?\r?\nATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?\r?\nAllergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?\r?\nTraitement/).groups)
+                                FHR_regex = new RegExp(
+                                    /Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*/.source
+                                    +/ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Traitements en.*?\r?\n(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
+                                    +/Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Anamn.*?\r?\n(?<hdlm>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
+                                    +/Examen clinique ini.*?\r?\n(?<examSomaInit>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Entretiens :.*?\r?\n(?<entretiens>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
+                                    +/Commentaire gé.*?\r?\n(?<commentaire>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Au total.*?\r?\n(?<conclusion>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?/.source
+                                    +/TTT de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Dr /.source
+                                    /*
+                                    /*
+                                    */
+                                )
+                                observData = clipData.match(FHR_regex).groups
+                                observData.tttSortie = observData.tttSortie.trim()
+                                FHR_regex = new RegExp(
+                                    /Evaluation.*?\r?\n(?<examPsyEntree>(.|\r|\n)*?)\r?\n/.source
+                                    +/Diagnostic initial.*?\r?\n(?<diagEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Mobilisation des ressources.*?\r?\n(?<pecEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Accompagnement au projet/.source
+                                )
+                                Object.assign(observData, observData.entretiens.match(FHR_regex).groups)
+                                log(observData)
+                                µ.observData = observData
                             }catch(e){
                                 log(typeof clipData, clipData.length)
                                 log(e)
                             }
                         })
-                        let observData = {}, $tmp
                         $('.fm-label-mandatory-validate').closest('td.fm_grid_cell').each((i,el)=>{
                             switch($(el).text().trim()){
                                 case "Sortie*":
@@ -290,7 +321,7 @@
                                     $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.motif ?? '.')
                                     break
                                 case "Conclusion de l'examen clinique initial*":
-                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.examInit ?? '.')
+                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.diagEntree ?? '.')
                                     break
                                 case "Périmètre abdominal*":
                                 case "Poids*":
@@ -304,7 +335,7 @@
                                    $(el).next().find('input:eq(1)').click()
                                     break
                                 case "Traitement à l'entrée*":
-                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.tttInit ?? '.')
+                                    $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.tttEntree ?? '.')
                                     break
                                 case "Diagnostic de sortie*":
                                     $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(observData.auTotal ?? '.')
@@ -627,10 +658,11 @@
     <label><input type="checkbox" name="hide_parametres" ${EasilyInfos.hide_parametres ? "checked" : ""}> Paramétrage</label>
    </td>
   </tr>
-  <tr class="option-warningTTT">
-   <td>Cacher Warning TTT</td>
+  <tr class="option-others">
+   <td>Autres options</td>
    <td>
-    <input type="checkbox" name="hide_warningTTT" ${EasilyInfos.hide_warningTTT ? "checked" : ""}>
+    <label><input type="checkbox" name="hide_warningTTT" ${EasilyInfos.hide_warningTTT ? "checked" : ""}> Cacher Warning TTT</label>
+    <label><input type="checkbox" name="FHR_auto_UHL" ${EasilyInfos.FHR_auto_UHL ? "checked" : ""}> Remplissage auto FHR UHDL</label>
    </td>
   </tr>
 </tbody></table>`).dialog({
