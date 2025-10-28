@@ -214,6 +214,43 @@
         $('#btnEnregistrer:contains(Continuer)').click()
     }
 
+//    ████████ ██████   █████  ███    ██ ███████ ███    ███ ██ ███████ ███████ ██  ██████  ███    ██ ███████
+//       ██    ██   ██ ██   ██ ████   ██ ██      ████  ████ ██ ██      ██      ██ ██    ██ ████   ██ ██
+//       ██    ██████  ███████ ██ ██  ██ ███████ ██ ████ ██ ██ ███████ ███████ ██ ██    ██ ██ ██  ██ ███████
+//       ██    ██   ██ ██   ██ ██  ██ ██      ██ ██  ██  ██ ██      ██      ██ ██ ██    ██ ██  ██ ██      ██
+//       ██    ██   ██ ██   ██ ██   ████ ███████ ██      ██ ██ ███████ ███████ ██  ██████  ██   ████ ███████
+//
+//
+    else if (location.pathname == "/Module/DS_TC/JDT/Index"){
+        window.addEventListener('message', ev=>{
+            if(ev.data && ev.data.cr && ev.data.uf){
+                $('.nav-cr-uf-secteur span.f_cr').parent().find('select').each((i,el)=>{
+                    if($(el).val() != ev.data.cr){
+                        $(el).val(ev.data.cr).change()
+                        $.waitFor('.nav-cr-uf-secteur span.f_uf').then($el=>{
+                            $el.parent().find('select').each((i,el)=>{
+                                if($(el).val() != ev.data.uf){
+                                    $(el).val(ev.data.uf).change()
+                                }
+                            })
+                        })
+                    } else {
+                        $('.nav-cr-uf-secteur span.f_uf').parent().find('select').each((i,el)=>{
+                            if($(el).val() != ev.data.uf){
+                                $(el).val(ev.data.uf).change()
+                            }
+                        })
+                    }
+                })
+            }
+        })
+        window.parent.postMessage(JSON.stringify({command:"transmissions_get-CR-UF"}))
+        $.waitFor('#inputopen:visible:not(:checked)').then($el=>$el.click())
+        $('body').not(':has(#EasilyPlus_Style)').append($('<style id="EasilyPlus_Style">').html(`
+    nav.navbar, .nav-cr-uf-secteur {display:none;}
+    `))
+    }
+
 
 //    ███████ ██  ██████ ██   ██ ███████         ██     ██████   ██████   ██████
 //    ██      ██ ██      ██   ██ ██             ██      ██   ██ ██    ██ ██
@@ -297,20 +334,61 @@
                                     */
                                 )
                                 observData = clipData.match(FHR_regex).groups
-                                observData.tttSortie = observData.tttSortie.trim()
-                                FHR_regex = new RegExp(
-                                    /Evaluation.*?\r?\n(?<examPsyEntree>(.|\r|\n)*?)\r?\n/.source
-                                    +/Diagnostic initial.*?\r?\n(?<diagEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Mobilisation des ressources.*?\r?\n(?<pecEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Accompagnement au projet/.source
-                                )
-                                Object.assign(observData, observData.entretiens.match(FHR_regex).groups)
-                                log(observData)
-                                µ.observData = observData
                             }catch(e){
-                                log(typeof clipData, clipData.length)
-                                log(e)
+                                let FHR_regexArray = [/Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*ATCD médico/.source,
+                                    /ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psychiatriques .*? personnels/.source,
+                                    /ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psy.*?familiaux/.source,
+                                    /ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source,
+                                    /Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements en/.source,
+                                    /Traitements en.*?\r?\n(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements psycho/.source,
+                                    /Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Mode de vi/.source,
+                                    /Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\nContact/.source,
+                                    /Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Anamn/.source,
+                                    /Anamn.*?\r?\n(?<hdlm>(.|\n|\r)*?)\r?\n.*?\r?\nExamen clinique ini/.source,
+                                    /Examen clinique ini.*?\r?\n(?<examSomaInit>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Entretiens :/.source,
+                                    /Entretiens :.*?\r?\n(?<entretiens>(.|\n|\r)*?)\r?\n.*?\r?\nCommentaire gé/.source,
+                                    /Commentaire gé.*?\r?\n(?<commentaire>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Au total/.source,
+                                    /Au total.*?\r?\n(?<conclusion>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Plan de sortie/.source,
+                                    /Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?TTT de sortie/.source,
+                                    /TTT de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Dr /.source]
+                                for (FHR_regex of FHR_regexArray){
+                                    try{Object.assign(observData, observData.match(new RegExp(FHR_regex)).groups)}catch(e){}
+                                }
+                                log(observData)
                             }
+                            try{observData.tttSortie = observData.tttSortie.trim()}catch(e){}
+                            FHR_regex = new RegExp(
+                                /Evaluation.*?\r?\n(?<examPsyEntree>(.|\r|\n)*?)\r?\n/.source
+                                +/Diagnostic initial.*?\r?\n(?<diagEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                +/Mobilisation des ressources.*?\r?\n(?<pecEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                +/Accompagnement au projet/.source
+                            )
+                            try{Object.assign(observData, observData.entretiens.match(FHR_regex).groups)}catch(e){}
+                            µ.observData = observData
+
+                            //Ajout des médecins de l'UHDL
+                            $('table[fm-errors="data.model.ref_medecins.errors"]').each((i,el)=>{
+                                let MedecinsUHDL = 0
+                                $(el).find('input.k-input.fm_dropdownlistpractician').each((i,el2)=>{
+                                    if($(el2).val() == "MERY, Raphael"){
+                                        MedecinsUHDL+=1
+                                        $(el2).addClass("medUHDL")
+                                    }
+                                    if($(el2).val() == "HARRY, Adrien"){
+                                        MedecinsUHDL+=2
+                                        $(el2).addClass("medUHDL")
+                                    }
+                                })
+                                let $addMedBtn = $('.fm_label_important:contains(Médecin(s))').closest('.fm_grid_cell').prev().find("fm-button[fm-on-click*=Function_AjoutReferent]")
+                                if(!(MedecinsUHDL & 1)){
+                                    $addMedBtn.click()
+                                    $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{$el.val("MERY, Raphael")})
+                                }
+                                if(!(MedecinsUHDL & 2)){
+                                    $addMedBtn.click()
+                                    $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{$el.val("HARRY, Adrien")})
+                                }
+                            })
                             //Histoire de la maladie
                             $('.fm_grid_cell:contains(Histoire de la maladie):last').each((i,el)=>{
                                 let $elem=$(el)
@@ -341,10 +419,10 @@
                                         $(el).next().find('input').val(new Date().toLocaleDateString())
                                         break
                                     case "Motif entrée*":
-                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.motif ?? ( t ?? '.'))
+                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.motif ?? ( t ? t : '.'))
                                         break
                                     case "Conclusion de l'examen clinique initial*":
-                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.diagEntree ?? ( t ?? '.'))
+                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.diagEntree ?? ( t ? t : '.'))
                                         break
                                     case "Périmètre abdominal*":
                                     case "Poids*":
@@ -358,16 +436,16 @@
                                         $(el).next().find('input:eq(1)').click()
                                         break
                                     case "Traitement à l'entrée*":
-                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.tttEntree ?? ( t ?? '.'))
+                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.tttEntree ?? ( t ? t : '.'))
                                         break
                                     case "Diagnostic de sortie*":
-                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.auTotal ?? ( t ?? '.'))
+                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.auTotal ?? ( t ? t : '.'))
                                         break
                                     case "Destination du patient à la sortie*":
                                         $(el).parent().closest('td.fm_grid_cell').parent().next().find('input:first').click()
                                         break
                                     case "Prescription de sortie *":
-                                        $(el).closest('td.fm_group_header_default').parent().next().find('textarea').val((i,t)=>observData.tttSortie ?? ( t ?? '.'))
+                                        $(el).closest('td.fm_group_header_default').parent().next().find('textarea').val((i,t)=>observData.tttSortie ?? ( t ? t : '.'))
                                         break
                                     case "- Patient porteur/contact de BMR ou BHRe*":
                                     case "- Transfusion*":
@@ -423,7 +501,8 @@
 //    ██      ██  ██████   ██████  ███████ ███████     ███████   ████   ███████ ██   ████    ██    ███████
 //
 
-    $(window).on('click contextmenu mouseup', (ev=>{
+    unsafeWindow.isHospitalisationLoaded = false
+    $(window).on('click contextmenu mouseup', ev=>{
         //console.log(ev)
         if(location.href.search("https://easily-prod.chu-clermontferrand.fr/")+1){
             switch(location.pathname.split("/")[1]){
@@ -447,6 +526,7 @@
                             setTimeout(()=>$('#dropdownUF').val('string:'+EasilyInfos.UF).change(), 500)
                         }
                     }
+                    //Gestion des Onglets des patients
                     if($(ev.target).closest('.easily-container-area').length){ // bandeau droite
                         if ($(ev.target).is('a:contains(Imagerie)')){
                             if(ev.type == "click"){
@@ -487,11 +567,14 @@
                             }
                         }
                     }
+
+                    //Gestion du menu
                     if($(ev.target).closest('#easily-univers').length){
                         if($(ev.target).is('a:contains("urgences")')){
                             $('li[title="ASUR (Urgences)"]').click()
                         } else if($(ev.target).is('a:contains("hospitalisation")')){
                             $('li[title="Patients en psy (WorklistsHospitalisation)"]').click()
+                            unsafeWindow.isHospitalisationLoaded = false
                         } else if($(ev.target).is('a:contains("consultation")')){
                             $('li[title="Gestion des agendas (Agenda)"]').click()
                         }
@@ -510,7 +593,22 @@
                     break
             }
         }
-    }))
+        if(window.top == window.self && !unsafeWindow.isHospitalisationLoaded){
+            $.waitFor('#module-worklistshospitalisation .menu-action>div').then($el=>{
+                unsafeWindow.isHospitalisationLoaded = true
+                $el.filter(':not(:has(#btnTransmissions))').append($('<button class="btn btn-success btn-sm" style="margin-left:5px" id="btnTransmissions">Transmissions</button>').click(ev=>{
+                    if(!$('#transmissionsFrame').dialog('open').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window}).length){
+                        $('<iframe id="transmissionsFrame" src="/Module/DS_TC/JDT/Index">').dialog()
+                        $.waitFor('div[aria-describedby="transmissionsFrame"]').then($el=>{
+                            $el.height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window}).attr('id', 'transmissionsDialog')
+                        })
+                    } else {
+                        document.getElementById('transmissionsFrame').contentWindow.postMessage({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]})
+                    }
+                }))
+            })
+        }
+    })
 
 
 
@@ -539,6 +637,7 @@
                 frameOrigin = el
             }
         })
+        console.log(messageEvData.command)
         switch(messageEvData.command){
 
 //        _   ___ _   _ ___
@@ -603,6 +702,17 @@
                 };
                 // send the other end
                 frameOrigin.contentWindow.postMessage(JSON.stringify({'command':'FHR_channel-framePort'}), '*', [FHR_channel.port2]); // 1
+                break
+
+//    ___________                                   .__              .__
+//    \__    ___/___________    ____   ______ _____ |__| ______ _____|__| ____   ____   ______
+//      |    |  \_  __ \__  \  /    \ /  ___//     \|  |/  ___//  ___/  |/  _ \ /    \ /  ___/
+//      |    |   |  | \// __ \|   |  \\___ \|  Y Y  \  |\___ \ \___ \|  (  <_> )   |  \\___ \
+//      |____|   |__|  (____  /___|  /____  >__|_|  /__/____  >____  >__|\____/|___|  /____  >
+//                          \/     \/     \/      \/        \/     \/               \/     \/
+
+            case "transmissions_get-CR-UF":
+                frameOrigin.contentWindow.postMessage({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]})
                 break
         }
 
@@ -741,8 +851,10 @@
 //         ██    ██       ██    ██      ██
 //    ███████    ██       ██    ███████ ███████
 
-    $('<style id="EasilyPlus_Style">').html(`
-    `)
+    $('body').not(':has(#EasilyPlus_Style)').append($('<style id="EasilyPlus_Style">').html(`
+    #transmissionsFrame {width:100%!important;height:calc(100% - 5px)!important;padding:0!important}
+    //#transmissionsDialog {}
+    `))
     // Your code here...
 })();
 
