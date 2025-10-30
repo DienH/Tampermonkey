@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251026
+// @version      1.0.251028
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -174,7 +174,7 @@
 
     if (location.href.search("xplore.chu-clermontferrand.fr")+1){
         if (!$ || !$.fn) {$ = µ.jQuery || µ.$ || window.jQuery }
-        console.log((location.pathname + location.hash) == "/XaIntranet/#/UserLogin")
+        //console.log((location.pathname + location.hash) == "/XaIntranet/#/UserLogin")
         if((location.pathname + location.hash) == "/XaIntranet/#/UserLogin"){
             $.waitFor('#txtUSERNAME input').then(el=>{
                 $(el).val(EasilyInfos.username).each((i,elem)=>{elem.dispatchEvent(new Event('change'))})
@@ -182,6 +182,7 @@
                 $('#btnVALIDER>a').click2()
             })
         }
+        return true
     }
 
 //    ██████  ██████  ███████ ███████
@@ -245,9 +246,14 @@
             }
         })
         window.parent.postMessage(JSON.stringify({command:"transmissions_get-CR-UF"}))
-        $.waitFor('#inputopen:visible:not(:checked)').then($el=>$el.click())
+        $.waitFor('#inputopen:visible:not(:checked)').then($el=>{
+            $el.click()
+            $('thead .glyphicon-triangle-right').click()
+        })
         $('body').not(':has(#EasilyPlus_Style)').append($('<style id="EasilyPlus_Style">').html(`
     nav.navbar, .nav-cr-uf-secteur {display:none;}
+    #module-ds-tc-jdt .table-residents>table>tbody {height: calc(100vh - 130px) !important;}
+    table.table {margin-bottom:0!important}
     `))
     }
 
@@ -261,7 +267,42 @@
 //
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         // Gestion des fiches du type Observation / FHR
-        if(location.pathname == "/dominho/Fiche/Open" || location.pathname == "/Dominho/Fiche/Create"){
+        if(location.pathname.match(/^\/Dominho\/Main/i)){
+            $('#specialiteSelection').parent().append($('<button class="BoutonClassique"><span title="Psychiatrie">Psychiatrie</span>').click(ev=>{
+                $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="FHR">FHR</span>').click(ev=>{
+                $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
+                $.waitFor('li[onclick]:contains(Observations Médicales)').then($el=>{
+                    $el.click()
+                    $.waitFor('li[onclick]:contains(FHR Observation Médicale - Psychiatrie)').then($el2=>{
+                        $el2.click()
+                    })
+                })
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Consult">Consult</span>').click(ev=>{
+                $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
+                $.waitFor('li[onclick]:contains(Observations Médicales)').then($el=>{
+                    $el.click()
+                    $.waitFor('li[onclick]:contains(Fiche de Consultation Psy)').then($el2=>{
+                        $el2.click()
+                    })
+                })
+            })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Commun">Commun médical</span>').click(ev=>{
+                $('#selectedDossierSpecialite-list li>span:contains(Commun Médical)').click()
+            })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Transport">BdT</span>').click(ev=>{
+                $('#selectedDossierSpecialite-list li>span:contains(Commun Médical)').click()
+                $.waitFor('li[onclick]:contains(Cerfa)').then($el=>{
+                    $el.click()
+                    $.waitFor('li[onclick]:contains(Demande transport)').then($el2=>{
+                        $el2.click()
+                    })
+                })
+            })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Cerfas">Cerfas</span>').click(ev=>{
+                $('#selectedDossierSpecialite-list li>span:contains(Commun Médical)').click()
+                $.waitFor('li[onclick]:contains(Cerfa)').then($el=>{
+                    $el.click()
+                })
+            }))
+        } else if(location.pathname.match(/^\/dominho\/Fiche\/(Open|Create)/i)){
             if(!unsafeWindow._currentContext){return}
             //Expension des catégories "Contexte", "Sejour" et "Sortie" avec simple click
             $('.fm_grid_cell.fm_group_header.fm_group_header_lightgray, .fm_grid_cell.fm_group_header.fm_group_header_default').off().click(ev=>{
@@ -309,161 +350,173 @@
                         let observData = {}, $tmp, FHR_regex
                         µ.getFHR_Clipboard().then(clipData=>{
                             //log(clipData)
-                            µ.clipData = clipData
-                            try{
-                                FHR_regex = new RegExp(
-                                    /Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*/.source
-                                    +/ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Traitements en.*?\r?\n(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
-                                    +/Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Anamn.*?\r?\n(?<hdlm>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
-                                    +/Examen clinique ini.*?\r?\n(?<examSomaInit>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Entretiens :.*?\r?\n(?<entretiens>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
-                                    +/Commentaire gé.*?\r?\n(?<commentaire>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Au total.*?\r?\n(?<conclusion>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?/.source
-                                    +/TTT de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                    +/Dr /.source
-                                    /*
+                            if(EasilyInfos.FHR_auto_UHDL){
+                                µ.clipData = clipData
+                                try{
+                                    FHR_regex = new RegExp(
+                                        /Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*/.source
+                                        +/ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/Traitements en.*?\r?\n(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
+                                        +/Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/Anamn.*?\r?\n(?<hdlm>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
+                                        +/Examen clinique ini.*?\r?\n(?<examSomaInit>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/Entretiens :.*?\r?\n(?<entretiens>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
+                                        +/Commentaire gé.*?\r?\n(?<commentaire>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/Au total.*?\r?\n(?<conclusion>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?/.source
+                                        +/TTT de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        +/Dr /.source
+                                        /*
                                     /*
                                     */
-                                )
-                                observData = clipData.match(FHR_regex).groups
-                            }catch(e){
-                                let FHR_regexArray = [/Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*ATCD médico/.source,
-                                    /ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psychiatriques .*? personnels/.source,
-                                    /ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psy.*?familiaux/.source,
-                                    /ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source,
-                                    /Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements en/.source,
-                                    /Traitements en.*?\r?\n(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements psycho/.source,
-                                    /Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Mode de vi/.source,
-                                    /Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\nContact/.source,
-                                    /Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Anamn/.source,
-                                    /Anamn.*?\r?\n(?<hdlm>(.|\n|\r)*?)\r?\n.*?\r?\nExamen clinique ini/.source,
-                                    /Examen clinique ini.*?\r?\n(?<examSomaInit>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Entretiens :/.source,
-                                    /Entretiens :.*?\r?\n(?<entretiens>(.|\n|\r)*?)\r?\n.*?\r?\nCommentaire gé/.source,
-                                    /Commentaire gé.*?\r?\n(?<commentaire>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Au total/.source,
-                                    /Au total.*?\r?\n(?<conclusion>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Plan de sortie/.source,
-                                    /Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?TTT de sortie/.source,
-                                    /TTT de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Dr /.source]
-                                for (FHR_regex of FHR_regexArray){
-                                    try{Object.assign(observData, observData.match(new RegExp(FHR_regex)).groups)}catch(e){}
-                                }
-                                log(observData)
-                            }
-                            try{observData.tttSortie = observData.tttSortie.trim()}catch(e){}
-                            FHR_regex = new RegExp(
-                                /Evaluation.*?\r?\n(?<examPsyEntree>(.|\r|\n)*?)\r?\n/.source
-                                +/Diagnostic initial.*?\r?\n(?<diagEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                +/Mobilisation des ressources.*?\r?\n(?<pecEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                +/Accompagnement au projet/.source
-                            )
-                            try{Object.assign(observData, observData.entretiens.match(FHR_regex).groups)}catch(e){}
-                            µ.observData = observData
-
-                            //Ajout des médecins de l'UHDL
-                            $('table[fm-errors="data.model.ref_medecins.errors"]').each((i,el)=>{
-                                let MedecinsUHDL = 0
-                                $(el).find('input.k-input.fm_dropdownlistpractician').each((i,el2)=>{
-                                    if($(el2).val() == "MERY, Raphael"){
-                                        MedecinsUHDL+=1
-                                        $(el2).addClass("medUHDL")
+                                    )
+                                    observData = clipData.match(FHR_regex).groups
+                                    //log(observData)
+                                    µ.observData = observData
+                                }catch(e){
+                                    let FHR_regexArray = [/Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*ATCD médico/.source,
+                                                          /ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psychiatriques .*? personnels/.source,
+                                                          /ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psy.*?familiaux/.source,
+                                                          /ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source,
+                                                          /Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements en/.source,
+                                                          /Traitements en.*?\r?\n(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements psycho/.source,
+                                                          /Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Mode de vi/.source,
+                                                          /Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\nContact/.source,
+                                                          /Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Anamn/.source,
+                                                          /Anamn.*?\r?\n(?<hdlm>(.|\n|\r)*?)\r?\n.*?\r?\nExamen clinique ini/.source,
+                                                          /Examen clinique ini.*?\r?\n(?<examSomaInit>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Entretiens :/.source,
+                                                          /Entretiens :.*?\r?\n(?<entretiens>(.|\n|\r)*?)\r?\n.*?\r?\nCommentaire gé/.source,
+                                                          /Commentaire gé.*?\r?\n(?<commentaire>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Au total/.source,
+                                                          /Au total.*?\r?\n(?<conclusion>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Plan de sortie/.source,
+                                                          /Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?TTT de sortie/.source,
+                                                          /TTT de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Dr /.source]
+                                    for (FHR_regex of FHR_regexArray){
+                                        try{Object.assign(observData, observData.match(new RegExp(FHR_regex)).groups)}catch(e){}
                                     }
-                                    if($(el2).val() == "HARRY, Adrien"){
-                                        MedecinsUHDL+=2
-                                        $(el2).addClass("medUHDL")
+                                    log(observData)
+                                }
+                                try{observData.tttSortie = observData.tttSortie.trim()}catch(e){}
+                                FHR_regex = new RegExp(
+                                    /Evaluation.*?\r?\n(?<examPsyEntree>(.|\r|\n)*?)\r?\n/.source
+                                    +/Diagnostic initial.*?\r?\n(?<diagEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Mobilisation des ressources.*?\r?\n(?<pecEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                    +/Accompagnement au projet/.source
+                                )
+                                try{Object.assign(observData, observData.entretiens.match(FHR_regex).groups)}catch(e){}
+                                µ.observData = observData
+
+                                //Ajout des médecins de l'UHDL
+                                $('table[fm-errors="data.model.ref_medecins.errors"]:first').each((i,el)=>{
+                                    let MedecinsUHDL = 0
+                                    $(el).find('input.k-input.fm_dropdownlistpractician').each((i,el2)=>{
+                                        if($(el2).val() == "MERY, Raphael"){
+                                            MedecinsUHDL+=1
+                                            $(el2).addClass("medUHDL")
+                                        }
+                                        if($(el2).val() == "HARRY, Adrien"){
+                                            MedecinsUHDL+=2
+                                            $(el2).addClass("medUHDL")
+                                        }
+                                    })
+                                    let $addMedBtn = $('.fm_label_important:contains(Médecin(s))').closest('.fm_grid_cell').prev().find("fm-button[fm-on-click*=Function_AjoutReferent]")
+                                    if(!(MedecinsUHDL & 1)){
+                                        $addMedBtn.click()
+                                        $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{$el.val("MERY, Raphael").addClass('medUHDL')})
+                                    }
+                                    if(!(MedecinsUHDL & 2)){
+                                        $addMedBtn.click()
+                                        $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{$el.val("HARRY, Adrien").addClass('medUHDL')})
                                     }
                                 })
-                                let $addMedBtn = $('.fm_label_important:contains(Médecin(s))').closest('.fm_grid_cell').prev().find("fm-button[fm-on-click*=Function_AjoutReferent]")
-                                if(!(MedecinsUHDL & 1)){
-                                    $addMedBtn.click()
-                                    $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{$el.val("MERY, Raphael")})
-                                }
-                                if(!(MedecinsUHDL & 2)){
-                                    $addMedBtn.click()
-                                    $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{$el.val("HARRY, Adrien")})
-                                }
-                            })
-                            //Histoire de la maladie
-                            $('.fm_grid_cell:contains(Histoire de la maladie):last').each((i,el)=>{
-                                let $elem=$(el)
-                                while(!$elem.find('iframe').length){
-                                    $elem=$elem.parent().closest('.fm_grid_cell')
-                                }
-                                $elem.find('iframe').each((j,el2)=>{$('body', el2.contentDocument).html('<pre>'+(observData.hdlm ?? '') + '</pre>')})
-                            })
-                            //Synthèse de séjour / commentaire
-                            $('.fm_grid_cell:contains(Synthèse de séjour):last').each((i,el)=>{
-                                let $elem=$(el)
-                                while(!$elem.find('iframe').length){
-                                    $elem=$elem.parent().closest('.fm_grid_cell')
-                                }
-                                $elem.find('iframe').each((j,el2)=>{$('body', el2.contentDocument).html('<pre>'+(observData.commentaire ?? '') + '</pre>')})
-                            })
-                            //Mode de vie
-                            $('.fm_grid_cell:contains(Mode de vie):last').each((i,el)=>{
-                                let $elem=$(el)
-                                while(!$elem.find('textarea').length){
-                                    $elem=$elem.parent().closest('.fm_grid_cell')
-                                }
-                                $elem.find('textarea').val(observData.mdv ?? '').trigger('keyup')
-                            })
-                            $('.fm-label-mandatory-validate').closest('td.fm_grid_cell').each((i,el)=>{
-                                switch($(el).text().trim()){
-                                    case "Sortie*":
-                                        $(el).next().find('input').val(new Date().toLocaleDateString())
-                                        break
-                                    case "Motif entrée*":
-                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.motif ?? ( t ? t : '.'))
-                                        break
-                                    case "Conclusion de l'examen clinique initial*":
-                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.diagEntree ?? ( t ? t : '.'))
-                                        break
-                                    case "Périmètre abdominal*":
-                                    case "Poids*":
-                                    case "Taille*":
-                                        $tmp = $(el).next().find('input').val((i,v)=>v ? v : '1').end().next().next().find('input')
-                                        if(!$tmp.filter(':checked').length){
-                                            $tmp.first().click()
-                                        }
-                                        break
-                                    case "Variation poids pré-hospit.*":
-                                        $(el).next().find('input:eq(1)').click()
-                                        break
-                                    case "Traitement à l'entrée*":
-                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.tttEntree ?? ( t ? t : '.'))
-                                        break
-                                    case "Diagnostic de sortie*":
-                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.auTotal ?? ( t ? t : '.'))
-                                        break
-                                    case "Destination du patient à la sortie*":
-                                        $(el).parent().closest('td.fm_grid_cell').parent().next().find('input:first').click()
-                                        break
-                                    case "Prescription de sortie *":
-                                        $(el).closest('td.fm_group_header_default').parent().next().find('textarea').val((i,t)=>observData.tttSortie ?? ( t ? t : '.'))
-                                        break
-                                    case "- Patient porteur/contact de BMR ou BHRe*":
-                                    case "- Transfusion*":
-                                    case "- Médicament dérivé du sang*":
-                                    case "- Pose d'un dispositif médical implantable*":
-                                    case "- Allergies au cours du séjour*":
-                                    case "- Evènements indésirables / Complications*":
-                                    case "- Déclaration de vigilance (Pharmacovigilance, etc...)*":
-                                    case "- Autres*":
-                                        $(el).next().find('input:eq(1)').click()
-                                        break
-                                    case "- Remis en main propre*":
-                                        $(el).next().find('input:eq(0)').click()
-                                        break
-                                    default:
-                                        break
-                                }
-                            })
+                                //Histoire de la maladie
+                                $('.fm_grid_cell:contains(Histoire de la maladie):last').each((i,el)=>{
+                                    let $elem=$(el)
+                                    while(!$elem.find('iframe').length){
+                                        $elem=$elem.parent().closest('.fm_grid_cell')
+                                    }
+                                    $elem.find('iframe').each((j,el2)=>{if(!$('body', el2.contentDocument).text().trim())$('body', el2.contentDocument).html('<pre>'+(observData.hdlm ?? '') + '</pre>')})
+                                })
+                                //Synthèse de séjour / commentaire
+                                $('.fm_grid_cell:contains(Synthèse de séjour):last').each((i,el)=>{
+                                    let $elem=$(el)
+                                    while(!$elem.find('iframe').length){
+                                        $elem=$elem.parent().closest('.fm_grid_cell')
+                                    }
+                                    $elem.find('iframe').each((j,el2)=>{if(!$('body', el2.contentDocument).text().trim())$('body', el2.contentDocument).html('<pre>'+(observData.commentaire ?? '') + '</pre>')})
+                                })
+                                //Mode de vie
+                                $('.fm_grid_cell:contains(Mode de vie):last').each((i,el)=>{
+                                    let $elem=$(el)
+                                    while(!$elem.find('textarea').length){
+                                        $elem=$elem.parent().closest('.fm_grid_cell')
+                                    }
+                                    if(!$elem.find('textarea').val())$elem.find('textarea').val(observData.mdv ?? '').trigger('keyup')
+                                })
+                                $('.fm-label-mandatory-save').closest('td.fm_grid_cell').each((i,el)=>{
+                                    switch($(el).text().trim()){
+                                        case "Mode d'hospitalisation du patient à l'entrée*":
+                                            $(el).next().find('input:eq(0)').click()
+                                            break
+                                    }
+                                })
+                                $('.fm-label-mandatory-validate').closest('td.fm_grid_cell').each((i,el)=>{
+                                    switch($(el).text().trim()){
+                                        case "Sortie*":
+                                            $(el).next().find('input').val((i,t)=> t ? t : new Date().toLocaleDateString()).trigger('input')
+                                            break
+                                        case "Motif entrée*":
+                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.motif ?? ( t ? t : '.')).trigger('input')
+                                            break
+                                        case "Conclusion de l'examen clinique initial*":
+                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.diagEntree ?? ( t ? t : '.')).trigger('input')
+                                            break
+                                        case "Périmètre abdominal*":
+                                        case "Poids*":
+                                        case "Taille*":
+                                            $tmp = $(el).next().find('input').val((i,v)=>v ? v : '1').trigger('input').end().next().next().find('input')
+                                            if(!$tmp.filter(':checked').length){
+                                                $tmp.first().click()
+                                            }
+                                            break
+                                        case "Variation poids pré-hospit.*":
+                                            $(el).next().find('input:eq(1)').click()
+                                            break
+                                        case "Traitement à l'entrée*":
+                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.tttEntree ?? ( t ? t : '.')).trigger('input')
+                                            break
+                                        case "Diagnostic de sortie*":
+                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.auTotal ?? ( t ? t : '.')).trigger('input')
+                                            break
+                                        case 'Destination du patient à la sortie*':
+                                            //console.log($(el))
+                                            $(el).parent().next().find('input:first').prop('checked',true).log().click()
+                                            break
+                                        case "Prescription de sortie *":
+                                            $(el).closest('td.fm_group_header_default').parent().next().find('textarea').val((i,t)=>observData.tttSortie ?? ( t ? t : '.')).trigger('input')
+                                            break
+                                        case "- Patient porteur/contact de BMR ou BHRe*":
+                                        case "- Transfusion*":
+                                        case "- Médicament dérivé du sang*":
+                                        case "- Pose d'un dispositif médical implantable*":
+                                        case "- Allergies au cours du séjour*":
+                                        case "- Evènements indésirables / Complications*":
+                                        case "- Déclaration de vigilance (Pharmacovigilance, etc...)*":
+                                        case "- Autres*":
+                                            $(el).next().find('input:eq(1)').click()
+                                            break
+                                        case "- Remis en main propre*":
+                                            $(el).next().find('input:eq(0)').click()
+                                            break
+                                        default:
+                                            break
+                                    }
+                                })
+                            }
                         })
                     })
                     //console.log("Fiche FHR")
@@ -480,11 +533,12 @@
         }
     } else if (location.hostname == "easily-prod.chu-clermontferrand.fr" && window.top == window.self){
         window.addEventListener("message", receiveMessage_Main);
+        $('body').click()
     }
 
        // auto-relogon
     $('.verrouillage-nom').click(ev=>{
-        if(EasilyInfos.password_store){$("#password-popup").val(EasilyInfos.password).log()}
+        if(EasilyInfos.password_store){$("#password-popup").val(EasilyInfos.password)}
         $("button.deverrouillage-button").click()
     })
 
@@ -528,7 +582,7 @@
                     }
                     //Gestion des Onglets des patients
                     if($(ev.target).closest('.easily-container-area').length){ // bandeau droite
-                        if ($(ev.target).is('a:contains(Imagerie)')){
+                        if ($(ev.target).is('a:contains(Pres Biologie)')){
                             if(ev.type == "click"){
                                 if(!$('#module-bioboxes-anapath').is('.pres-bio_frame')){
                                     if(!µ.currentPatient.IPP){
@@ -536,8 +590,10 @@
                                         µ.currentPatient.DDN = $('.infosPatient').text().split('le ')[1].split(" (")[0]
                                     }
                                 }
+                            } else if(ev.which == 2){
+                                $('#presBioFrame').attr('src', 'https://cyberlab.chu-clermontferrand.fr')
                             }
-                        }else if ($(ev.target).is('a:contains(Imagerie)')){
+                        } else if ($(ev.target).is('a:contains(Imagerie)')){
                             if(ev.type == "click"){
                                 window.open(`Lancemodule: IMAGES_PATIENT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`)
                             }
@@ -565,9 +621,28 @@
                                 btoa('Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+µ._data.IPP+'&patientBirthDate='+µ.currentPatient.DDN.split('/').reverse().join('')+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
                             */
                             }
+
+                            // Edition rapide de la FHR ou de la Lettre de Liaison (choix à définir dans les options)
+                        } else if ($(ev.target).is('a:contains(Histoire)')){
+                            if(ev.type == "mouseup" && ev.which == 2){
+                                $(ev.target).click()
+                                $.waitFor('span.libelledoc:contains(FHR Observation Médicale - Psychiatrie)').then($el=>{
+                                    $el.closest('li:has(.iconDependanceDoc)').find('div.iconmodif').log().click()
+                                    if(EasilyInfos.fast_edit_Lettre){
+                                        $.waitFor('li:has(span.libelledoc:contains(Lettre de Liaison valant CRH Psy)) div.iconmodif:visible', $el.closest('li:has(.iconDependanceDoc)').next('li')).then($el2=>{
+                                            try{
+                                                $el2.click()
+                                            }catch(e){
+                                            }
+                                            $.waitFor('div.edit-document', $el2.closest('li')).then($el3=>$el3.click())
+                                        })
+                                    } else {
+                                        $.waitFor(find('div.edit-document'), $el.closest('li:has(.iconDependanceDoc)').next('li')).then($el2=>$el2.click())
+                                    }
+                                })
+                            }
                         }
                     }
-
                     //Gestion du menu
                     if($(ev.target).closest('#easily-univers').length){
                         if($(ev.target).is('a:contains("urgences")')){
@@ -594,9 +669,9 @@
             }
         }
         if(window.top == window.self && !unsafeWindow.isHospitalisationLoaded){
-            $.waitFor('#module-worklistshospitalisation .menu-action>div').then($el=>{
+            $.waitFor('#module-worklistshospitalisation .menu-action:not(:has(#btnTransmissions))>div').then($el=>{
                 unsafeWindow.isHospitalisationLoaded = true
-                $el.filter(':not(:has(#btnTransmissions))').append($('<button class="btn btn-success btn-sm" style="margin-left:5px" id="btnTransmissions">Transmissions</button>').click(ev=>{
+                $el.after($('<button class="btn btn-success btn-sm" style="margin-left:5px" id="btnTransmissions">Transmissions</button>').click(ev=>{
                     if(!$('#transmissionsFrame').dialog('open').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window}).length){
                         $('<iframe id="transmissionsFrame" src="/Module/DS_TC/JDT/Index">').dialog()
                         $.waitFor('div[aria-describedby="transmissionsFrame"]').then($el=>{
@@ -722,15 +797,18 @@
 //      \___|_||_\__,_|_||_\__, \___|_|_|_\___|_||_\__| | .__/\__,_|\__|_\___|_||_\__|
 //                         |___/                        |_|
         if (µ._data && µ._data.PatientId){
-            µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
-            Object.assign(µ.currentPatient, $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups)
-            //µ.currentPatient.IPP = $('.infosPatient:visible:first').text().split(' : ')[1]
-            //µ.currentPatient.DDN = $('.infosPatient:visible:first').text().split('le ')[1].split(" (")[0]
-            µ.currentPatient.sexe = µ._data.PatientSexe == "Femme" ? "f" : "m"
-            µ.currentPatient.ID = µ._data.PatientId
-            µ.currentPatient.IEP = µ._data.VenueNumero
-            console.log('Changement de patient pour : ' + µ.currentPatient.nom + " " + µ.currentPatient.prenom)
-            changementContextePatient()
+            try{
+                µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
+                Object.assign(µ.currentPatient, $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups)
+                //µ.currentPatient.IPP = $('.infosPatient:visible:first').text().split(' : ')[1]
+                //µ.currentPatient.DDN = $('.infosPatient:visible:first').text().split('le ')[1].split(" (")[0]
+                µ.currentPatient.sexe = µ._data.PatientSexe == "Femme" ? "f" : "m"
+                µ.currentPatient.ID = µ._data.PatientId
+                µ.currentPatient.IEP = µ._data.VenueNumero
+                console.log('Changement de patient pour : ' + µ.currentPatient.nom + " " + µ.currentPatient.prenom)
+                changementContextePatient()
+            }catch(e){
+            }
         }
     }
 
@@ -792,11 +870,18 @@
     <label><input type="checkbox" name="hide_parametres" ${EasilyInfos.hide_parametres ? "checked" : ""}> Paramétrage</label>
    </td>
   </tr>
+  <tr class="option-fast_edit">
+   <td>Edition rapide</td>
+   <td>
+    <label><input type="radio" name="fast_edit_Lettre" value=false ${EasilyInfos.fast_edit_Lettre ? "" : "checked"}> FHR</label>
+    <label><input type="radio" name="fast_edit_Lettre" value=true ${EasilyInfos.fast_edit_Lettre ? "checked" : ""}> Lettre de Liaison</label>
+   </td>
+  </tr>
   <tr class="option-others">
    <td>Autres options</td>
    <td>
     <label><input type="checkbox" name="hide_warningTTT" ${EasilyInfos.hide_warningTTT ? "checked" : ""}> Cacher Warning TTT</label>
-    <label><input type="checkbox" name="FHR_auto_UHL" ${EasilyInfos.FHR_auto_UHL ? "checked" : ""}> Remplissage auto FHR UHDL</label>
+    <label><input type="checkbox" name="FHR_auto_UHDL" ${EasilyInfos.FHR_auto_UHDL ? "checked" : ""}> Remplissage auto FHR UHDL</label>
    </td>
   </tr>
 </tbody></table>`).dialog({
@@ -851,10 +936,13 @@
 //         ██    ██       ██    ██      ██
 //    ███████    ██       ██    ███████ ███████
 
-    $('body').not(':has(#EasilyPlus_Style)').append($('<style id="EasilyPlus_Style">').html(`
-    #transmissionsFrame {width:100%!important;height:calc(100% - 5px)!important;padding:0!important}
-    //#transmissionsDialog {}
-    `))
+    if(!$('#EasilyPlus_Style').length){
+        $('<style id="EasilyPlus_Style">').html(`
+        img[src*="word.png"]:not([title="Lettre de Liaison valant CRH Psy"]) {filter: grayscale(1);}
+        #transmissionsFrame {width:100%!important;height:calc(100% - 5px)!important;padding:0!important}
+        #specialiteSelection{display:none;}
+    `).appendTo('body')
+    }
     // Your code here...
 })();
 
