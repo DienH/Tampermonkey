@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251028
+// @version      1.0.251030
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -223,6 +223,44 @@
 //
 //
     else if (location.pathname == "/Module/DS_TC/JDT/Index"){
+        function checkTransOpen (){
+            $.waitFor('#inputopen:visible:not(:checked)').then($el=>{
+                $el.click()
+                $('thead .glyphicon-triangle-right').click()
+                let transmissions = {}
+                $('table.table>tbody>tr').each((i,el)=>{
+                    let infosPatient = $('.tdPat', el).text().trim().match(/(?<nom>([A-Z]|\s|-)+) (?<prenom>([A-Z][a-z]+|\s|-)+) (?<ddn>[0-9]{2}\/[0-9]{2}\/[0-9]{4})/).groups,
+                        nchambre=$('span[data-bind="text:NumeroLit"]', el).text().trim()
+                    log(nchambre)
+                    transmissions[nchambre]={patient:infosPatient,trans:{}}
+                    $('.svg-elts-form', el).each((i,el2)=>{
+                        let $infos=$($(el2).data('title')).find('ul'),
+                            transInfo={title:$infos.find('li.tool-title').text(),date:$infos.find('li.tool-info').text().split(' (')[0]}
+                        if($infos.find('li.tool-title-c').length){
+                            Object.assign(transInfo, {
+                                type:'cible',
+                                data:$infos.find('tr:eq(1)>td:eq(0)').text(),
+                                action:$infos.find('tr:eq(1)>td:eq(1)').text(),
+                                resultat:$infos.find('tr:eq(1)>td:eq(2)').text()
+                            })
+                        }else if($infos.find('li.tool-title-mc').length){
+                            let infodata=''
+                            $('div.macro-struct-title', $infos).each((i,el3)=>{
+                                $(el3).next().find('dt').each((j,el4)=>{
+                                    infodata += $(el4).text().trim() + " : " + $(el4).next().text().trim() + "<br>"
+                                })
+                                transInfo[$(el3).text()] = infodata
+                            })
+                            Object.assign(transInfo, {
+                                type:'macrocible'
+                            })
+                        }
+                        transmissions[nchambre].trans[transInfo.date + '-' + transInfo.title ] = transInfo
+                    })
+                })
+                unsafeWindow.transmissions = transmissions
+            })
+        }
         window.addEventListener('message', ev=>{
             if(ev.data && ev.data.cr && ev.data.uf){
                 $('.nav-cr-uf-secteur span.f_cr').parent().find('select').each((i,el)=>{
@@ -235,21 +273,23 @@
                                 }
                             })
                         })
+                        $.waitFor('div.loader:visible').then(
+                            $el=>$.waitFor('div.loader:not(:visible)').then($el2=>checkTransOpen())
+                        )
                     } else {
                         $('.nav-cr-uf-secteur span.f_uf').parent().find('select').each((i,el)=>{
                             if($(el).val() != ev.data.uf){
                                 $(el).val(ev.data.uf).change()
                             }
                         })
+                        $.waitFor('div.loader:visible').then(
+                            $el=>$.waitFor('div.loader:not(:visible)').then($el2=>checkTransOpen())
+                        )
                     }
                 })
             }
         })
         window.parent.postMessage(JSON.stringify({command:"transmissions_get-CR-UF"}))
-        $.waitFor('#inputopen:visible:not(:checked)').then($el=>{
-            $el.click()
-            $('thead .glyphicon-triangle-right').click()
-        })
         $('body').not(':has(#EasilyPlus_Style)').append($('<style id="EasilyPlus_Style">').html(`
     nav.navbar, .nav-cr-uf-secteur {display:none;}
     #module-ds-tc-jdt .table-residents>table>tbody {height: calc(100vh - 130px) !important;}
