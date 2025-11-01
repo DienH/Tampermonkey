@@ -115,7 +115,7 @@
                 .cyberlab_framed .DTFC_LeftWrapper, .cyberlab_framed .DTFC_RightWrapper {display:none!important}
                 .cyberlab_framed .DTFC_scroll .column-test {position:sticky!important;left:0!important;z-index:10;border-right:dashed black 1px;}
                 .cyberlab_framed .DTFC_scroll .column-norm {position:sticky!important;right:0!important;z-index:10;border-left:dashed black 1px;}
-                .cyberlab_framed .DTFC_scroll thead>tr {position:sticky!important;top:0!important;z-index:10;}
+                .cyberlab_framed .DTFC_scroll thead>tr {position:sticky!important;top:0!important;z-index:20;}
                 `)
             }
             $('.DTFC_LeftHeadWrapper th').prependTo('.dataTables_scrollHeadInner tr')
