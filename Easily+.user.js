@@ -116,6 +116,7 @@
                 .cyberlab_framed .DTFC_scroll .column-test {position:sticky!important;left:0!important;z-index:10;border-right:dashed black 1px;}
                 .cyberlab_framed .DTFC_scroll .column-norm {position:sticky!important;right:0!important;z-index:10;border-left:dashed black 1px;}
                 .cyberlab_framed .DTFC_scroll thead>tr {position:sticky!important;top:0!important;z-index:20;}
+                .cyberlab_framed .DTFC_scroll .row-discipline>td.column-test, .cyberlab_framed .DTFC_scroll .row-section>td.column-test {overflow:visible;border-right:none!important}
                 `)
             }
             $('.DTFC_LeftHeadWrapper th').prependTo('.dataTables_scrollHeadInner tr')
@@ -148,21 +149,44 @@
                 $(el).attr("title", $(el).find('div.description').text().trim())
             })
         }
-        setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
+        //setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
+        $.waitFor('#browserTable tbody>tr:first').then($el=>$el.click())
         let creat = "", CKDEPI = "", IPP = ""
-        function checkCreat() {
-            IPP = $('.patientHeader span.identifiers:contains(IPP)').text()
-            if (IPP && IPP.split('[IPP: ').length>1){
-                IPP = IPP.split('[IPP: ')[1].split(',')[0]
+        try{IPP = $('.patientHeader span.identifiers:contains(IPP)').text().match(/IPP: (?<IPP>\d+?),/).groups.IPP}catch(e){}
+
+        /**
+ * @param {String} test - L'analyse biologique à chercher ; "tous" pour tous les résultats, "defaut" pour les résultats standards
+ * @param {Number} n_results - Le nombre de résultats à renvoyer par analyse ; 0 pour tous les résultats de l'analyse
+ */
+        function getBioResults(test = "defaut", n_results = 0){
+            let more_recent=1000, $tr, $td, results={}, result
+            if (test == "default"){
+                let tests=`Sodium, Potassium, Chlore, Protéines, Calcium, Ca corrigé/protéines, Urée, Créatinine, Formule CKDEPI, Glucose,
+                Bilirubine totale, ASAT, ALAT, GGT, PAL, Alcool éthylique, Albumine, CRP, TSH`
+                .split(",").map(t=>t.trim())
+                console.log(tests)
+            } else {
+                $('.DTFC_Scroll td.colum-test:contains(' + test + ')').each((i,el)=>{
+                    $tr = $(el).parent()
+                    $td=$tr.find('td.clickable')
+                    if(n_results != "all"){
+                        $td = $td.lt(n_results)
+                    }
+                    if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();creat=$td.text().trim()}
+                })
             }
+        }
+        function checkCreat() {
             let more_recent=1000, $tr, $td;
             $('.DTFC_LeftBodyWrapper>table>tbody>tr:contains(Créatinine)').each((i,el)=>{
                 $tr = $('.DTFC_scrollBody>table>tbody>tr').eq($(el).index('.DTFC_LeftBodyWrapper>table>tbody>tr'))
-                $td=$tr.find('td.clickable:first');if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();creat=$td.text().trim()}})
+                $td=$tr.find('td.clickable:first');if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();creat=$td.text().trim()}
+            })
             more_recent=1000
             $('.DTFC_LeftBodyWrapper>table>tbody>tr:contains("Formule CKDEPI")').each((i,el)=>{
                 $tr = $('.DTFC_scrollBody>table>tbody>tr').eq($(el).index('.DTFC_LeftBodyWrapper>table>tbody>tr'))
-                $td=$tr.find('td.clickable:first');if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();CKDEPI=$td.text().trim()}})
+                $td=$tr.find('td.clickable:first');if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();CKDEPI=$td.text().trim()}
+            })
             console.log(IPP + " - créat : " + creat + " - DFG : " + CKDEPI)
             if (creat && CKDEPI){
                 GM_setValue("labo", {IPP:IPP,creat:creat, CKDEPI: CKDEPI, autoclose:false})
@@ -174,8 +198,9 @@
                 })
             }
         }
-        setTimeout(checkCreat, 2000)
-        setTimeout(()=>{µ.location.reload()},240000)
+        setTimeout(getBioResults, 2000)
+        //setTimeout(checkCreat, 2000)
+        setTimeout(()=>{µ.location.reload()},360000)
         return true
     }
 
