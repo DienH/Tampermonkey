@@ -107,10 +107,10 @@
                 .cyberlab_framed .main, .cyberlab_framed .dataTables_wrapper {width: calc(100vw - 1.5em)!important;}
                 .cyberlab_framed td {overflow:hidden}
                 .cyberlab_framed td.value.clickable, .cyberlab_framed .DTFC_scrollBody td:first-child {white-space:nowrap;}
+                .cyberlab_framed .DTFC_scroll {left:0!important;width:calc(100vw - 20px)!important;}
+                .cyberlab_framed .DTFC_scrollBody {width:calc(100vw - 20px)!important;top:0!important;height:100%!important;}
                 .cyberlab_framed .DTFC_scrollBody td.column-result.first, .cyberlab_framed .DTFC_scrollBody td:first-child {height:fit-content!important;border-left:none;}
                 .cyberlab_framed .DTFC_scrollBody th.column-result.first {border-left:none;}
-                .cyberlab_framed .DTFC_scroll {left:0!important;width:calc(100vw - 20px)!important;}
-                .cyberlab_framed .DTFC_scrollBody {width:calc(100vw - 20px)!important;top:0!important;}
                 .cyberlab_framed .DTFC_scrollBody div.description {overflow:hidden;}
                 .cyberlab_framed .DTFC_LeftWrapper, .cyberlab_framed .DTFC_RightWrapper {display:none!important}
                 .cyberlab_framed .DTFC_scroll .column-test {position:sticky!important;left:0!important;z-index:10;border-right:dashed black 1px;}
@@ -136,7 +136,7 @@
                 }
             })
             $('.DTFC_scrollBody tr:first td, .DTFC_scrollBody th').css('width', 150)
-            $('.DTFC_scrollBody td.column-result.first')
+            window.dispatchEvent(new Event('resize'))
             let units = []
             $('td.column-unit').each((i,el)=>{
                 units.push($(el).text().trim())
@@ -147,7 +147,6 @@
             $('td.column-test').each((i,el)=>{
                 $(el).attr("title", $(el).find('div.description').text().trim())
             })
-            window.dispatchEvent(new Event('resize'))
         }
         setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
         let creat = "", CKDEPI = "", IPP = ""
