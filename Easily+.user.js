@@ -107,33 +107,45 @@
                 .cyberlab_framed .main, .cyberlab_framed .dataTables_wrapper {width: calc(100vw - 1.5em)!important;}
                 .cyberlab_framed td {overflow:hidden}
                 .cyberlab_framed td.value.clickable, .cyberlab_framed .DTFC_scrollBody td:first-child {white-space:nowrap;}
-                .cyberlab_framed .DTFC_scrollBody td.column-result.first, .cyberlab_framed .DTFC_scrollBody td:first-child {height:fit-content!important}
+                .cyberlab_framed .DTFC_scrollBody td.column-result.first, .cyberlab_framed .DTFC_scrollBody td:first-child {height:fit-content!important;border-left:none;}
+                .cyberlab_framed .DTFC_scrollBody th.column-result.first {border-left:none;}
                 .cyberlab_framed .DTFC_scroll {left:0!important;width:calc(100vw - 20px)!important;}
-                .cyberlab_framed .DTFC_scrollBody, .cyberlab_framed .DTFC_scrollHead {width:calc(100vw - 20px)!important;}
+                .cyberlab_framed .DTFC_scrollBody {width:calc(100vw - 20px)!important;top:0!important;}
                 .cyberlab_framed .DTFC_scrollBody div.description {overflow:hidden;}
-                .cyberlab_framed .DTFC_LeftWrapper {display:none!important}
-                .cyberlab_framed .DTFC_scroll .column-test {position:sticky!important;left:0!important;z-index:10;border-right:dashed lightgrey 1px}
+                .cyberlab_framed .DTFC_LeftWrapper, .cyberlab_framed .DTFC_RightWrapper {display:none!important}
+                .cyberlab_framed .DTFC_scroll .column-test {position:sticky!important;left:0!important;z-index:10;border-right:dashed black 1px;}
+                .cyberlab_framed .DTFC_scroll .column-norm {position:sticky!important;right:0!important;z-index:10;border-left:dashed black 1px;}
+                .cyberlab_framed .DTFC_scroll thead>tr {position:sticky!important;top:0!important;z-index:10;}
                 `)
             }
             $('.DTFC_LeftHeadWrapper th').prependTo('.dataTables_scrollHeadInner tr')
             $('.DTFC_LeftBodyWrapper tr>td').each((i,el)=>{
                 $(el).prependTo($('.DTFC_scrollBody>table>tbody>tr:eq('+i+')'))
             })
+            /**/
+            $('.DTFC_RightHeadWrapper th.column-norm').appendTo('.dataTables_scrollHeadInner tr').attr('title', "Norme (Unité)")
+            $('.DTFC_RightBodyWrapper tr>td.column-norm').each((i,el)=>{
+                $(el).attr('title', $(el).text().trim()+ " " + $(el).next().text().trim()).appendTo($('.DTFC_scrollBody>table>tbody>tr:eq('+i+')')).attr('style', '')
+            })
+            /*
+            */
+            $('.DTFC_scrollHead thead').prependTo('.DTFC_scrollBody>table').find('th.column-result:first').addClass('first')
             $('.cyberlab_framed .DTFC_scrollBody div.description').each((i,el)=>{
                 if($(el).next().find('.icon').length){
                     $(el).css('width','calc(100% - 20px)')
                 }
             })
-            $('.DTFC_scrollHead th').css('width', 150)
-            $('.DTFC_scrollBody tr:first td').css('width', 150)
+            $('.DTFC_scrollBody tr:first td, .DTFC_scrollBody th').css('width', 150)
             $('.DTFC_scrollBody td.column-result.first')
-            /*
-            $('td.value.clickable, td.column-test').each((i,el)=>{
-                $(el).height($(el).height())
+            let units = []
+            $('td.column-unit').each((i,el)=>{
+                units.push($(el).text().trim())
             })
-            */
-            $('td.value.clickable, td.column-test').each((i,el)=>{
-                $(el).attr("title", $(el).text().trim())
+            $('.column-result.first td.value.clickable').each((i,el)=>{
+                $(el).attr("title", $(el).text() + units[$(el).closest('.column-result').index('.DTFC_scrollBody>table>tbody>tr>td:nth-child(2)')])
+            })
+            $('td.column-test').each((i,el)=>{
+                $(el).attr("title", $(el).find('div.description').text().trim())
             })
             window.dispatchEvent(new Event('resize'))
         }
