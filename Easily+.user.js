@@ -154,51 +154,67 @@
         let creat = "", CKDEPI = "", IPP = ""
         try{IPP = $('.patientHeader span.identifiers:contains(IPP)').text().match(/IPP: (?<IPP>\d+?),/).groups.IPP}catch(e){}
 
-        /**
- * @param {String} test - L'analyse biologique à chercher ; "tous" pour tous les résultats, "defaut" pour les résultats standards
- * @param {Number} n_results - Le nombre de résultats à renvoyer par analyse ; 0 pour tous les résultats de l'analyse
- */
+
         function getBioResults(test = "defaut", n_results = 0){
-            let more_recent=1000, $tr, $td, results={}, result
-            if (test == "default"){
+            /** @param {String} test - L'analyse biologique à chercher ; "tous" pour tous les résultats, "defaut" pour les résultats standards
+              * @param {Number} n_results - Le nombre de résultats à renvoyer par analyse ; 0 pour tous les résultats de l'analyse
+ */
+            let $tr, $td, results, result=[], liste_bilans = []
+            //construction de la liste des infos des bilans {date, time, status, id}
+            $('th.column-result').each((i,th_bilan)=>{
+                let bilan={}
+                $(th_bilan).find('.sampleCollectionTime, .status, div:not([class])').each((i,info_bilan)=>{
+                    if($(info_bilan).is('.status')){
+                        bilan.status=$(info_bilan).text()
+                    }else if($(info_bilan).is('.sampleCollectionTime')){
+                        Object.assign(bilan, $(info_bilan).prop('innerText').match(/(?<date>.*)\n(?<time>.*)/).groups)
+                    }else{
+                        bilan.id = $(info_bilan).text()
+                    }
+                })
+                liste_bilans.push(bilan)
+            })
+
+            //construction des résultats
+            if (test == "default" || test == "defaut"){
                 let tests=`Sodium, Potassium, Chlore, Protéines, Calcium, Ca corrigé/protéines, Urée, Créatinine, Formule CKDEPI, Glucose,
                 Bilirubine totale, ASAT, ALAT, GGT, PAL, Alcool éthylique, Albumine, CRP, TSH`
                 .split(",").map(t=>t.trim())
                 console.log(tests)
+            } else if(test == "all" || test == "tous"){
             } else {
-                $('.DTFC_Scroll td.colum-test:contains(' + test + ')').each((i,el)=>{
+                $td=$()
+                $('.DTFC_scroll td.column-test:contains("' + test + '")').each((i,el)=>{
                     $tr = $(el).parent()
-                    $td=$tr.find('td.clickable')
-                    if(n_results != "all"){
+                    $td=$td.add($tr.find('td.clickable'))
+                    /*
+                    if($td.parents('td').index()<n_results){
+                        more_recent=$td.parents('td').index()
+                        creat=$td.text().trim()}
+                        */
+                })
+                /*
+                if(n_results){
+                    if(typeof n_results == 'number'){
                         $td = $td.lt(n_results)
+                    } else{
+                        return false
                     }
-                    if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();creat=$td.text().trim()}
+                }
+                */
+                $td.log().each((i,el)=>{
+                    let ind=$(el).closest('td.column-result').data('column')
+                    result[ind*100+$(el).closest('td.column-result').data('row')] = {value:$(el).text().trim(),date:liste_bilans[ind].date+" "+liste_bilans[ind].time}
                 })
+                result = result.filter(Boolean)
+                if(n_results){
+                    result = result.slice(0, n_results)
+                }
+                return result.length<2 ? result[0].value : result
             }
         }
-        function checkCreat() {
-            let more_recent=1000, $tr, $td;
-            $('.DTFC_LeftBodyWrapper>table>tbody>tr:contains(Créatinine)').each((i,el)=>{
-                $tr = $('.DTFC_scrollBody>table>tbody>tr').eq($(el).index('.DTFC_LeftBodyWrapper>table>tbody>tr'))
-                $td=$tr.find('td.clickable:first');if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();creat=$td.text().trim()}
-            })
-            more_recent=1000
-            $('.DTFC_LeftBodyWrapper>table>tbody>tr:contains("Formule CKDEPI")').each((i,el)=>{
-                $tr = $('.DTFC_scrollBody>table>tbody>tr').eq($(el).index('.DTFC_LeftBodyWrapper>table>tbody>tr'))
-                $td=$tr.find('td.clickable:first');if($td.parents('td').index()<more_recent){more_recent=$td.parents('td').index();CKDEPI=$td.text().trim()}
-            })
-            console.log(IPP + " - créat : " + creat + " - DFG : " + CKDEPI)
-            if (creat && CKDEPI){
-                GM_setValue("labo", {IPP:IPP,creat:creat, CKDEPI: CKDEPI, autoclose:false})
-                var listener = GM_addValueChangeListener("labo", function(name, oldValue, newValue, remote){
-                    if (newValue.autoclose){
-                        window.close()
-                        GM_removeValueChangeListener(listener)
-                    }
-                })
-            }
-        }
-        setTimeout(getBioResults, 2000)
+        unsafeWindow.getBioResults = getBioResults
+        setTimeout(()=>{console.log(getBioResults('GGT'))}, 1000)
         //setTimeout(checkCreat, 2000)
         setTimeout(()=>{µ.location.reload()},360000)
         return true
