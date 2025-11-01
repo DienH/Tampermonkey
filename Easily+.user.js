@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251030
+// @version      1.0.251031
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -108,21 +108,17 @@
                 .cyberlab_framed td {overflow:hidden}
                 .cyberlab_framed td.value.clickable, .cyberlab_framed .DTFC_scrollBody td:first-child {white-space:nowrap;}
                 .cyberlab_framed .DTFC_scrollBody td.column-result.first, .cyberlab_framed .DTFC_scrollBody td:first-child {height:fit-content!important}
-                //.cyberlab_framed .DTFC_scroll {left:0!important;width:calc(100vw - 20px)!important;}
+                .cyberlab_framed .DTFC_scroll {left:0!important;width:calc(100vw - 20px)!important;}
                 .cyberlab_framed .DTFC_scrollBody, .cyberlab_framed .DTFC_scrollHead {width:calc(100vw - 20px)!important;}
                 .cyberlab_framed .DTFC_scrollBody div.description {overflow:hidden;}
-                //.cyberlab_framed .DTFC_LeftWrapper {display:none!important}
+                .cyberlab_framed .DTFC_LeftWrapper {display:none!important}
+                .cyberlab_framed .DTFC_scroll .column-test {position:sticky!important;left:0!important;z-index:10;border-right:dashed lightgrey 1px}
                 `)
             }
-            $('td.value.clickable, td.column-test').each((i,el)=>{
-                $(el).height($(el).height()).attr("title", $(el).text().trim())
-            })
-            //$('.DTFC_LeftHeadWrapper th').prependTo('.dataTables_scrollHeadInner tr')
-            /*
+            $('.DTFC_LeftHeadWrapper th').prependTo('.dataTables_scrollHeadInner tr')
             $('.DTFC_LeftBodyWrapper tr>td').each((i,el)=>{
                 $(el).prependTo($('.DTFC_scrollBody>table>tbody>tr:eq('+i+')'))
             })
-            */
             $('.cyberlab_framed .DTFC_scrollBody div.description').each((i,el)=>{
                 if($(el).next().find('.icon').length){
                     $(el).css('width','calc(100% - 20px)')
@@ -131,6 +127,14 @@
             $('.DTFC_scrollHead th').css('width', 150)
             $('.DTFC_scrollBody tr:first td').css('width', 150)
             $('.DTFC_scrollBody td.column-result.first')
+            /*
+            $('td.value.clickable, td.column-test').each((i,el)=>{
+                $(el).height($(el).height())
+            })
+            */
+            $('td.value.clickable, td.column-test').each((i,el)=>{
+                $(el).attr("title", $(el).text().trim())
+            })
             window.dispatchEvent(new Event('resize'))
         }
         setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
