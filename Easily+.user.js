@@ -151,6 +151,8 @@
         }
         //setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
         $.waitFor('#browserTable tbody>tr:first').then($el=>$el.click())
+
+
         let creat = "", CKDEPI = "", IPP = ""
         try{IPP = $('.patientHeader span.identifiers:contains(IPP)').text().match(/IPP: (?<IPP>\d+?),/).groups.IPP}catch(e){}
 
@@ -213,10 +215,25 @@
                 return result.length<2 ? result[0].value : result
             }
         }
+
+        function alertResults(show_alert = false){
+            if(show_alert){
+                let alert_text="Valeurs hors des normes sur le dernier bilan :\n\n"
+                $('td.value.highflag, td.value.lowflag', 'td.column-result.first').each((i,el)=>{
+                    alert_text+=$(el).closest('td.column-result.first').prev().find('.description').text().trim() + " : " + $(el).text().trim()+ " ("+ ($(el).is('highflag') ? "élevé" : "faible") + ")\n"
+                })
+                alert(alert_text)
+            } else {
+                let wrong_values = {}
+                $('td.value.highflag, td.value.lowflag', 'td.column-result.first').each((i,el)=>{
+                    wrong_values[$(el).closest('td.column-result.first').prev().find('.description').text().trim()] = $(el).text().trim()
+                })
+            }
+        }
         unsafeWindow.getBioResults = getBioResults
-        setTimeout(()=>{console.log(getBioResults('GGT'))}, 1000)
-        //setTimeout(checkCreat, 2000)
-        setTimeout(()=>{µ.location.reload()},360000)
+        setTimeout(()=>{console.time('GGT');console.log(getBioResults('GGT'));console.timeEnd('GGT');}, 1000)
+        setTimeout(alertResults, 500)
+        setTimeout(()=>{µ.location.reload()},480000)
         return true
     }
 
