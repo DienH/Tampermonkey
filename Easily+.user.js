@@ -35,6 +35,11 @@
     µ.currentPatient = {id:'', nom:'', prenom:'',ddn:'', IPP:''}
     if (!$ || !$.fn) {var $ = µ.jQuery || window.jQuery };
     if (!$ || !$.fn) {try{ $ = µ.parent.jQuery || window.parent.jQuery}catch(e){}}
+    if (!$ || !$.fn){
+        if (location.href.search("cyberlab.chu-clermontferrand.fr")+1){
+            window.parent.postMessage(JSON.stringify({command:"cyberlab-reloadFrame"}, '*'))
+        }
+    }
     if(!$('#DienScriptPlus', document).length){
         $('body', document)
             .append($('<script id="DienScriptPlus">').html(GM_getResourceText('DienJS')))
@@ -154,8 +159,32 @@
         $.waitFor('#browserTable tbody>tr:first').then($el=>$el.click())
 
 
-        let creat = "", CKDEPI = "", IPP = ""
-        try{IPP = $('.patientHeader span.identifiers:contains(IPP)').text().match(/IPP: (?<IPP>\d+?),/).groups.IPP}catch(e){}
+        let creat = "", CKDEPI = "", IPP = "", friendlyNames={
+            "Polynucléaires Neutrophiles (G/l)":"PNN",
+            "Ca corrigé/protéines":"Ca/Prot",
+            "Protéines":"Prot",
+            "Albumine":"Albu",
+            "Bilirubine totale":"Bili",
+            "Alcool éthylique":"OH",
+            Calcium:"Ca",
+            Chlore:"Cl",
+            Sodium:"Na",
+            Potassium:"K",
+            "Formule CKDEPI":"DFG",
+            "Volume Globulaire Moyen":"VGM",
+            "Hémoglobine":"Hb",
+            "hCG grossesse":"beta-hCG",
+            "Screening toxicologique":"Screen tox"
+        }
+        try{
+            IPP = $('.patientHeader span.identifiers:contains(IPP)').text()
+            if(!IPP){
+                IPP = $('.patientHeader span.identifiers span[title=IPP]').text()
+            } else {
+                IPP = IPP.match(/IPP: (?<IPP>\d+?),/).groups.IPP
+            }
+        }catch(e){
+        }
 
 
         function getBioResults(test = "defaut", n_results = 0){
@@ -163,6 +192,10 @@
               * @param {Number} n_results - Le nombre de résultats à renvoyer par analyse ; 0 pour tous les résultats de l'analyse
  */
             if(!$('th:first #invertSelection').length){return false}
+            if(typeof test == "number"){
+                n_results = test
+                test = "defaut"
+            }
             let $tr, $td, result=[], liste_bilans = []
             //construction de la liste des infos des bilans {date, time, status, id}
             $('th.column-result').each((i,th_bilan)=>{
@@ -184,16 +217,17 @@
             })
 
             //construction des résultats
-            if (test == "default" || test == "defaut"){
-                let tests=`Sodium, Potassium, Chlore, Protéines, Calcium, Ca corrigé/protéines, Urée, Créatinine, Formule CKDEPI, Glucose,
-                Bilirubine totale, ASAT, ALAT, GGT, PAL, Alcool éthylique, Albumine, CRP, TSH`
+            if (test == "default" || test == "defaut" || test == "all" || test == "tous"){
+                let defauts_tests=`Na, K, Cl, Prot, Ca, Ca/Prot, Urée, Créatinine, DFG, Glucose,
+                Bili, ASAT, ALAT, GGT, PAL, OH, Albu, CRP, TSH, beta-hCG, Globules Blancs, Hb, VGM,
+                Plaquettes, PNN, INR, Screen tox`
                 .split(",").map(t=>t.trim())
-                console.log(tests)
-            } else if(test == "all" || test == "tous"){
                 let $tests_list = $('.DTFC_scroll td.column-test'), $test_sodium = $tests_list.filter(':contains(Sodium)'), Na_row_index = $tests_list.index($test_sodium), results = {}
                 $tests_list= $tests_list.gt(Na_row_index - 1)
                 $tests_list.each((i,el)=>{
-                    let test_name = $(el).find('.description').text().trim()
+                    let test_name = $(el).find('.description').text().trim().replace(/[\u200B-\u200F]/g, '')
+                    test_name = friendlyNames[test_name] ?? test_name
+                    if((test == "default" || test == "defaut") && !defauts_tests.includes(test_name)){return}
                     if(typeof results[test_name] == 'undefined'){
                         results[test_name]=[]
                     }
@@ -205,6 +239,13 @@
                 })
                 for (let test in results){
                     results[test]=results[test].filter(Boolean)
+                    if(n_results> 1){
+                        results[test]=results[test].filter((el,i)=>{
+                            return (i < n_results)
+                        })
+                    } else if (n_results === 1){
+                        results[test]=results[test][0]
+                    }
                 }
                 return results
                 //console.log(results)
@@ -245,18 +286,28 @@
             if(show_alert){
                 let alert_text="Valeurs hors des normes sur le dernier bilan :\n\n"
                 $('td.value.highflag, td.value.lowflag', 'td.column-result.first').each((i,el)=>{
-                    alert_text+=$(el).closest('td.column-result.first').prev().find('.description').text().trim() + " : " + $(el).text().trim()+ " ("+ ($(el).is('highflag') ? "élevé" : "faible") + ")\n"
+                    alert_text+=$(el).closest('td.column-result.first').prev().find('.description').text().trim() + " : " + $(el).text().trim()+ " ("+ ($(el).is('.highflag') ? "élevé" : "faible") + ")\n"
                 })
                 alert(alert_text)
             } else {
                 let wrong_values = {}
                 $('td.value.highflag, td.value.lowflag', 'td.column-result.first').each((i,el)=>{
-                    wrong_values[$(el).closest('td.column-result.first').prev().find('.description').text().trim()] = $(el).text().trim()
+                    wrong_values[$(el).closest('td.column-result').prev().find('.description').text().trim().replace(/[\u200B-\u200F]/g, '')] = {
+                        value:$(el).text().trim(),
+                        alert:$(el).is('.highflag') ? "élevé" : "faible",
+                        norme:$(el).closest('td.column-result').siblings('.column-norm').text().trim()
+                    }
                 })
+                return wrong_values
             }
         }
         unsafeWindow.getBioResults = getBioResults
-        setTimeout(()=>{console.time('Toute la bio');console.log(getBioResults('all'));console.timeEnd('Toute la bio');}, 1000)
+        if(IPP){
+            setTimeout(()=>{
+                window.parent.postMessage(JSON.stringify({command:"cyberlab-lastBio", IPP:IPP, bio:getBioResults(1)}), "*")
+                window.parent.postMessage(JSON.stringify({command:"cyberlab-alertBio", IPP:IPP, alert:alertResults()}), "*")
+            }, 1000)
+        }
         setTimeout(alertResults, 500)
         setTimeout(()=>{µ.location.reload()},480000)
         return true
@@ -894,6 +945,24 @@
                     $(frameOrigin).each((i,el)=>el.contentWindow.postMessage(cyberlabData, "https://cyberlab.chu-clermontferrand.fr"))
                 }
                 break
+            case "cyberlab-lastBio":
+                console.log(messageEvData.bio)
+                break
+            case "cyberlab-alertBio":
+                console.log(messageEvData.alert)
+                if(Object.keys(messageEvData.alert).length){
+                    let alert_title = ''
+                    for (let test in messageEvData.alert){
+                        alert_title+= test + " " + messageEvData.alert[test].alert + " (" + messageEvData.alert[test].value
+                        alert_title+= (messageEvData.alert[test].norme ? ", norme " + messageEvData.alert[test].norme : "") + ")\n"
+                    }
+                    $('.area-carrousel li:contains(Biologie):not(:contains(Pres))').attr('title', alert_title).find('img').addClass('warning')
+                }
+                break
+            case "cyberlab-reloadFrame":
+                $(frameOrigin).attr('src', "https://cyberlab.chu-clermontferrand.fr")
+                console.log(messageEvData.alert)
+                break
 
 //    ___________.__       .__                  /\  ________
 //    \_   _____/|__| ____ |  |__   ____       / /  \______ \   ____   ____
@@ -1079,6 +1148,14 @@
         img[src*="word.png"]:not([title="Lettre de Liaison valant CRH Psy"]) {filter: grayscale(1);}
         #transmissionsFrame {width:100%!important;height:calc(100% - 5px)!important;padding:0!important}
         #specialiteSelection{display:none;}
+        .area-carrousel img.warning, .area-carrousel img.vide, .area-carrousel img.signe,.area-carrousel img.arrete, .area-carrousel img.arr-prog {
+              background: url(/Modules/WorklistsHospitalisation/Content/images/prescription/sprite_prescription.png) no-repeat;
+              height: 16px;width: 16px;display: inline-block;vertical-align: text-bottom;-webkit-print-color-adjust: exact;display:initial!important;position:absolute;}
+        .area-carrousel img.vide {background-position: -32px -16px}
+        .area-carrousel img.signe {background-position: -32px 0}
+        .area-carrousel img.warning {background-position: -16px -16px}
+        .area-carrousel img.arrete {background-position: -16px 0}
+        .area-carrousel img.arr-prog {background-position: 0 -16px}
     `).appendTo('body')
     }
     // Your code here...
@@ -1090,29 +1167,32 @@ function changementContextePatient(){
     let EasilyInfos = GM_getValue('EasilyInfos',{"user":"", "password":""})
     //<i class='fa fa-carret'></i>
     let $ = unsafeWindow.jQuery
-    $('.area-carrousel-wrapper li:not(.menu-links)>a:contains("Liens")').append("<i class='fa fa-caret-down' style='margin-left:5px;'></i>").parent().addClass("menu-links")
-        .append("<li class='li_links'></li><li class='li_links'></li>")
-    $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
+    if($('.area-carrousel:visible li:contains(Prescrire):not(.easily_plus)').length){
+        $('.area-carrousel-wrapper li:not(.menu-links)>a:contains("Liens")').append("<i class='fa fa-caret-down' style='margin-left:5px;'></i>").parent().addClass("menu-links")
+            .append("<li class='li_links'></li><li class='li_links'></li>")
+        $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
 
-    $.waitFor('.area-carrousel:visible li:contains(Prescrire):not(.easily_plus)').then($el=>{
-        $('li:contains(Biologie):not(:contains(Pres Bio))', '.area-carrousel').click()
-        setTimeout(()=>{
-        $('.area-carrousel:visible').eq(1).find('li:first').click()
-    }, 1000)
-    })
-    $.waitFor('#module-bioboxes-imagerie').then($el=>{
-        $el.not(':has(#xploreFrame)').html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
-    })
+        $.waitFor('.area-carrousel:visible li:contains(Prescrire):not(.easily_plus)').then($el=>{
+            $el.addClass('easily_plus')
+            $('li:contains(Biologie):not(:contains(Pres Bio))', '.area-carrousel').click()
+            setTimeout(()=>{
+                $('.area-carrousel:visible').eq(1).find('li:first').click()
+            }, 1000)
+        })
+        $.waitFor('#module-bioboxes-imagerie').then($el=>{
+            $el.not(':has(#xploreFrame)').html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
+        })
 
-    $.waitFor('#module-bioboxes-anapath').then($el=>{
-        $el.not(':has(#presBioFrame)').html("").addClass('pres-bio_frame').append('<iframe id="presBioFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
-    })
-    $.waitFor('#module-bioboxes-biologie').then($el=>{
-        $el.not(':has(#cyberlabFrame)').html("").addClass('cyberlab_frame').append('<iframe id="cyberlabFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">').children().on('load error', ev=>console.log(ev))
-    })
+        $.waitFor('#module-bioboxes-anapath').then($el=>{
+            $el.not(':has(#presBioFrame)').html("").addClass('pres-bio_frame').append('<iframe id="presBioFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
+        })
+        $.waitFor('#module-bioboxes-biologie').then($el=>{
+            $el.not(':has(#cyberlabFrame)').html("").addClass('cyberlab_frame').append('<iframe id="cyberlabFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
+        })
 
-    $('.area-carrousel:visible:eq(0)>ul>li:last:not(#synth_patient)').after($('.area-carrousel:visible:eq(0)>ul>li:last').clone().attr('id', 'synth_patient').find('a').text('XWay').attr('id','').attr('href', `Lancemodule: SYNTHESE_PAT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`).end())
+        $('.area-carrousel:visible:eq(0)>ul>li:last:not(#synth_patient)').after($('.area-carrousel:visible:eq(0)>ul>li:last').clone().attr('id', 'synth_patient').find('a').text('XWay').attr('id','').attr('href', `Lancemodule: SYNTHESE_PAT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`).end())
 
+    }
     //modules
     // Lancemodule: SYNTHESE_PAT;${IPP};LOGINAD=${username}   == Synthèse Logon
     // Lancemodule: IMAGES_PATIENT;${IPP};LOGINAD=${username}     == PACS
