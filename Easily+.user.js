@@ -33,7 +33,8 @@
     var µ = unsafeWindow
     var log = console.log
     µ.currentPatient = {id:'', nom:'', prenom:'',ddn:'', IPP:''}
-    if (!$ || !$.fn) {var $ = µ.jQuery || µ.parent.jQuery || window.parent.jQuery || window.jQuery };
+    if (!$ || !$.fn) {var $ = µ.jQuery || window.jQuery };
+    if (!$ || !$.fn) {try{ $ = µ.parent.jQuery || window.parent.jQuery}catch(e){}}
     if(!$('#DienScriptPlus', document).length){
         $('body', document)
             .append($('<script id="DienScriptPlus">').html(GM_getResourceText('DienJS')))
@@ -161,7 +162,8 @@
             /** @param {String} test - L'analyse biologique à chercher ; "tous" pour tous les résultats, "defaut" pour les résultats standards
               * @param {Number} n_results - Le nombre de résultats à renvoyer par analyse ; 0 pour tous les résultats de l'analyse
  */
-            let $tr, $td, results, result=[], liste_bilans = []
+            if(!$('th:first #invertSelection').length){return false}
+            let $tr, $td, result=[], liste_bilans = []
             //construction de la liste des infos des bilans {date, time, status, id}
             $('th.column-result').each((i,th_bilan)=>{
                 let bilan={}
@@ -169,7 +171,11 @@
                     if($(info_bilan).is('.status')){
                         bilan.status=$(info_bilan).text()
                     }else if($(info_bilan).is('.sampleCollectionTime')){
-                        Object.assign(bilan, $(info_bilan).prop('innerText').match(/(?<date>.*)\n(?<time>.*)/).groups)
+                        try{
+                            Object.assign(bilan, $(info_bilan).text().match(/(?<date>\d{2}\/\d{2}\/\d{4})(.|\n|\s)?(?<time>\d{2}:\d{2})/).groups)
+                        }catch(e){
+                            $(info_bilan).log('innerText')
+                        }
                     }else{
                         bilan.id = $(info_bilan).text()
                     }
@@ -184,6 +190,24 @@
                 .split(",").map(t=>t.trim())
                 console.log(tests)
             } else if(test == "all" || test == "tous"){
+                let $tests_list = $('.DTFC_scroll td.column-test'), $test_sodium = $tests_list.filter(':contains(Sodium)'), Na_row_index = $tests_list.index($test_sodium), results = {}
+                $tests_list= $tests_list.gt(Na_row_index - 1)
+                $tests_list.each((i,el)=>{
+                    let test_name = $(el).find('.description').text().trim()
+                    if(typeof results[test_name] == 'undefined'){
+                        results[test_name]=['']
+                    }
+                    let $tds = $(el).siblings('.column-result')
+                    $tds.each((j,el2)=>{
+                        let ind=$(el2).data('column') || $tds.index(el2)
+                        results[test_name][ind*100+$(el2).data('row')] = {value:$(el2).find('td.clickable').text().trim(), date:liste_bilans[ind].date+" "+liste_bilans[ind].time}
+                    })
+                        if(test_name == "TSH"){
+                            console.log(results[test_name])
+                        }
+                })
+                //results[test_name]=results[test_name].filter(Boolean)
+                console.log(results)
             } else {
                 $td=$()
                 $('.DTFC_scroll td.column-test:contains("' + test + '")').each((i,el)=>{
@@ -217,6 +241,7 @@
         }
 
         function alertResults(show_alert = false){
+            if(!$('th:first #invertSelection').length){return false}
             if(show_alert){
                 let alert_text="Valeurs hors des normes sur le dernier bilan :\n\n"
                 $('td.value.highflag, td.value.lowflag', 'td.column-result.first').each((i,el)=>{
@@ -1069,14 +1094,21 @@ function changementContextePatient(){
         .append("<li class='li_links'></li><li class='li_links'></li>")
     $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
 
-    $.waitFor('#module-bioboxes-imagerie').then($el=>{
-    $el.not(':has(#xploreFrame)').html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
+    $.waitFor('.area-carrousel:visible li:contains(Prescrire):not(.easily_plus)').then($el=>{
+        $('li:contains(Biologie):not(:contains(Pres Bio))', '.area-carrousel').click()
+        setTimeout(()=>{
+        $('.area-carrousel:visible').eq(1).find('li:first').click()
+    }, 1000)
     })
+    $.waitFor('#module-bioboxes-imagerie').then($el=>{
+        $el.not(':has(#xploreFrame)').html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
+    })
+
     $.waitFor('#module-bioboxes-anapath').then($el=>{
         $el.not(':has(#presBioFrame)').html("").addClass('pres-bio_frame').append('<iframe id="presBioFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
     })
     $.waitFor('#module-bioboxes-biologie').then($el=>{
-        $el.not(':has(#cyberlabFrame)').html("").addClass('cyberlab_frame').append('<iframe id="cyberlabFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
+        $el.not(':has(#cyberlabFrame)').html("").addClass('cyberlab_frame').append('<iframe id="cyberlabFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">').children().on('load error', ev=>console.log(ev))
     })
 
     $('.area-carrousel:visible:eq(0)>ul>li:last:not(#synth_patient)').after($('.area-carrousel:visible:eq(0)>ul>li:last').clone().attr('id', 'synth_patient').find('a').text('XWay').attr('id','').attr('href', `Lancemodule: SYNTHESE_PAT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`).end())
