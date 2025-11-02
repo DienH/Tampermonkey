@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251031
+// @version      1.0.251101
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -195,19 +195,19 @@
                 $tests_list.each((i,el)=>{
                     let test_name = $(el).find('.description').text().trim()
                     if(typeof results[test_name] == 'undefined'){
-                        results[test_name]=['']
+                        results[test_name]=[]
                     }
                     let $tds = $(el).siblings('.column-result')
                     $tds.each((j,el2)=>{
                         let ind=$(el2).data('column') || $tds.index(el2)
                         results[test_name][ind*100+$(el2).data('row')] = {value:$(el2).find('td.clickable').text().trim(), date:liste_bilans[ind].date+" "+liste_bilans[ind].time}
                     })
-                        if(test_name == "TSH"){
-                            console.log(results[test_name])
-                        }
                 })
-                //results[test_name]=results[test_name].filter(Boolean)
-                console.log(results)
+                for (let test in results){
+                    results[test]=results[test].filter(Boolean)
+                }
+                return results
+                //console.log(results)
             } else {
                 $td=$()
                 $('.DTFC_scroll td.column-test:contains("' + test + '")').each((i,el)=>{
@@ -256,7 +256,7 @@
             }
         }
         unsafeWindow.getBioResults = getBioResults
-        setTimeout(()=>{console.time('GGT');console.log(getBioResults('GGT'));console.timeEnd('GGT');}, 1000)
+        setTimeout(()=>{console.time('Toute la bio');console.log(getBioResults('all'));console.timeEnd('Toute la bio');}, 1000)
         setTimeout(alertResults, 500)
         setTimeout(()=>{µ.location.reload()},480000)
         return true
