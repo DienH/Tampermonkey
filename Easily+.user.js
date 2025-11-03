@@ -106,6 +106,12 @@
             */
         }
         if(window.name =="resultats"){
+//      _________ __          .__           ._____________                              ___________             .__.__
+//     /   _____//  |_ ___.__.|  |   ____   |__\_   _____/___________    _____   ____   \_   _____/____    _____|__|  | ___.__.
+//     \_____  \\   __<   |  ||  | _/ __ \  |  ||    __) \_  __ \__  \  /     \_/ __ \   |    __)_\__  \  /  ___/  |  |<   |  |
+//     /        \|  |  \___  ||  |_\  ___/  |  ||     \   |  | \// __ \|  Y Y  \  ___/   |        \/ __ \_\___ \|  |  |_\___  |
+//    /_______  /|__|  / ____||____/\___  > |__|\___  /   |__|  (____  /__|_|  /\___  > /_______  (____  /____  >__|____/ ____|
+//            \/       \/               \/          \/               \/      \/     \/          \/     \/     \/        \/
             if(!$('#cyberlab_style').length){
                 $('<style id="cyberlab_style">').appendTo($('body').addClass('cyberlab_framed')).html(`
                 .cyberlab_framed .globalMenu, .cyberlab_framed .contextMenu, .cyberlab_framed #patientHeader, .cyberlab_framed .blockingOverlayOnMobile {display:none}
@@ -161,7 +167,12 @@
         //Affichage automatique premier résultat
         $.waitFor('#browserTable tbody>tr:first').then($el=>$el.click())
 
-
+//    __________                    .__   __          __
+//    \______   \ ____   ________ __|  |_/  |______ _/  |_  ______
+//     |       _// __ \ /  ___/  |  \  |\   __\__  \\   __\/  ___/
+//     |    |   \  ___/ \___ \|  |  /  |_|  |  / __ \|  |  \___ \
+//     |____|_  /\___  >____  >____/|____/__| (____  /__| /____  >
+//            \/     \/     \/                     \/          \/
         let creat = "", CKDEPI = "", IPP = "", friendlyNames={
             "Polynucléaires Neutrophiles (G/l)":"PNN",
             "Ca corrigé/protéines":"Ca/Prot",
@@ -284,20 +295,27 @@
             }
         }
 
+//       _____  .__                 __
+//      /  _  \ |  |   ____________/  |_
+//     /  /_\  \|  | _/ __ \_  __ \   __\
+//    /    |    \  |_\  ___/|  | \/|  |
+//    \____|__  /____/\___  >__|   |__|
+//            \/          \/
         function alertResults(show_alert = false){
             if(!$('th:first #invertSelection').length){return false}
             if(show_alert){
                 let alert_text="Valeurs hors des normes sur le dernier bilan :\n\n"
-                $('td.value.highflag, td.value.lowflag', 'td.column-result.first').each((i,el)=>{
-                    alert_text+=$(el).closest('td.column-result.first').prev().find('.description').text().trim() + " : " + $(el).text().trim()+ " ("+ ($(el).is('.highflag') ? "élevé" : "faible") + ")\n"
+                $('.highflag, .lowflag, .veryhighflag, .verylowlag', 'td.column-result.first').each((i,el)=>{
+                    alert_text+=$(el).closest('td.column-result.first').prev().find('.description').text().trim() + " : " + $(el).text().trim()+ " ("+ ($(el).is('.highflag') ? "élevé" : ($(el).is('.veryhighflag') ? "élevé" : ($(el).is('.lowflag') ? "faible" : "très faible"))) + ")\n"
                 })
                 alert(alert_text)
             } else {
                 let wrong_values = {}
-                $('td.value.highflag, td.value.lowflag', 'td.column-result.first').each((i,el)=>{
+
+                $('.highflag, .lowflag, .veryhighflag, .verylowlag', 'td.column-result.first').each((i,el)=>{
                     wrong_values[$(el).closest('td.column-result').prev().find('.description').text().trim().replace(/[\u200B-\u200F]/g, '')] = {
                         value:$(el).text().trim(),
-                        alert:$(el).is('.highflag') ? "élevé" : "faible",
+                        alert:$(el).is('.highflag') ? "élevé" : ($(el).is('.veryhighflag') ? "élevé" : ($(el).is('.lowflag') ? "faible" : "très faible")),
                         norme:$(el).closest('td.column-result').siblings('.column-norm').text().trim()
                     }
                 })
@@ -535,6 +553,12 @@
             }
             switch(unsafeWindow._currentContext.FicheTitle){
                 case 'FHR Observation Médicale - Psychiatrie':
+//    ______________ _____________
+//    \_   _____/   |   \______   \
+//     |    __)/    ~    \       _/
+//     |     \ \    Y    /    |   \
+//     \___  /  \___|_  /|____|_  /
+//         \/         \/        \/
                     $('.header.headerScrolling>div:not([id])>div:first').clone().appendTo($('.header.headerScrolling>div:not([id])')).find('.ToolbarButtonImage').attr('class', 'ToolbarButtonImage image__envoyer-a-la-frappe_png').attr('icone', 'image__envoyer-a-la-frappe_png').siblings().remove().end()
                         .parent().attr({'onclick':'', 'Title': 'Remplissage auto de la fiche', 'id': '', 'ng-class':''}).click(async ev=>{
                         //let CB_content = await navigator.clipboard.readText()
@@ -544,6 +568,7 @@
                             //log(clipData)
                             if(EasilyInfos.FHR_auto_UHDL){
                                 µ.clipData = clipData
+                                clipData = clipData.split('Motif hospitalisation')[1]
                                 try{
                                     FHR_regex = new RegExp(
                                         /Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*/.source
@@ -954,14 +979,19 @@
                 console.log(messageEvData.bio)
                 break
             case "cyberlab-alertBio":
-                console.log(messageEvData.alert)
                 if(Object.keys(messageEvData.alert).length){
-                    let alert_title = ''
+                    let alert_title = '', important = false, $img
                     for (let test in messageEvData.alert){
                         alert_title+= test + " " + messageEvData.alert[test].alert + " (" + messageEvData.alert[test].value
                         alert_title+= (messageEvData.alert[test].norme ? ", norme " + messageEvData.alert[test].norme : "") + ")\n"
+                        important = ( messageEvData.alert[test].alert == "très faible" || messageEvData.alert[test].alert == "très élevé")
                     }
-                    $('.area-carrousel li:contains(Biologie):not(:contains(Pres))').attr('title', alert_title).find('img').addClass('warning')
+                    $img = $('.area-carrousel li:contains(Biologie):not(:contains(Pres))').attr('title', alert_title).find('img')
+                    if(important){
+                        $img.attr('source', "https://easilynlb-prod.chu-clermontferrand.fr/TempetePlus/TempetePlus.Web/Content/Images/alerte.png").css({width:"16px", "position":"absolute"})
+                    } else {
+                        $img.addClass('warning')
+                    }
                 }
                 break
             case "cyberlab-reloadFrame":
@@ -1161,6 +1191,7 @@
         .area-carrousel img.warning {background-position: -16px -16px}
         .area-carrousel img.arrete {background-position: -16px 0}
         .area-carrousel img.arr-prog {background-position: 0 -16px}
+        .area-carrousel img[src*=png] {position:absolute;width:16px;}
     `).appendTo('body')
     }
     // Your code here...
