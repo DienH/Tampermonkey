@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251101
+// @version      1.0.251103
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -565,15 +565,50 @@
                         //console.log(CB_content)
                         let observData = {}, $tmp, FHR_regex
                         µ.getFHR_Clipboard().then(clipData=>{
-                            //log(clipData)
+                            log(clipData)
                             if(EasilyInfos.FHR_auto_UHDL){
+                                let clipDataArray
                                 µ.clipData = clipData
-                                clipData = 'Motif hospitalisation' + clipData.split('Motif hospitalisation')[1]
-                                console.log(clipData)
+                                // clipData = 'Motif hospitalisation :' + clipData.split('Motif hospitalisation')[1]
+                                try{
+                                clipData = clipData.split('Motif hospitalisation :')[1]
+                                let sections = [
+                                    {s:'Motif hospitalisation :', o:'motif'},
+                                    {s:'Médecins référents :', o:''},
+                                    {s:'ATCD médico-chirurgicaux personnels:', o:'atcd_med'},
+                                    {s:'ATCD psychiatriques et addictologiques personnels :', o:'atcd_psy_perso'},
+                                    {s:'ATCD psychiatriques et addictologiques familiaux :', o:'atcd_psy_fam'},
+                                    {s:'Allergies :', o:'allergies'},
+                                    {s:"Traitements en cours à l'admission:", o:'tttEntree'},
+                                    {s:'Traitements psychotropes antérieurs :', o:'tttPsyAnte'},
+                                    {s:'Mode de vie/bio :', o:'mdv'},
+                                    {s:'Contacts :', o:'contact'},
+                                    {s:'Anamnèse :', o:'hdlm'},
+                                    {s:'Examen clinique initial ', o:'examSomaInit'},
+                                    {s:'Entretiens :', o:'entretiens'},
+                                    {s:'Commentaire général sur la prise en charge :', o:'commentaire'},
+                                    {s:'Au total :', o:'conclusion'},
+                                    {s:'Plan de sortie : ', o:'planSortie'},
+                                    {s:'TTT de sortie :', o:'tttSortie'},
+                                    {s:'Dr ', o:''}
+                                ]
+                                for(let section in sections){
+                                    if(typeof sections[section-0+1] == "object"){
+                                        clipDataArray = clipData.split(sections[section-0+1].s)
+                                        if(sections[section].o && clipDataArray.length == 2){
+                                            observData[sections[section].o] = clipDataArray.shift().trim()
+                                        } else {
+                                            clipDataArray.shift()
+                                        }
+                                        clipData = clipDataArray.shift()
+                                    }
+                                }
+                                }catch(e){}
+                                /*
                                 try{
                                     FHR_regex = new RegExp(
-                                        /Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*/.source
-                                        +/ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
+                                        /Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*A/.source
+                                        +/TCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
                                         +/ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
                                         +/ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
                                         +/Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
@@ -591,7 +626,6 @@
                                         +/Dr /.source
                                         /*
                                     /*
-                                    */
                                     )
                                     observData = clipData.match(FHR_regex).groups
                                     //log(observData)
@@ -618,6 +652,7 @@
                                     }
                                     log(observData)
                                 }
+                                */
                                 try{observData.tttSortie = observData.tttSortie.trim()}catch(e){}
                                 FHR_regex = new RegExp(
                                     /Evaluation.*?\r?\n(?<examPsyEntree>(.|\r|\n)*?)\r?\n/.source
@@ -626,6 +661,8 @@
                                     +/Accompagnement au projet/.source
                                 )
                                 try{Object.assign(observData, observData.entretiens.match(FHR_regex).groups)}catch(e){}
+                                observData.examSomaInit = observData.examSomaInit.split('):')[1]
+                                observData.tttSortie = observData.tttSortie.split('Documents de sortie')[0].trim()
                                 µ.observData = observData
 
                                 //Ajout des médecins de l'UHDL
@@ -657,7 +694,7 @@
                                     while(!$elem.find('iframe').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    $elem.find('iframe').each((j,el2)=>{if(!$('body', el2.contentDocument).text().trim())$('body', el2.contentDocument).html('<pre>'+(observData.hdlm ?? '') + '</pre>')})
+                                    $elem.find('iframe').each((j,el2)=>{if(observData.hdlm)$('body', el2.contentDocument).html('<pre>'+observData.hdlm + '</pre>')})
                                 })
                                 //Synthèse de séjour / commentaire
                                 $('.fm_grid_cell:contains(Synthèse de séjour):last').each((i,el)=>{
@@ -665,7 +702,7 @@
                                     while(!$elem.find('iframe').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    $elem.find('iframe').each((j,el2)=>{if(!$('body', el2.contentDocument).text().trim())$('body', el2.contentDocument).html('<pre>'+(observData.commentaire ?? '') + '</pre>')})
+                                    $elem.find('iframe').each((j,el2)=>{if(observData.commentaire)$('body', el2.contentDocument).html('<pre>'+observData.commentaire+ '</pre>')})
                                 })
                                 //Mode de vie
                                 $('.fm_grid_cell:contains(Mode de vie):last').each((i,el)=>{
@@ -673,7 +710,7 @@
                                     while(!$elem.find('textarea').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    if(!$elem.find('textarea').val())$elem.find('textarea').val(observData.mdv ?? '').trigger('keyup')
+                                    if(observData.mdv)$elem.find('textarea').val(observData.mdv).trigger('keyup')
                                 })
                                 $('.fm-label-mandatory-save').closest('td.fm_grid_cell').each((i,el)=>{
                                     switch($(el).text().trim()){
@@ -835,11 +872,11 @@
                                         µ.currentPatient.IPP = $('.infosPatient').text().split(' : ')[1]
                                         µ.currentPatient.DDN = $('.infosPatient').text().split('le ')[1].split(" (")[0]
                                     }
-                                } else if(ev.type == "mouseup" && ev.which == 2){
-                                    let labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
-                                        btoa('Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+µ._data.IPP+'&patientBirthDate='+µ.currentPatient.DDN.split('/').reverse().join('')+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
-                                    window.open(labo_url, '_blank')
                                 }
+                            } else if(ev.type == "mouseup" && ev.which == 2){
+                                let labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
+                                    btoa('Class=Patient&Method=ViewReport&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&Object='+µ.currentPatient.IPP+'&patientBirthDate='+µ.currentPatient.DDN.split('/').reverse().join('')+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
+                                window.open(labo_url, '_tab')
                             }
 
                             // Edition rapide de la FHR ou de la Lettre de Liaison (choix à définir dans les options)
