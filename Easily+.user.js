@@ -71,6 +71,7 @@
                 if(msg.data.IPP){
                     if(window.name == "resultats"){
                         $('#pat_Code').val(msg.data.IPP)
+                        $('#lastName').val(msg.data.nom)
                         $('span.menuLabel:contains(Chercher)').click()
                     }else if(window.name == "prescription"){
                         $.post('/cyberlab/servlet/be.mips.cyberlab.web.APIEntry', `Class=Patient&Method=CreateOrder&LoginName=${EasilyInfos.username}&Password=Clermont63!&Object=${msg.data.IPP}&Visit=${msg.data.IEP}&Organization=CLERMONT&onClose=Login.jsp&application=CHU_PRESCR`, r=>{
@@ -155,7 +156,9 @@
                 $(el).attr("title", $(el).find('div.description').text().trim())
             })
         }
-        //setTimeout(()=>{$('#browserTable tbody>tr:first').click()}, 1000)
+
+
+        //Affichage automatique premier résultat
         $.waitFor('#browserTable tbody>tr:first').then($el=>$el.click())
 
 
@@ -800,15 +803,17 @@
                             }
                             //https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2=${IPP}
                         } else if ($(ev.target).is('a:contains(Biologie)')){
-                            if(!$('#module-bioboxes-biologie').is('.cyberlab_frame')){
-                                if(!µ.currentPatient.IPP){
-                                    µ.currentPatient.IPP = $('.infosPatient').text().split(' : ')[1]
-                                    µ.currentPatient.DDN = $('.infosPatient').text().split('le ')[1].split(" (")[0]
+                            if(ev.type =="click"){
+                                if(!$('#module-bioboxes-biologie').is('.cyberlab_frame')){
+                                    if(!µ.currentPatient.IPP){
+                                        µ.currentPatient.IPP = $('.infosPatient').text().split(' : ')[1]
+                                        µ.currentPatient.DDN = $('.infosPatient').text().split('le ')[1].split(" (")[0]
+                                    }
+                                } else if(ev.type == "mouseup" && ev.which == 2){
+                                    let labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
+                                        btoa('Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+µ._data.IPP+'&patientBirthDate='+µ.currentPatient.DDN.split('/').reverse().join('')+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
+                                    window.open(labo_url, '_blank')
                                 }
-                                /*
-                            labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
-                                btoa('Class=Order&Method=SearchOrders&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&patientcode='+µ._data.IPP+'&patientBirthDate='+µ.currentPatient.DDN.split('/').reverse().join('')+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
-                            */
                             }
 
                             // Edition rapide de la FHR ou de la Lettre de Liaison (choix à définir dans les options)
@@ -816,8 +821,8 @@
                             if(ev.type == "mouseup" && ev.which == 2){
                                 $(ev.target).click()
                                 $.waitFor('span.libelledoc:contains(FHR Observation Médicale - Psychiatrie)').then($el=>{
-                                    $el.closest('li:has(.iconDependanceDoc)').find('div.iconmodif').log().click()
-                                    if(EasilyInfos.fast_edit_Lettre){
+                                    try{$el.closest('li:has(.iconDependanceDoc)').find('div.iconmodif').click()}catch(e){}
+                                    if(EasilyInfos.fast_edit_Lettre && $el.closest('li:has(.icon-dependance:visible)').length){
                                         $.waitFor('li:has(span.libelledoc:contains(Lettre de Liaison valant CRH Psy)) div.iconmodif:visible', $el.closest('li:has(.iconDependanceDoc)').next('li')).then($el2=>{
                                             try{
                                                 $el2.click()
