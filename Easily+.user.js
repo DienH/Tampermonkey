@@ -568,7 +568,8 @@
                             //log(clipData)
                             if(EasilyInfos.FHR_auto_UHDL){
                                 µ.clipData = clipData
-                                clipData = clipData.split('Motif hospitalisation')[1]
+                                clipData = 'Motif hospitalisation' + clipData.split('Motif hospitalisation')[1]
+                                console.log(clipData)
                                 try{
                                     FHR_regex = new RegExp(
                                         /Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*/.source
