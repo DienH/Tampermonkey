@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251103
+// @version      1.0.251104
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -393,7 +393,7 @@
 //
 //
     else if (location.pathname == "/Module/DS_TC/JDT/Index"){
-        async function checkTransOpen2(){
+        async function checkTransOpen2 (){
             await $.waitFor('#inputopen:visible:not(:checked)').then(async $el=>{
                 $el.click()
                 $('thead .glyphicon-triangle-right').click()
@@ -449,7 +449,7 @@
             })
             return infos
         }
-        function checkTransOpen (){
+    function checkTransOpen (){
             $.waitFor('#inputopen:visible:not(:checked)').then($el=>{
                 $el.click()
                 $('thead .glyphicon-triangle-right').click()
@@ -844,7 +844,11 @@
         }
     } else if (location.hostname == "easily-prod.chu-clermontferrand.fr" && window.top == window.self){
         window.addEventListener("message", receiveMessage_Main);
-        $('body').click()
+
+        if(GM_getValue('fromLogin', false)){
+
+            setTimeout(()=>{console.log(GM_getValue('fromLogin', false));GM_setValue('fromLogin', false);$(window).click()}, 1500)
+        }
     }
 
        // auto-relogon
@@ -875,6 +879,7 @@
                 case "Login":
                     // Auto-logon
                     if($(ev.type == "click")){
+                        GM_setValue("fromLogin", true)
                         if(EasilyInfos.password_store && $(ev.target).parents('.msg-accueil').length){
                             $("input#username").val(EasilyInfos.username)
                             $("input#password").val(EasilyInfos.password)
@@ -984,15 +989,27 @@
         if(window.top == window.self && !unsafeWindow.isHospitalisationLoaded){
             $.waitFor('#module-worklistshospitalisation .menu-action:not(:has(#btnTransmissions))>div').then($el=>{
                 unsafeWindow.isHospitalisationLoaded = true
+
+                if(!$('#transmissionsFrame').length){
+                    $('<iframe id="transmissionsFrame" src="/Module/DS_TC/JDT/Index">').dialog().dialog('close').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window})
+                    /*
+                    $.waitFor('div[aria-describedby="transmissionsFrame"]').then($el=>{
+                        $el.height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window}).attr('id', 'transmissionsDialog')
+                    })
+                    */
+                }
                 $el.after($('<button class="btn btn-success btn-sm" style="margin-left:5px" id="btnTransmissions">Transmissions</button>').click(ev=>{
+                    $('#transmissionsFrame').dialog('open').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window})
+                    document.getElementById('transmissionsFrame').contentWindow.postMessage({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]})
+                    /*
                     if(!$('#transmissionsFrame').dialog('open').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window}).length){
                         $('<iframe id="transmissionsFrame" src="/Module/DS_TC/JDT/Index">').dialog()
                         $.waitFor('div[aria-describedby="transmissionsFrame"]').then($el=>{
                             $el.height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window}).attr('id', 'transmissionsDialog')
                         })
                     } else {
-                        document.getElementById('transmissionsFrame').contentWindow.postMessage({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]})
                     }
+                    */
                 }))
             })
         }
