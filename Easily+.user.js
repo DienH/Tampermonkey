@@ -393,6 +393,62 @@
 //
 //
     else if (location.pathname == "/Module/DS_TC/JDT/Index"){
+        async function checkTransOpen2(){
+            await $.waitFor('#inputopen:visible:not(:checked)').then(async $el=>{
+                $el.click()
+                $('thead .glyphicon-triangle-right').click()
+                let transmissions = {}
+                await $('table.table>tbody>tr').each(async (i,el)=>{
+                    let infosPatient = $('.tdPat', el).text().trim().match(/(?<nom>([A-Z]|\s|-)+) (?<prenom>([A-Z][a-z]+|\s|-)+) (?<ddn>[0-9]{2}\/[0-9]{2}\/[0-9]{4})/).groups,
+                        nchambre=$('span[data-bind="text:NumeroLit"]', el).text().trim()
+                    log(nchambre)
+                    transmissions[nchambre]={patient:infosPatient,trans:{}}
+                    await $('.svg-elts-form', el).each(async (i,el2)=>{
+                        let $infos=$($(el2).data('title')).find('ul'),
+                            transInfo={title:$infos.find('li.tool-title').text(),date:$infos.find('li.tool-info').text().split(' (')[0]}
+                        if($infos.find('li.tool-title-c').length){
+                            $infos = $infos.find('tr:eq(1)')
+                            let tmpData=$infos.find('td:eq(0)').text(), tmpAction = $infos.find('td:eq(1)').text(), tmpResultat=$infos.find('td:eq(2)').text()
+                            Object.assign(transInfo, {
+                                type:'cible',
+                                data:tmpData,
+                                action:tmpAction,
+                                resultat:tmpResultat
+                            })
+                            //récupération des transmissions incomplètes
+                            if(tmpData.slice(-3) == "..." || tmpAction.slice(-3) == "..." ||tmpResultat.slice(-3) == "..."){
+                                let tmpDatas = await getFullTransmission($(el2))
+                                Object.assign(transInfo, tmpDatas)
+                                console.log(transInfo)
+                            }
+                        }else if($infos.find('li.tool-title-mc').length){
+                            let infodata=''
+                            $('div.macro-struct-title', $infos).each((i,el3)=>{
+                                $(el3).next().find('dt').each((j,el4)=>{
+                                    infodata += $(el4).text().trim() + " : " + $(el4).next().text().trim() + "<br>"
+                                })
+                                transInfo[$(el3).text()] = infodata
+                            })
+                            Object.assign(transInfo, {
+                                type:'macrocible'
+                            })
+                        }
+                        transmissions[nchambre].trans[transInfo.date + '-' + transInfo.title ] = transInfo
+                    })
+                })
+                unsafeWindow.transmissions = transmissions
+            })
+        }
+        async function getFullTransmission($transEl, type="c"){
+            //type = c pour cible, type = mc pour macrocible
+            let infos={data:'', action:'', resultat:''}
+            console.log($($transEl.click().data('title')).find('ul li.tool-title-c').text())
+            let $modal = await $.waitFor('#CibleModalEdit:visible')
+            $modal.modal('hide').find('.sbloc>.row>div').each((i,el)=>{
+                infos[i == 0 ? "data": (i == 1 ? "action" : "resultat")] = $(el).text().trim()
+            })
+            return infos
+        }
         function checkTransOpen (){
             $.waitFor('#inputopen:visible:not(:checked)').then($el=>{
                 $el.click()
