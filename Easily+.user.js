@@ -447,28 +447,37 @@
             $modal.modal('hide').find('.sbloc>.row>div').each((i,el)=>{
                 infos[i == 0 ? "data": (i == 1 ? "action" : "resultat")] = $(el).text().trim()
             })
+            await $.waitFor('#CibleModalEdit:not(:visible)')
             return infos
         }
     function checkTransOpen (){
-            $.waitFor('#inputopen:visible:not(:checked)').then($el=>{
+        $.waitFor('#inputopen:visible:not(:checked)').then($el=>{
                 $el.click()
                 $('thead .glyphicon-triangle-right').click()
-                let transmissions = {}
+                let transmissions = {},
+                    transIncompletes={}
                 $('table.table>tbody>tr').each((i,el)=>{
                     let infosPatient = $('.tdPat', el).text().trim().match(/(?<nom>([A-Z]|\s|-)+) (?<prenom>([A-Z][a-z]+|\s|-)+) (?<ddn>[0-9]{2}\/[0-9]{2}\/[0-9]{4})/).groups,
                         nchambre=$('span[data-bind="text:NumeroLit"]', el).text().trim()
                     log(nchambre)
                     transmissions[nchambre]={patient:infosPatient,trans:{}}
+                    transIncompletes[nchambre] = {}
                     $('.svg-elts-form', el).each((i,el2)=>{
                         let $infos=$($(el2).data('title')).find('ul'),
                             transInfo={title:$infos.find('li.tool-title').text(),date:$infos.find('li.tool-info').text().split(' (')[0]}
                         if($infos.find('li.tool-title-c').length){
+                            $infos = $infos.find('tr:eq(1)')
+                            let tmpData=$infos.find('td:eq(0)').text(), tmpAction = $infos.find('td:eq(1)').text(), tmpResultat=$infos.find('td:eq(2)').text()
                             Object.assign(transInfo, {
                                 type:'cible',
-                                data:$infos.find('tr:eq(1)>td:eq(0)').text(),
-                                action:$infos.find('tr:eq(1)>td:eq(1)').text(),
-                                resultat:$infos.find('tr:eq(1)>td:eq(2)').text()
+                                data:tmpData,
+                                action:tmpAction,
+                                resultat:tmpResultat
                             })
+                            //récupération des transmissions incomplètes
+                            if(tmpData.slice(-3) == "..." || tmpAction.slice(-3) == "..." ||tmpResultat.slice(-3) == "..."){
+                                transIncompletes[nchambre][transInfo.date + '-' + transInfo.title] = $(el2)
+                            }
                         }else if($infos.find('li.tool-title-mc').length){
                             let infodata=''
                             $('div.macro-struct-title', $infos).each((i,el3)=>{
@@ -485,6 +494,7 @@
                     })
                 })
                 unsafeWindow.transmissions = transmissions
+                                console.log(transIncompletes)
             })
         }
         window.addEventListener('message', ev=>{
