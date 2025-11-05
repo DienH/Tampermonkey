@@ -1301,6 +1301,7 @@
     if(!$('#EasilyPlus_Style').length){
         $('<style id="EasilyPlus_Style">').html(`
         img[src*="word.png"]:not([title="Lettre de Liaison valant CRH Psy"]) {filter: grayscale(1);}
+        img[src*="MyHopLogo"] {display:none;}
         #transmissionsFrame {width:100%!important;height:calc(100% - 5px)!important;padding:0!important}
         #specialiteSelection{display:none;}
         .area-carrousel img.warning, .area-carrousel img.vide, .area-carrousel img.signe,.area-carrousel img.arrete, .area-carrousel img.arr-prog {
