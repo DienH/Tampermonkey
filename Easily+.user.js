@@ -1050,21 +1050,33 @@
             case "allowASUR":
                 $('[data-action=habilitation]').click2()
                 $.waitFor(`ul.nav>li:contains("Demandes d'habilitation"):visible a:contains("Faire une demande d'habilitation temporaire")`).then($el=>{
-                    $.waitFor('h4:contains("Vous avez le rôle")').then(()=>$el.click())
+                    $.waitFor('h4:contains("Vous avez le rôle")').then(()=>setTimeout(()=>{
+                        $el.click()
+                        $.waitFor(`label:contains("Choix des services"):visible`).then($el2=>setTimeout(()=>{
+                            $el2.click()
+                            $.waitFor(`input[placeholder="rechercher un service par code ou libellé de..."]:visible`).then($el3=>setTimeout(()=>{
+                                $el3.val("1361u").trigger("change")
+                                $.waitFor(`span[data-bind="click: rechercherServices"]:visible`).then($el4=>setTimeout(()=>{
+                                    $el4.click()
+                                    $.waitFor(`#module-habilitation-tab-workflow-cr tr:contains("URGENCES ET UHCD GM") button.glyphicon-plus`).then($el5=>setTimeout(()=>{
+                                        $el5.click()
+                                        $.waitFor(`label:contains("Synthèse"):visible`).then($el6=>setTimeout(()=>{
+                                            $el6.click()
+                                            $.waitFor(`button.btn-success[data-bind="enable : allowValidation, click:faireDemande"]:visible`).then($el7=>setTimeout(()=>{
+                                                $el7.click()
+                                                $.waitFor(`button[data-bind="click: RetourPagePrefereeOuFournie(0)"]:visible`).then($el8=>setTimeout(()=>{
+                                                    $el8.click()
+                                                    $.waitFor(`li[title="ASUR (Urgences)"]`).then($el9=>$el9.click())
+                                                },300))
+                                            },300))
+                                        },300))
+                                    },300))
+                                },300))
+                            },300))
+                        },300))
+                    }, 300))
                 })
-                $.waitFor(`label:contains("Choix des services"):visible`).then(el=>setTimeout((e)=>$(e).click(),300,el))
-                $.waitFor(`input[placeholder="rechercher un service par code ou libellé de..."]:visible`).then(el=>setTimeout((e)=>$(e).val("1361u").trigger("change"),300,el))
-                $.waitFor(`span[data-bind="click: rechercherServices"]:visible`).then(el=>setTimeout((e)=>$(e).click(),300,el))
-                $.waitFor(`#module-habilitation-tab-workflow-cr tr:contains("URGENCES ET UHCD GM") button.glyphicon-plus`).then(el=>setTimeout((e)=>$(el).click(),300,el))
-                $.waitFor(`label:contains("Synthèse"):visible`).then(el=>setTimeout((e)=>$(e).click(),300,el))
-                $.waitFor(`button.btn-success[data-bind="enable : allowValidation, click:faireDemande"]:visible`).then(el=>setTimeout((e)=>$(e).click(),300,el))
-                $.waitFor(`button[data-bind="click: RetourPagePrefereeOuFournie(0)"]:visible`).then(el=>setTimeout((e)=>{
-                    $(e).click()
-                    $.waitFor(`li[title="ASUR (Urgences)"]`).then(el2=>$(el2).click())
-                },300,el)
-                )
-                /*
-                */
+                break
                 break
 //       ___     _             _      _
 //      / __|  _| |__  ___ _ _| |__ _| |__
