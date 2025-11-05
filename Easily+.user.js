@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251104
+// @version      1.0.251105
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -957,6 +957,9 @@
                                 })
                             }
                         }
+                    }
+                    
+                    if($('img[src*="word.png"][title="Lettre de Liaison valant CRH Psy"]').length){
                     }
                     //Gestion du menu
                     if($(ev.target).closest('#easily-univers').length){
