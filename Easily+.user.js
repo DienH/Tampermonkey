@@ -714,7 +714,9 @@
                                     +/Accompagnement au projet/.source
                                 )
                                 try{Object.assign(observData, observData.entretiens.match(FHR_regex).groups)}catch(e){}
-                                observData.examSomaInit = observData.examSomaInit.split('):')[1]
+                                try{observData.examSomaInit = observData.examSomaInit.split('):')[1]}catch(e){
+                                    try{observData.examSomaInit = observData.examSomaInit.split(') :')[1]}catch(e){}
+                                }
                                 observData.tttSortie = observData.tttSortie.split('Documents de sortie')[0].trim()
                                 µ.observData = observData
 
