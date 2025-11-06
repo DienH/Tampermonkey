@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251105
+// @version      1.0.251106
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -618,21 +618,22 @@
                         //console.log(CB_content)
                         let observData = {}, $tmp, FHR_regex
                         µ.getFHR_Clipboard().then(clipData=>{
-                            log(clipData)
+                            //log(clipData)
                             if(EasilyInfos.FHR_auto_UHDL){
                                 let clipDataArray
                                 µ.clipData = clipData
                                 // clipData = 'Motif hospitalisation :' + clipData.split('Motif hospitalisation')[1]
+                                /*
                                 try{
                                 clipData = clipData.split('Motif hospitalisation :')[1]
                                 let sections = [
                                     {s:'Motif hospitalisation :', o:'motif'},
-                                    {s:'Médecins référents :', o:''},
+                                    //{s:'Médecins référents :', o:''},
                                     {s:'ATCD médico-chirurgicaux personnels:', o:'atcd_med'},
                                     {s:'ATCD psychiatriques et addictologiques personnels :', o:'atcd_psy_perso'},
                                     {s:'ATCD psychiatriques et addictologiques familiaux :', o:'atcd_psy_fam'},
                                     {s:'Allergies :', o:'allergies'},
-                                    {s:"Traitements en cours à l'admission:", o:'tttEntree'},
+                                    {s:"Traitements en cours à l’admission:", o:'tttEntree'},
                                     {s:'Traitements psychotropes antérieurs :', o:'tttPsyAnte'},
                                     {s:'Mode de vie/bio :', o:'mdv'},
                                     {s:'Contacts :', o:'contact'},
@@ -644,7 +645,7 @@
                                     {s:'Plan de sortie : ', o:'planSortie'},
                                     {s:'TTT de sortie :', o:'tttSortie'},
                                     {s:'Dr ', o:''}
-                                ]
+                                    ]
                                 for(let section in sections){
                                     if(typeof sections[section-0+1] == "object"){
                                         clipDataArray = clipData.split(sections[section-0+1].s)
@@ -657,6 +658,7 @@
                                     }
                                 }
                                 }catch(e){}
+                                */
                                 /*
                                 try{
                                     FHR_regex = new RegExp(
@@ -684,8 +686,10 @@
                                     //log(observData)
                                     µ.observData = observData
                                 }catch(e){
+                                }
+                                */
                                     let FHR_regexArray = [/Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*ATCD médico/.source,
-                                                          /ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psychiatriques .*? personnels/.source,
+                                                          /ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psychiatriques .*?personnels/.source,
                                                           /ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psy.*?familiaux/.source,
                                                           /ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source,
                                                           /Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements en/.source,
@@ -698,14 +702,17 @@
                                                           /Entretiens :.*?\r?\n(?<entretiens>(.|\n|\r)*?)\r?\n.*?\r?\nCommentaire gé/.source,
                                                           /Commentaire gé.*?\r?\n(?<commentaire>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Au total/.source,
                                                           /Au total.*?\r?\n(?<conclusion>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Plan de sortie/.source,
-                                                          /Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?TTT de sortie/.source,
-                                                          /TTT de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Dr /.source]
-                                    for (FHR_regex of FHR_regexArray){
-                                        try{Object.assign(observData, observData.match(new RegExp(FHR_regex)).groups)}catch(e){}
+                                                          /Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?(TTT|Traitements?) de sortie/.source,
+                                                          /(TTT|Traitements?) de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Dr /.source]
+                                    for (FHR_regex in FHR_regexArray){
+                                        //log(FHR_regex, FHR_regexArray[FHR_regex])
+                                        if(typeof FHR_regexArray[FHR_regex] != 'function'){
+                                            try{
+                                                let info = clipData.match(new RegExp(FHR_regexArray[FHR_regex]))
+                                                Object.assign(observData, info.groups)
+                                            }catch(e){log(FHR_regexArray[FHR_regex] +" non trouvé")}
+                                        }
                                     }
-                                    log(observData)
-                                }
-                                */
                                 try{observData.tttSortie = observData.tttSortie.trim()}catch(e){}
                                 FHR_regex = new RegExp(
                                     /Evaluation.*?\r?\n(?<examPsyEntree>(.|\r|\n)*?)\r?\n/.source
@@ -717,7 +724,7 @@
                                 try{observData.examSomaInit = observData.examSomaInit.split('):')[1]}catch(e){
                                     try{observData.examSomaInit = observData.examSomaInit.split(') :')[1]}catch(e){}
                                 }
-                                observData.tttSortie = observData.tttSortie.split('Documents de sortie')[0].trim()
+                                try{observData.tttSortie = observData.tttSortie.split('Documents de sortie')[0].trim()}catch(e){}
                                 µ.observData = observData
 
                                 //Ajout des médecins de l'UHDL
@@ -804,7 +811,7 @@
                                             break
                                         case 'Destination du patient à la sortie*':
                                             //console.log($(el))
-                                            $(el).parent().next().find('input:first').prop('checked',true).log().click()
+                                            $(el).parent().next().find('input:first').prop('checked',true).click()
                                             break
                                         case "Prescription de sortie *":
                                             $(el).closest('td.fm_group_header_default').parent().next().find('textarea').val((i,t)=>observData.tttSortie ?? ( t ? t : '.')).trigger('input')
@@ -960,7 +967,7 @@
                             }
                         }
                     }
-                    
+
                     if($('img[src*="word.png"][title="Lettre de Liaison valant CRH Psy"]').length){
                     }
                     //Gestion du menu
@@ -1081,7 +1088,6 @@
                         },300))
                     }, 300))
                 })
-                break
                 break
 //       ___     _             _      _
 //      / __|  _| |__  ___ _ _| |__ _| |__
