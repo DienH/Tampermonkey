@@ -6,7 +6,7 @@
     $.fn.extend({
         //select all text nodes within selected elements, or text nodes containing filter text
         textNodes(...args) {
-            let filter = "", i = 0, a = [], recursive = false;
+            let filter = "", i = 0, a = [], recursive = false, lastArg, that, reg, keep,
             $sel = $();
             while(arguments[i]){
                 if (typeof arguments[i] === "string"){
@@ -64,6 +64,7 @@
 	//replace text with given text. Can completely replace a text node containing a string with a new Text
 	replaceText(...args){
 		if (1 < arguments.length < 4){
+            let searchT, replaceT
 			if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
 				$(this).textNodes(searchT, (typeof arguments[2] === "boolean") && arguments[2]).each(function(){
 					this.data=replaceT;
@@ -74,7 +75,7 @@
 	},
         // return href attribute or change href attribute
         href(link){
-            changeLink = (typeof link === "string") ? true : false;
+            let changeLink = (typeof link === "string") ? true : false;
             if (changeLink) return $(this).attr("href", link);
             return $(this).attr("href");
         },
@@ -142,8 +143,8 @@
 				return this.attr("class", newClassString)
 			}
 		} else if (typeof newClassString == "object") {
-			classesAddList = newClassesString["+"]+" "+newClassesString["add"]
-			classesRemoveList = newClassesString["-"]+" "+newClassesString["remove"]
+			classesAddList = newClassString["+"]+" "+newClassString.add
+			classesRemoveList = newClassString["-"]+" "+newClassString.remove
 			return this.addClass(classesAddList).removeClass(classesRemoveList)
 		}
 	},
@@ -180,8 +181,8 @@
             }
 
             opt = $.type(options) === "object" ? options : (Object.keys(opt).length) ? opt : {attributes: true, childList:true, characterData:true, subtree:true };
-            nameObserver = name || options.name || ((typeof callback === "string") ? callback : "observer"+Date.now());
-            mutationObserver = new MutationObserver((typeof callback === "function") ? callback : options);
+            let nameObserver = name || options.name || ((typeof callback === "string") ? callback : "observer"+Date.now());
+            let mutationObserver = new MutationObserver((typeof callback === "function") ? callback : options);
             return this.each(function() {
                 var node = this;
                 if(!node.observers) node.observers = {};
@@ -195,7 +196,7 @@
         disconnect(name) {
             return this.each(function(){
                 if (this.observers) {
-					for (i in this.observers){
+					for (let i in this.observers){
 						this.observers[i].disconnect();
 					}
                 }
@@ -217,7 +218,7 @@
         //return the coordinates of the center of the first element, or place the center of all selected elements at new coordinates
         middle(coord){
             if (typeof coord === "undefined" || (typeof coord !== "object" && typeof coord !== "function")){
-                var middle = {X : 0, Y : 0};
+                let middle = {X : 0, Y : 0}, $el
                 if (($el = $(this).first())){
                     middle.X = $el.offset().left + Math.round($el.outerWidth()/2);
                     middle.Y = $el.offset().top + Math.round($el.outerHeight()/2);
@@ -262,6 +263,7 @@
             });
         },
 	hidden(display){
+        let dispNone
 		if (typeof display === "boolean") {dispNone = display}else{dispNone = false};
 		return this.each(function(){
 			this.style.visibility = 'hidden';
@@ -269,6 +271,7 @@
 		});
 	},
 	visible(display){
+        let dispNone
 		if (typeof display === "text") {dispNone = true}else{dispNone = false};
 		return this.each(function(){
 			this.style.visibility = 'visible';
@@ -276,6 +279,7 @@
 		});
 	},
 	toggleV(display){
+        let dispNone
 		if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};			
 		return this.each(function(){
 			if (this.style.visibility === 'visible'){
@@ -310,24 +314,19 @@
 		return this.slice(index+1)
 	}
     });
-	$.waitFor = async (selector, context = document, timeout = 0, delay = 0, checkFrequency = 250) => {
+	$.waitFor = async (selector, context = document, delay = 0, checkFrequency = 250) => {
+		let $selection, start = Date.now(), frameRef
 		if (typeof context == "number"){
 			delay = context
 			context = document
-		} else if (typeof context == "object"){
-			delay = context.delay ?? 0
-			timeout = context.waiTime ?? 0
-			checkFrequency = context.checkFrequency ?? 250
-			context = context.context
 		}
-		let $selection, start = Date.now() + delay, frameRef
 		if (!checkFrequency){
-			while (((($selection = $(selector, context || document)).length === 0) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
+			while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
 				await new Promise( resolve => {frameRef=requestAnimationFrame(resolve)} )
 			}
 			cancelAnimationFrame(frameRef)
 		} else {
-			while (((($selection = $(selector, context || document)).length === 0) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
+			while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
 				await new Promise( resolve => setTimeout(resolve, checkFrequency))
 			}
 		}
@@ -378,10 +377,10 @@ async function waitForElement(selector) {
 
 function getPath(win, n){
 	if (!(typeof win === "object" && win.document)) win = window;
-	subpath = (typeof win === "number") ? win : (typeof n === "number") ? n : false;
-	let path = win.location.pathname;
-    let href = path.split("/");
-	href["path"] = path;
+	let subpath = (typeof win === "number") ? win : (typeof n === "number") ? n : false,
+        path = win.location.pathname,
+        href = path.split("/");
+	href.path = path;
     href.splice(0,1);
     if (subpath && href[subpath]) {
 	    href[subpath].params = getSearchParams(win.location.search)
@@ -408,13 +407,13 @@ function addFn(func) {
 function getSearchParams(url){
 	let searchParams = "", searchParamsObject = {}
 	if (typeof url == "string" && url){
-		try{url = new URL(url);searchParams =  url.searchParams;}
+		try{url = new URL(url);searchParams = url.searchParams;}
 		catch(e){searchParams = new URLSearchParams(url)}
 	} else {
 		searchParams = new URLSearchParams(location.search)
 	}
 	
-	searchParams.forEach((v,k)=>searchParamsObject[k]=v)
+	searchParams.forEach((v,k)=>{searchParamsObject[k]=v})
 	return searchParamsObject;
 }
 
