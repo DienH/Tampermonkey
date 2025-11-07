@@ -159,7 +159,7 @@
         // jQuery implementation of Mutation observer
         observe(options, callback, name) {
 			let listOptions = {
-				"text":"characterData", 
+				"text":"characterData",
 				"characterData":"characterData",
 				"string":"characterData",
 				"attributes":"attributes",
@@ -280,7 +280,7 @@
 	},
 	toggleV(display){
         let dispNone
-		if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};			
+		if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};
 		return this.each(function(){
 			if (this.style.visibility === 'visible'){
 				this.style.visibility = 'hidden';
@@ -317,7 +317,7 @@
 	$.waitFor = async (selector, context = document, timeout = 0, delay = 0, checkFrequency = 250) => {
 		let $selection, start = Date.now() + delay, frameRef
 		if (typeof context == "number"){
-			delay = context
+			timeout = context
 			context = document
 		} else if (typeof context == "object"){
 			delay = context.delay ?? 0
@@ -417,7 +417,6 @@ function getSearchParams(url){
 	} else {
 		searchParams = new URLSearchParams(location.search)
 	}
-	
 	searchParams.forEach((v,k)=>{searchParamsObject[k]=v})
 	return searchParamsObject;
 }
