@@ -311,7 +311,6 @@
 	}
     });
 	$.waitFor = async (selector, context = document, timeout = 0, delay = 0, checkFrequency = 250) => {
-		let $selection, start = Date.now() + delay, frameRef
 		if (typeof context == "number"){
 			delay = context
 			context = document
@@ -321,6 +320,7 @@
 			checkFrequency = context.checkFrequency ?? 250
 			context = context.context
 		}
+		let $selection, start = Date.now() + delay, frameRef
 		if (!checkFrequency){
 			while (((($selection = $(selector, context || document)).length === 0) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
 				await new Promise( resolve => {frameRef=requestAnimationFrame(resolve)} )
