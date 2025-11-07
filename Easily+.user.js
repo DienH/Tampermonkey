@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251106
+// @version      1.0.251107
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -402,7 +402,6 @@
                 $('table.table>tbody>tr').each((i,el)=>{
                     let infosPatient = $('.tdPat', el).text().trim().match(/(?<nom>([A-Z]|\s|-)+) (?<prenom>([A-Z][a-z]+|\s|-)+) (?<ddn>[0-9]{2}\/[0-9]{2}\/[0-9]{4})/).groups,
                         nchambre=$('span[data-bind="text:NumeroLit"]', el).text().trim()
-                    log(nchambre)
                     transmissions[nchambre]={patient:infosPatient,trans:{}}
                     transIncompletes[nchambre] = {}
                     $('.svg-elts-form', el).each((i,el2)=>{
@@ -450,25 +449,55 @@
         }
         function completeFullTrans(transCompletes, listeTransIncompletes){
             if(listeTransIncompletes.length){
-                if(!$('#completeTransStyle').length){
+                if(!$('#completeTransStyle').length){ //cacher le modal de détail de transmissions qui va s'afficher pour récupérer les détails complets des trans incomplètes
                     $('body').append($('<style id="completeTransStyle">').html(`
                     #CibleModalEdit, .modal-backdrop {visibility:hidden;}
                     `))
                 }
-                //$('#CibleModalEdit, .modal-backdrop').hidden()
+
                 let transIncomplete = listeTransIncompletes.shift(), infos={}
                 transIncomplete.$el.click()
-                $.waitFor('#CibleModalEdit[style*=block]').then($el=>{
+                $.waitFor('#CibleModalEdit[style*=block]:has(.sbloc>.row>div)').then($el=>{
                     $el.find('.sbloc>.row>div').each((i,el)=>{
                         infos[i == 0 ? "data": (i == 1 ? "action" : "resultat")] = $(el).text().trim()
                     }).end().find('button.close').click()
                     Object.assign(transCompletes[transIncomplete.lit].trans[transIncomplete.title], infos)
-                    $.waitFor('#CibleModalEdit[style*=none]').then($el2=>{
-                        setTimeout(()=>{completeFullTrans(transCompletes, listeTransIncompletes)}, 300)
-                    })
+                    if(0){
+                        $.waitFor('#CibleModalEdit[style*=none]').then($el2=>{
+                            completeFullTrans(transCompletes, listeTransIncompletes)
+                        })
+                    } else {
+                        $.waitFor('#CibleModalEdit[style*=none]', {checkFrequency:100}).then($el2=>setTimeout(()=>{completeFullTrans(transCompletes, listeTransIncompletes)}, 300))
+                    }
                 })
-            } else {
-                $('#completeTransStyle').remove()
+            } else { // transmissions complétées
+                $('#completeTransStyle').remove() //rafficher le modal de détail de transmissions
+                transCompletes = Object.fromEntries(Object.entries(transCompletes).sort())
+                let $transTable = $('<table id="transTable"><thead><tr><th>Chambre</th><th>Transmission</th><th>Infos</th></tr></thead><tbody>')
+                for(let chambre in transCompletes){
+                    let transChambre = transCompletes[chambre], n_trans = Object.keys(transChambre.trans).length, i = 0
+
+                    for (let k_trans in transChambre.trans){
+                        let $patientTransRow = i == 0
+                        ? $("<tr class='trans-trans trans-chambre'><td rowspan="+n_trans+" class='trans-patient'>Ch. "+chambre+"<br>"+transChambre.patient.nom+ " " + transChambre.patient.prenom+"<br>né(e) le "+transChambre.patient.ddn+"</td>")
+                        : $("<tr class='trans-trans'>"),
+                            $k_transTable = $('<td>'+transChambre.trans[k_trans].title+'<br>'+transChambre.trans[k_trans].date+'</td><td><table class="trans-infos"><tbody>')
+                        for (let t of ['data', 'action', 'resultat']){
+                            if(transChambre.trans[k_trans][t]){
+                                $k_transTable.find('tbody').append('<tr class="trans-data"><td class="trans-type">'+(t == "data" ? "Donnée" : t.capitalize())+'</td><td class="trans-value">'+transChambre.trans[k_trans][t]+'</td>')
+                            }
+                        }
+                        $patientTransRow.append($k_transTable)
+                        $transTable.append($patientTransRow)
+                        //console.log(transChambre.trans[k_trans])
+                        i++
+                    }
+                }
+                console.log(transCompletes)
+                console.log($transTable[0])
+                µ.$transTable = $transTable
+                $('[data-bind*=ListePatients]>:last-child').id('transLines').after($transTable)
+                $('body').toggleClass('trans-viewTable')
                 /*
                 <div style="
     position: absolute;
@@ -481,7 +510,6 @@
     left: -26px;
 "></i>Afficher en tableau</label></div>
                 */
-                console.log(transCompletes)
             }
         }
         window.addEventListener('message', ev=>{
@@ -515,8 +543,19 @@
         window.parent.postMessage(JSON.stringify({command:"transmissions_get-CR-UF"}))
         $('body').not(':has(#EasilyPlus_Style)').append($('<style id="EasilyPlus_Style">').html(`
     nav.navbar, .nav-cr-uf-secteur {display:none;}
-    #module-ds-tc-jdt .table-residents>table>tbody {height: calc(100vh - 130px) !important;}
+    #module-ds-tc-jdt .table-residents>table>tbody {height: calc(100vh - 110px) !important;}
     table.table {margin-bottom:0!important}
+    #transTable {width:100%; font-size:14px;display:none;}
+    .trans-infos {width: 100%;}
+    .trans-type {padding: 2px 5px; width: 80px;}
+    .trans-data {border-bottom: 1px dashed black;}
+    .trans-data:last-child {border-bottom: none;}
+    .trans-trans {margin-bottom:5px;border-bottom:1px solid black;}
+    .trans-trans>td {padding: 5px;}
+    .trans-chambre {border-top:2px solid black;}
+    .trans-viewTable #transLines {display:none}
+    .trans-viewTable #transTable {display:table}
+    .trans-viewTable {overflow:visible}
     `))
     }
 
@@ -1313,7 +1352,7 @@
         $('<style id="EasilyPlus_Style">').html(`
         img[src*="word.png"]:not([title="Lettre de Liaison valant CRH Psy"]) {filter: grayscale(1);}
         img[src*="MyHopLogo"] {display:none;}
-        #transmissionsFrame {width:100%!important;height:calc(100% - 5px)!important;padding:0!important}
+        #transmissionsFrame {width:100%!important;height:calc(100% - 25px)!important;padding:0!important}
         #specialiteSelection{display:none;}
         .area-carrousel img.warning, .area-carrousel img.vide, .area-carrousel img.signe,.area-carrousel img.arrete, .area-carrousel img.arr-prog {
               background: url(/Modules/WorklistsHospitalisation/Content/images/prescription/sprite_prescription.png) no-repeat;
