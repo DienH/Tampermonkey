@@ -314,23 +314,28 @@
 		return this.slice(index+1)
 	}
     });
-	$.waitFor = async (selector, context = document, delay = 0, checkFrequency = 250) => {
-		let $selection, start = Date.now(), frameRef
+	$.waitFor = async (selector, context = document, timeout = 0, delay = 0, checkFrequency = 250) => {
+		let $selection, start = Date.now() + delay, frameRef
 		if (typeof context == "number"){
 			delay = context
 			context = document
+		} else if (typeof context == "object"){
+			delay = context.delay ?? 0
+			timeout = context.waiTime ?? 0
+			checkFrequency = context.checkFrequency ?? 250
+			context = context.context
 		}
 		if (!checkFrequency){
-			while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
+			while (((($selection = $(selector, context || document)).length === 0) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
 				await new Promise( resolve => {frameRef=requestAnimationFrame(resolve)} )
 			}
 			cancelAnimationFrame(frameRef)
 		} else {
-			while ((($selection = $(selector, context || document)).length === 0) && (!delay || Date.now() < (start+delay))) {
+			while (((($selection = $(selector, context || document)).length === 0) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
 				await new Promise( resolve => setTimeout(resolve, checkFrequency))
 			}
 		}
-	    	return $selection;
+		return $selection;
 	}
 })($ && $.fn ? $ : jQuery);
 
