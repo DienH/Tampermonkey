@@ -497,18 +497,13 @@
                 console.log($transTable[0])
                 µ.$transTable = $transTable
                 $('[data-bind*=ListePatients]>:last-child').id('transLines').after($transTable)
-                $('body').toggleClass('trans-viewTable')
+                let timeLineSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M192 233.3C220.3 221 240 192.8 240 160C240 115.8 204.2 80 160 80C115.8 80 80 115.8 80 160C80 192.8 99.7 221 128 233.3L128 288L64 288C46.3 288 32 302.3 32 320C32 337.7 46.3 352 64 352L288 352L288 406.7C259.7 419 240 447.2 240 480C240 524.2 275.8 560 320 560C364.2 560 400 524.2 400 480C400 447.2 380.3 419 352 406.7L352 352L576 352C593.7 352 608 337.7 608 320C608 302.3 593.7 288 576 288L512 288L512 233.3C540.3 221 560 192.8 560 160C560 115.8 524.2 80 480 80C435.8 80 400 115.8 400 160C400 192.8 419.7 221 448 233.3L448 288L192 288L192 233.3z"/></svg>`,
+                    tableSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M96 160C96 124.7 124.7 96 160 96L480 96C515.3 96 544 124.7 544 160L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 160zM160 160L160 224L224 224L224 160L160 160zM480 160L288 160L288 224L480 224L480 160zM160 288L160 352L224 352L224 288L160 288zM480 288L288 288L288 352L480 352L480 288zM160 416L160 480L224 480L224 416L160 416zM480 416L288 416L288 480L480 480L480 416z"/></svg>`
+                $('<div id="trans-toggleAffichage"><div class="trans-affichageTable">'+tableSVG+'Afficher en tableau</div><div class="trans-affichageTimeline">'+timeLineSVG+'Afficher en Timeline</div></div>').appendTo('.nav-filter').click(ev=>{
+                    $('body').toggleClass('trans-viewTable')
+                })
                 /*
-                <div style="
-    position: absolute;
-    right: 260px;
-    top: 10px;
-"><label><i class="fa fa-table" style="
-    font-size: 25px;
-    position: absolute;
-    top: -4px;
-    left: -26px;
-"></i>Afficher en tableau</label></div>
+                <div id="trans-toggleAffichage"><label><i class="fa fa-table"></i>Afficher en tableau</label></div>
                 */
             }
         }
@@ -545,6 +540,10 @@
     nav.navbar, .nav-cr-uf-secteur {display:none;}
     #module-ds-tc-jdt .table-residents>table>tbody {height: calc(100vh - 110px) !important;}
     table.table {margin-bottom:0!important}
+    #trans-toggleAffichage {position: absolute; right: 260px; top: 10px;}
+    #trans-toggleAffichage, #trans-toggleAffichage>div {cursor:pointer;}
+    #trans-toggleAffichage>.trans-affichageTable>i {font-size: 25px; position: absolute; top: -4px; left: -26px;}
+    #trans-toggleAffichage svg {width: 20px;position: absolute;left: -24px;top: -2px;}
     #transTable {width:100%; font-size:14px;display:none;}
     .trans-infos {width: 100%;}
     .trans-type {padding: 2px 5px; width: 80px;}
@@ -556,6 +555,11 @@
     .trans-viewTable #transLines {display:none}
     .trans-viewTable #transTable {display:table}
     .trans-viewTable {overflow:visible}
+
+    .trans-affichageTimeline {display:none}
+    .trans-viewTable .trans-affichageTimeline {display:initial}
+    .trans-affichageTable {display:initial}
+    .trans-viewTable .trans-affichageTable {display:none}
     `))
     }
 
@@ -1027,6 +1031,11 @@
                         }
                     }
                     break;
+                case "Module":
+                case "module":
+                    if(location.pathname == "/Module/DS_TC/JDT/Index"){
+                    }
+                    break
             }
         } else if(location.href.search("https://easilynlb-prod.chu-clermontferrand.fr/")+1){
             switch(location.pathname){
