@@ -321,11 +321,11 @@
 				} else {
 					types.push(type)
 				}
-			} else if typeof type == "array"){
+			} else if (typeof type == "array"){
 				types = type
 			}
 
-			for (type of types){					
+			for (type of types){
 				let ev = new Event(type, options)
 				return this.each((i,el)=>{
 					el.dispatchEvent(ev)
