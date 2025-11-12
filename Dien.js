@@ -312,7 +312,26 @@
 	},
 	gt(index){
 		return this.slice(index+1)
-	}
+	},
+		dispatchEvent(type, options){
+			let types = []
+			if(typeof type == "string"){
+				if(type.split(' ').length > 1){
+					types = type.split(" ")
+				} else {
+					types.push(type)
+				}
+			} else if typeof type == "array"){
+				types = type
+			}
+
+			for (type of types){					
+				let ev = new Event(type, options)
+				return this.each((i,el)=>{
+					el.dispatchEvent(ev)
+				})
+			}
+		}
     });
 	$.waitFor = async (selector, context = document, timeout = 0, delay = 0, checkFrequency = 250) => {
 		let $selection, start = Date.now() + delay, frameRef
