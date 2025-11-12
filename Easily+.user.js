@@ -675,7 +675,7 @@
                         //console.log(CB_content)
                         let observData = {}, $tmp, FHR_regex
                         µ.getFHR_Clipboard().then(clipData=>{
-                            //log(clipData)
+                            log(clipData)
                             if(EasilyInfos.FHR_auto_UHDL){
                                 let clipDataArray
                                 µ.clipData = clipData
@@ -748,7 +748,15 @@
                                     while(!$elem.find('iframe').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    $elem.find('iframe').each((j,el2)=>{if(observData.hdlm)$('body', el2.contentDocument).html('<pre>'+observData.hdlm + '</pre>')}).trigger('paste')
+                                    $elem.find('iframe').each((j,el2)=>{
+                                        let $body = $('body', el2.contentDocument)
+                                        if(!$body.innerText && observData.hdlm){
+                                            let temparea = $('<textarea>')[0]
+                                            temparea.innerText = observData.hdlm
+                                            $body.html(temparea.innerHTML).trigger('paste')
+                                            temparea.remove()
+                                        }
+                                    })
                                 })
                                 //Synthèse de séjour / commentaire
                                 $('.fm_grid_cell:contains(Synthèse de séjour):last').each((i,el)=>{
@@ -757,10 +765,12 @@
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
                                     $elem.find('iframe').each((j,el2)=>{
-                                        if(observData.commentaire){
-                                            $('body', el2.contentDocument).html('<pre>'+observData.commentaire+ '</pre>').each((k,el3)=>{
-                                                el3.dispatchEvent(new Event('paste'))
-                                            })
+                                        let $body = $('body', el2.contentDocument)
+                                        if(!$body.innerText && observData.commentaire){
+                                            let temparea = $('<textarea>')[0]
+                                            temparea.innerText = observData.commentaire
+                                            $body.html(temparea.innerHTML).dispatchEvent('paste')
+                                            temparea.remove()
                                         }
                                     })
                                 })
@@ -771,9 +781,7 @@
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
                                     if(observData.mdv){
-                                        $elem.find('textarea').val(observData.mdv).each((j,el2)=>{
-                                            el2.dispatchEvent(new Event('paste'))
-                                        })
+                                        $elem.find('textarea').val(observData.mdv).dispatchEvent('input')
                                     }
                                 })
 
@@ -781,7 +789,7 @@
                                 $('.fm_grid_cell:contains(Anamnèse):last').parent().closest('td.fm_grid_cell').parent().next().find('textarea').each((i,el)=>{
                                     let $elem=$(el)
                                     if($elem.val() == ""){
-                                        $elem.val("ATCD psychiatriques personnels :\n"+observData.atcd_psy+"\n\nATCD médicaux-chirurgicaux :\r\n"+observData.atcd_med+"\n\nATCD psychiatriques familiaux :\r\n"+observData.atcd_psy_fam).trigger('input')
+                                        $elem.val("ATCD psychiatriques personnels :\n"+observData.atcd_psy+"\n\nATCD médicaux-chirurgicaux :\r\n"+observData.atcd_med+"\n\nATCD psychiatriques familiaux :\r\n"+observData.atcd_psy_fam).dispatchEvent('input')
                                     }
                                 })
                                 $('.fm-label-mandatory-save').closest('td.fm_grid_cell').each((i,el)=>{
