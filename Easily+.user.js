@@ -127,7 +127,7 @@
                 .cyberlab_framed .DTFC_scrollBody div.description {overflow:hidden;}
                 .cyberlab_framed .DTFC_LeftWrapper, .cyberlab_framed .DTFC_RightWrapper {display:none!important}
                 .cyberlab_framed .DTFC_scroll .column-test {position:sticky!important;left:0!important;z-index:10;border-right:dashed black 1px;}
-                .cyberlab_framed .DTFC_scroll .column-norm {position:sticky!important;right:0!important;z-index:10;border-left:dashed black 1px;}
+                .cyberlab_framed .DTFC_scroll .column-norm {position:sticky!important;right:0!important;z-index:10;border-left:dashed black 1px;min-width:90px!important;max-width:90px!important;width:90px!important;}
                 .cyberlab_framed .DTFC_scroll thead>tr {position:sticky!important;top:0!important;z-index:20;}
                 .cyberlab_framed .DTFC_scroll .row-discipline>td.column-test, .cyberlab_framed .DTFC_scroll .row-section>td.column-test {overflow:visible;border-right:none!important}
                 `)
@@ -675,7 +675,7 @@
                         //console.log(CB_content)
                         let observData = {}, $tmp, FHR_regex
                         µ.getFHR_Clipboard().then(clipData=>{
-                            log(clipData)
+                            //log(clipData)
                             if(EasilyInfos.FHR_auto_UHDL){
                                 let clipDataArray
                                 µ.clipData = clipData
@@ -854,6 +854,7 @@
                             }
                         })
                     })
+                    $('.fm_group_header_expander.image_expandable_png').click().log()
                     //console.log("Fiche FHR")
                     break
             }
