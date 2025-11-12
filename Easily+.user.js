@@ -684,7 +684,7 @@
                                                       /ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psy.*?familiaux/.source,
                                                       /ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source,
                                                       /Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements en/.source,
-                                                      /Traitements en.*?\r?\n(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements psycho/.source,
+                                                      /Traitements en.*?\r?\n?(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements psycho/.source,
                                                       /Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Mode de vi/.source,
                                                       /Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\nContact/.source,
                                                       /Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Anamn/.source,
@@ -704,6 +704,7 @@
                                         }catch(e){log(FHR_regexArray[FHR_regex] +" non trouvé")}
                                     }
                                 }
+                                try{observData.tttEntree = observData.tttEntree.trim()}catch(e){}
                                 try{observData.tttSortie = observData.tttSortie.trim()}catch(e){}
                                 FHR_regex = new RegExp(
                                     /Evaluation.*?\r?\n(?<examPsyEntree>(.|\r|\n)*?)\r?\n/.source
@@ -755,7 +756,13 @@
                                     while(!$elem.find('iframe').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    $elem.find('iframe').each((j,el2)=>{if(observData.commentaire)$('body', el2.contentDocument).html('<pre>'+observData.commentaire+ '</pre>')}).trigger('paste')
+                                    $elem.find('iframe').each((j,el2)=>{
+                                        if(observData.commentaire){
+                                            $('body', el2.contentDocument).html('<pre>'+observData.commentaire+ '</pre>').each((k,el3)=>{
+                                                el3.dispatchEvent(new Event('paste'))
+                                            })
+                                        }
+                                    })
                                 })
                                 //Mode de vie
                                 $('.fm_grid_cell:contains(Mode de vie):last').each((i,el)=>{
@@ -763,14 +770,18 @@
                                     while(!$elem.find('textarea').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    if(observData.mdv)$elem.find('textarea').val(observData.mdv).trigger('paste')
+                                    if(observData.mdv){
+                                        $elem.find('textarea').val(observData.mdv).each((j,el2)=>{
+                                            el2.dispatchEvent(new Event('paste'))
+                                        })
+                                    }
                                 })
 
                                 //Anamnèse == ATCD med + psy + familiaux
                                 $('.fm_grid_cell:contains(Anamnèse):last').parent().closest('td.fm_grid_cell').parent().next().find('textarea').each((i,el)=>{
                                     let $elem=$(el)
                                     if($elem.val() == ""){
-                                        $elem.val("ATCD psychiatriques personnels :\n"+observData.atcd_psy+"\n\nATCD médicaux-chirurgicaux :\r\n"+observData.atcd_med+"\n\nATCD psychiatriques familiaux :\r\n"+observData.atcd_psy_fam).trigger('paste')
+                                        $elem.val("ATCD psychiatriques personnels :\n"+observData.atcd_psy+"\n\nATCD médicaux-chirurgicaux :\r\n"+observData.atcd_med+"\n\nATCD psychiatriques familiaux :\r\n"+observData.atcd_psy_fam).trigger('input')
                                     }
                                 })
                                 $('.fm-label-mandatory-save').closest('td.fm_grid_cell').each((i,el)=>{
