@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251107
+// @version      1.0.25111
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -665,97 +665,31 @@
                             if(EasilyInfos.FHR_auto_UHDL){
                                 let clipDataArray
                                 µ.clipData = clipData
-                                // clipData = 'Motif hospitalisation :' + clipData.split('Motif hospitalisation')[1]
-                                /*
-                                try{
-                                clipData = clipData.split('Motif hospitalisation :')[1]
-                                let sections = [
-                                    {s:'Motif hospitalisation :', o:'motif'},
-                                    //{s:'Médecins référents :', o:''},
-                                    {s:'ATCD médico-chirurgicaux personnels:', o:'atcd_med'},
-                                    {s:'ATCD psychiatriques et addictologiques personnels :', o:'atcd_psy_perso'},
-                                    {s:'ATCD psychiatriques et addictologiques familiaux :', o:'atcd_psy_fam'},
-                                    {s:'Allergies :', o:'allergies'},
-                                    {s:"Traitements en cours à l’admission:", o:'tttEntree'},
-                                    {s:'Traitements psychotropes antérieurs :', o:'tttPsyAnte'},
-                                    {s:'Mode de vie/bio :', o:'mdv'},
-                                    {s:'Contacts :', o:'contact'},
-                                    {s:'Anamnèse :', o:'hdlm'},
-                                    {s:'Examen clinique initial ', o:'examSomaInit'},
-                                    {s:'Entretiens :', o:'entretiens'},
-                                    {s:'Commentaire général sur la prise en charge :', o:'commentaire'},
-                                    {s:'Au total :', o:'conclusion'},
-                                    {s:'Plan de sortie : ', o:'planSortie'},
-                                    {s:'TTT de sortie :', o:'tttSortie'},
-                                    {s:'Dr ', o:''}
-                                    ]
-                                for(let section in sections){
-                                    if(typeof sections[section-0+1] == "object"){
-                                        clipDataArray = clipData.split(sections[section-0+1].s)
-                                        if(sections[section].o && clipDataArray.length == 2){
-                                            observData[sections[section].o] = clipDataArray.shift().trim()
-                                        } else {
-                                            clipDataArray.shift()
-                                        }
-                                        clipData = clipDataArray.shift()
+                                let FHR_regexArray = [/Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*ATCD médico/.source,
+                                                      /ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psychiatriques .*?personnels/.source,
+                                                      /ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psy.*?familiaux/.source,
+                                                      /ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source,
+                                                      /Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements en/.source,
+                                                      /Traitements en.*?\r?\n(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements psycho/.source,
+                                                      /Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Mode de vi/.source,
+                                                      /Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\nContact/.source,
+                                                      /Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Anamn/.source,
+                                                      /Anamn.*?\r?\n(?<hdlm>(.|\n|\r)*?)\r?\n.*?\r?\nExamen clinique ini/.source,
+                                                      /Examen clinique ini.*?\r?\n(?<examSomaInit>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Entretiens :/.source,
+                                                      /Entretiens :.*?\r?\n(?<entretiens>(.|\n|\r)*?)\r?\n.*?\r?\nCommentaire gé/.source,
+                                                      /Commentaire gé.*?\r?\n(?<commentaire>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Au total/.source,
+                                                      /Au total.*?\r?\n(?<conclusion>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Plan de sortie/.source,
+                                                      /Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?(TTT|Traitements?) de sortie/.source,
+                                                      /(TTT|Traitements?) de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Dr /.source]
+                                for (FHR_regex in FHR_regexArray){
+                                    //log(FHR_regex, FHR_regexArray[FHR_regex])
+                                    if(typeof FHR_regexArray[FHR_regex] != 'function'){
+                                        try{
+                                            let info = clipData.match(new RegExp(FHR_regexArray[FHR_regex]))
+                                            Object.assign(observData, info.groups)
+                                        }catch(e){log(FHR_regexArray[FHR_regex] +" non trouvé")}
                                     }
                                 }
-                                }catch(e){}
-                                */
-                                /*
-                                try{
-                                    FHR_regex = new RegExp(
-                                        /Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*A/.source
-                                        +/TCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/Traitements en.*?\r?\n(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
-                                        +/Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/Anamn.*?\r?\n(?<hdlm>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
-                                        +/Examen clinique ini.*?\r?\n(?<examSomaInit>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/Entretiens :.*?\r?\n(?<entretiens>(.|\n|\r)*?)\r?\n.*?\r?\n/.source
-                                        +/Commentaire gé.*?\r?\n(?<commentaire>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/Au total.*?\r?\n(?<conclusion>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?/.source
-                                        +/TTT de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source
-                                        +/Dr /.source
-                                        /*
-                                    /*
-                                    )
-                                    observData = clipData.match(FHR_regex).groups
-                                    //log(observData)
-                                    µ.observData = observData
-                                }catch(e){
-                                }
-                                */
-                                    let FHR_regexArray = [/Motif hospitalisation \:\s?(?<motif>.*?)\r?\n(.|\n|\r)*ATCD médico/.source,
-                                                          /ATCD médico.*?\r?\n(?<atcd_med>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psychiatriques .*?personnels/.source,
-                                                          /ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy_perso>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psy.*?familiaux/.source,
-                                                          /ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source,
-                                                          /Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements en/.source,
-                                                          /Traitements en.*?\r?\n(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements psycho/.source,
-                                                          /Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Mode de vi/.source,
-                                                          /Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\nContact/.source,
-                                                          /Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Anamn/.source,
-                                                          /Anamn.*?\r?\n(?<hdlm>(.|\n|\r)*?)\r?\n.*?\r?\nExamen clinique ini/.source,
-                                                          /Examen clinique ini.*?\r?\n(?<examSomaInit>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Entretiens :/.source,
-                                                          /Entretiens :.*?\r?\n(?<entretiens>(.|\n|\r)*?)\r?\n.*?\r?\nCommentaire gé/.source,
-                                                          /Commentaire gé.*?\r?\n(?<commentaire>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Au total/.source,
-                                                          /Au total.*?\r?\n(?<conclusion>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Plan de sortie/.source,
-                                                          /Plan de sortie.*?\r?\n(?<planSortie>(.|\n|\r)*?)(\r?\n.*?)?(\r?\n)?(TTT|Traitements?) de sortie/.source,
-                                                          /(TTT|Traitements?) de sortie.*?\r?\n(?<tttSortie>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Dr /.source]
-                                    for (FHR_regex in FHR_regexArray){
-                                        //log(FHR_regex, FHR_regexArray[FHR_regex])
-                                        if(typeof FHR_regexArray[FHR_regex] != 'function'){
-                                            try{
-                                                let info = clipData.match(new RegExp(FHR_regexArray[FHR_regex]))
-                                                Object.assign(observData, info.groups)
-                                            }catch(e){log(FHR_regexArray[FHR_regex] +" non trouvé")}
-                                        }
-                                    }
                                 try{observData.tttSortie = observData.tttSortie.trim()}catch(e){}
                                 FHR_regex = new RegExp(
                                     /Evaluation.*?\r?\n(?<examPsyEntree>(.|\r|\n)*?)\r?\n/.source
@@ -799,7 +733,7 @@
                                     while(!$elem.find('iframe').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    $elem.find('iframe').each((j,el2)=>{if(observData.hdlm)$('body', el2.contentDocument).html('<pre>'+observData.hdlm + '</pre>')})
+                                    $elem.find('iframe').each((j,el2)=>{if(observData.hdlm)$('body', el2.contentDocument).html('<pre>'+observData.hdlm + '</pre>')}).trigger('keyup')
                                 })
                                 //Synthèse de séjour / commentaire
                                 $('.fm_grid_cell:contains(Synthèse de séjour):last').each((i,el)=>{
@@ -807,7 +741,7 @@
                                     while(!$elem.find('iframe').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    $elem.find('iframe').each((j,el2)=>{if(observData.commentaire)$('body', el2.contentDocument).html('<pre>'+observData.commentaire+ '</pre>')})
+                                    $elem.find('iframe').each((j,el2)=>{if(observData.commentaire)$('body', el2.contentDocument).html('<pre>'+observData.commentaire+ '</pre>')}).trigger('keyup')
                                 })
                                 //Mode de vie
                                 $('.fm_grid_cell:contains(Mode de vie):last').each((i,el)=>{
@@ -816,6 +750,14 @@
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
                                     if(observData.mdv)$elem.find('textarea').val(observData.mdv).trigger('keyup')
+                                })
+
+                                //Anamnèse == ATCD med + psy + familiaux
+                                $('.fm_grid_cell:contains(Anamnèse):last').parent().closest('td.fm_grid_cell').parent().next().find('textarea').each((i,el)=>{
+                                    let $elem=$(el)
+                                    if($elem.val() == ""){
+                                        $elem.val("ATCD psychiatriques personnels :\n"+observData.atcd_psy+"\n\nATCD médicaux-chirurgicaux :\r\n"+observData.atcd_med+"\n\nATCD psychiatriques familiaux :\r\n"+observData.atcd_psy_fam).trigger('input keyup')
+                                    }
                                 })
                                 $('.fm-label-mandatory-save').closest('td.fm_grid_cell').each((i,el)=>{
                                     switch($(el).text().trim()){
@@ -850,7 +792,7 @@
                                             $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.tttEntree ?? ( t ? t : '.')).trigger('input')
                                             break
                                         case "Diagnostic de sortie*":
-                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.auTotal ?? ( t ? t : '.')).trigger('input')
+                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.conclusion ?? ( t ? t : '.')).trigger('input')
                                             break
                                         case 'Destination du patient à la sortie*':
                                             //console.log($(el))
