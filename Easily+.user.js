@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.25111
+// @version      1.0.251111
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -577,34 +577,48 @@
             $('#specialiteSelection').parent().append($('<button class="BoutonClassique"><span title="Psychiatrie">Psychiatrie</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
             })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="FHR">FHR</span>').click(ev=>{
-                $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
-                $.waitFor('li[onclick]:contains(Observations Médicales)').then($el=>{
-                    $el.click()
-                    $.waitFor('li[onclick]:contains(FHR Observation Médicale - Psychiatrie)').then($el2=>{
-                        $el2.click()
+                if(!$('#formulaireSelection li[onclick]:contains(FHR Observation Médicale - Psychiatrie)').click().length){ // ouvrir si présent dans les raccourcis
+                    $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
+                    $.waitFor('#groupSelection li[onclick]:contains(Observations Médicales)').then($el=>{
+                        $el.click()
+                        $.waitFor('#formulaireSelection li[onclick]:contains(FHR Observation Médicale - Psychiatrie)').then($el2=>{
+                            $el2.click()
+                        })
                     })
-                })
+                }
             })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Consult">Consult</span>').click(ev=>{
-                $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
-                $.waitFor('li[onclick]:contains(Observations Médicales)').then($el=>{
-                    $el.click()
-                    $.waitFor('li[onclick]:contains(Fiche de Consultation Psy)').then($el2=>{
-                        $el2.click()
+                if(!$('#formulaireSelection li[onclick]:contains(Fiche de Consultation Psy)').click().length){ // ouvrir si présent dans les raccourcis
+                    $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
+                    $.waitFor('#groupSelection li[onclick]:contains(Observations Médicales)').then($el=>{
+                        $el.click()
+                        $.waitFor('#formulaireSelection li[onclick]:contains(Fiche de Consultation Psy)').then($el2=>{
+                            $el2.click()
+                        })
                     })
-                })
+                }
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Ordos">Ordos</span>').click(ev=>{
+                if(!$('#formulaireSelection li[onclick]:contains(Ordonnance):contains(Autre)').click().length){ // ouvrir si présent dans les raccourcis
+                    $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
+                    $.waitFor('#groupSelection li[onclick]:contains(Ordonnances)').then($el=>{
+                        $el.click()
+                        $.waitFor('#formulaireSelection li[onclick]:contains(Autre)').then($el2=>{
+                            $el2.click()
+                        })
+                    })
+                }
             })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Commun">Commun médical</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Commun Médical)').click()
             })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Transport">BdT</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Commun Médical)').click()
-                $.waitFor('li[onclick]:contains(Cerfa)').then($el=>{
+                $.waitFor('#groupSelection li[onclick]:contains(Cerfa)').then($el=>{
                     $el.click()
-                    $.waitFor('li[onclick]:contains(Demande transport)').then($el2=>{
+                    $.waitFor('#formulaireSelection li[onclick]:contains(Demande transport)').then($el2=>{
                         $el2.click()
                     })
                 })
             })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Cerfas">Cerfas</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Commun Médical)').click()
-                $.waitFor('li[onclick]:contains(Cerfa)').then($el=>{
+                $.waitFor('#groupSelection li[onclick]:contains(Cerfa)').then($el=>{
                     $el.click()
                 })
             }))
@@ -733,7 +747,7 @@
                                     while(!$elem.find('iframe').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    $elem.find('iframe').each((j,el2)=>{if(observData.hdlm)$('body', el2.contentDocument).html('<pre>'+observData.hdlm + '</pre>')}).trigger('keyup')
+                                    $elem.find('iframe').each((j,el2)=>{if(observData.hdlm)$('body', el2.contentDocument).html('<pre>'+observData.hdlm + '</pre>')}).trigger('paste')
                                 })
                                 //Synthèse de séjour / commentaire
                                 $('.fm_grid_cell:contains(Synthèse de séjour):last').each((i,el)=>{
@@ -741,7 +755,7 @@
                                     while(!$elem.find('iframe').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    $elem.find('iframe').each((j,el2)=>{if(observData.commentaire)$('body', el2.contentDocument).html('<pre>'+observData.commentaire+ '</pre>')}).trigger('keyup')
+                                    $elem.find('iframe').each((j,el2)=>{if(observData.commentaire)$('body', el2.contentDocument).html('<pre>'+observData.commentaire+ '</pre>')}).trigger('paste')
                                 })
                                 //Mode de vie
                                 $('.fm_grid_cell:contains(Mode de vie):last').each((i,el)=>{
@@ -749,14 +763,14 @@
                                     while(!$elem.find('textarea').length){
                                         $elem=$elem.parent().closest('.fm_grid_cell')
                                     }
-                                    if(observData.mdv)$elem.find('textarea').val(observData.mdv).trigger('keyup')
+                                    if(observData.mdv)$elem.find('textarea').val(observData.mdv).trigger('paste')
                                 })
 
                                 //Anamnèse == ATCD med + psy + familiaux
                                 $('.fm_grid_cell:contains(Anamnèse):last').parent().closest('td.fm_grid_cell').parent().next().find('textarea').each((i,el)=>{
                                     let $elem=$(el)
                                     if($elem.val() == ""){
-                                        $elem.val("ATCD psychiatriques personnels :\n"+observData.atcd_psy+"\n\nATCD médicaux-chirurgicaux :\r\n"+observData.atcd_med+"\n\nATCD psychiatriques familiaux :\r\n"+observData.atcd_psy_fam).trigger('input keyup')
+                                        $elem.val("ATCD psychiatriques personnels :\n"+observData.atcd_psy+"\n\nATCD médicaux-chirurgicaux :\r\n"+observData.atcd_med+"\n\nATCD psychiatriques familiaux :\r\n"+observData.atcd_psy_fam).trigger('paste')
                                     }
                                 })
                                 $('.fm-label-mandatory-save').closest('td.fm_grid_cell').each((i,el)=>{
@@ -1334,7 +1348,7 @@ function changementContextePatient(){
             $el.addClass('easily_plus')
             $('li:contains(Biologie):not(:contains(Pres Bio))', '.area-carrousel').click()
             setTimeout(()=>{
-                $('.area-carrousel:visible').eq(1).find('li:first').click()
+                $('.area-carrousel:visible').eq(1).find('li:eq(1)').click()
             }, 1000)
         })
         $.waitFor('#module-bioboxes-imagerie').then($el=>{
