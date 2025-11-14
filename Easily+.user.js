@@ -1382,7 +1382,14 @@ function changementContextePatient(){
             $el.not(':has(#cyberlabFrame)').html("").addClass('cyberlab_frame').append('<iframe id="cyberlabFrame" style="width:calc(100% - 10px);height:calc(100% - 5px)" src="https://cyberlab.chu-clermontferrand.fr">')
         })
 
-        $('.area-carrousel:visible:eq(0)>ul>li:last:not(#synth_patient)').after($('.area-carrousel:visible:eq(0)>ul>li:last').clone().attr('id', 'synth_patient').find('a').text('XWay').attr('id','').attr('href', `Lancemodule: SYNTHESE_PAT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`).end())
+        let $last_left_tab = $('.area-carrousel:visible:eq(0)>ul>li:last:not(#synth_patient)')
+        $last_left_tab.after($last_left_tab.clone().attr('id', 'synth_patient').find('a').text('XWay').attr('id','').attr('href', `Lancemodule: SYNTHESE_PAT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`).end())
+        .after($last_left_tab.clone().attr('id', 'urg_patient').find('a').text('Urg').attr('id','').end().click(ev=>{
+            $(ev.currentTarget).siblings('.selected').removeClass('selected').end().addClass('selected')
+            $('#area-content-1')
+                .filter(':not(:has(#area-content-1-urg)').append('<div id="area-content-1-urg" style="display:none;"><iframe style="width:100%;height:100%;" src="https://easilynlb-prod.chu-clermontferrand.fr/Urgences/Urgences.Web/">').end()
+            .find('[id^=area-content-1]').hide().end().find('#area-content-1-urg').show()
+        }))
 
     }
     //modules
