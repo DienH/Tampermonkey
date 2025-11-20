@@ -422,15 +422,21 @@
                             }
                         }else if($infos.find('li.tool-title-mc').length){
                             let infodata=''
-                            $('div.macro-struct-title', $infos).each((i,el3)=>{
-                                $(el3).next().find('dt').each((j,el4)=>{
-                                    infodata += $(el4).text().trim() + " : " + $(el4).next().text().trim() + "<br>"
-                                })
-                                transInfo[$(el3).text()] = infodata
-                            })
-                            Object.assign(transInfo, {
-                                type:'macrocible'
-                            })
+                            switch(transInfo.title){
+                                case "Macro cible PERMISSION":
+                                    break
+                                default:
+                                    $('div.macro-struct-title', $infos).each((i,el3)=>{
+                                        $(el3).next().log('innerHTML').find('dt').each((j,el4)=>{
+                                            infodata += $(el4).text().trim() + " : " + $(el4).next().text().trim() + "<br>"
+                                        })
+                                        transInfo[$(el3).text()] = infodata
+                                    })
+                                    Object.assign(transInfo, {
+                                        type:'macrocible'
+                                    })
+                            }
+                            //log($infos.html())
                         }
                         transmissions[nchambre].trans[transInfo.date + '-' + transInfo.title ] = transInfo
                     })
@@ -496,7 +502,7 @@
                 console.log(transCompletes)
                 console.log($transTable[0])
                 µ.$transTable = $transTable
-                $('[data-bind*=ListePatients]>:last-child').id('transLines').after($transTable)
+                $('[data-bind*=ListePatients]>:last-child:not(#transLines)').id('transLines').after($transTable)
                 let timeLineSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M192 233.3C220.3 221 240 192.8 240 160C240 115.8 204.2 80 160 80C115.8 80 80 115.8 80 160C80 192.8 99.7 221 128 233.3L128 288L64 288C46.3 288 32 302.3 32 320C32 337.7 46.3 352 64 352L288 352L288 406.7C259.7 419 240 447.2 240 480C240 524.2 275.8 560 320 560C364.2 560 400 524.2 400 480C400 447.2 380.3 419 352 406.7L352 352L576 352C593.7 352 608 337.7 608 320C608 302.3 593.7 288 576 288L512 288L512 233.3C540.3 221 560 192.8 560 160C560 115.8 524.2 80 480 80C435.8 80 400 115.8 400 160C400 192.8 419.7 221 448 233.3L448 288L192 288L192 233.3z"/></svg>`,
                     tableSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M96 160C96 124.7 124.7 96 160 96L480 96C515.3 96 544 124.7 544 160L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 160zM160 160L160 224L224 224L224 160L160 160zM480 160L288 160L288 224L480 224L480 160zM160 288L160 352L224 352L224 288L160 288zM480 288L288 288L288 352L480 352L480 288zM160 416L160 480L224 480L224 416L160 416zM480 416L288 416L288 480L480 480L480 416z"/></svg>`
                 $('<div id="trans-toggleAffichage"><div class="trans-affichageTable">'+tableSVG+'Afficher en tableau</div><div class="trans-affichageTimeline">'+timeLineSVG+'Afficher en Timeline</div></div>').appendTo('.nav-filter').click(ev=>{
@@ -508,27 +514,41 @@
             }
         }
         window.addEventListener('message', ev=>{
-            if(ev.data && ev.data.cr && ev.data.uf){
+            let messageEvData
+            if (typeof ev.data == "object"){
+                messageEvData = ev.data
+            } else{
+                try {
+                    messageEvData = JSON.parse(ev.data)
+                }catch(e){
+                    checkTransOpen()
+                    console.log('Error parsing data', ev.data)
+                    return null
+                }
+            }
+            if(messageEvData && messageEvData.cr && messageEvData.uf){
                 $('.nav-cr-uf-secteur span.f_cr').parent().find('select').each((i,el)=>{
-                    if($(el).val() != ev.data.cr){
-                        $(el).val(ev.data.cr).change()
+                    if($(el).val() != messageEvData.cr){
+                        $(el).val(messageEvData.cr).change()
                         $.waitFor('.nav-cr-uf-secteur span.f_uf').then($el=>{
                             $el.parent().find('select').each((i,el)=>{
-                                if($(el).val() != ev.data.uf){
-                                    $(el).val(ev.data.uf).change()
+                                if($(el).val() != messageEvData.uf){
+                                    $(el).val(messageEvData.uf).change()
                                 }
                             })
                         })
-                        $.waitFor('div.loader:visible').then(
+                        $.waitFor('div.loader:visible', 1000).then(
                             $el=>$.waitFor('div.loader:not(:visible)').then($el2=>checkTransOpen())
                         )
                     } else {
                         $('.nav-cr-uf-secteur span.f_uf').parent().find('select').each((i,el)=>{
-                            if($(el).val() != ev.data.uf){
-                                $(el).val(ev.data.uf).change()
+                            if($(el).val() != messageEvData.uf){
+                                $(el).val(messageEvData.uf).change()
+                            } else {
+                                checkTransOpen()
                             }
                         })
-                        $.waitFor('div.loader:visible').then(
+                        $.waitFor('div.loader:visible', 1000).then(
                             $el=>$.waitFor('div.loader:not(:visible)').then($el2=>checkTransOpen())
                         )
                     }
@@ -1033,7 +1053,7 @@
                 }
                 $el.after($('<button class="btn btn-success btn-sm" style="margin-left:5px" id="btnTransmissions">Transmissions</button>').click(ev=>{
                     $('#transmissionsFrame').dialog('open').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window})
-                    document.getElementById('transmissionsFrame').contentWindow.postMessage({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]})
+                    document.getElementById('transmissionsFrame').contentWindow.postMessage(JSON.stringify({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]}))
                     /*
                     if(!$('#transmissionsFrame').dialog('open').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window}).length){
                         $('<iframe id="transmissionsFrame" src="/Module/DS_TC/JDT/Index">').dialog()
