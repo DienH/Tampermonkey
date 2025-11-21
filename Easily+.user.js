@@ -725,8 +725,8 @@
                                                       /ATCD psychiatriques .*? personnels.*?\r?\n(?<atcd_psy>(.|\n|\r)*?)\r?\n.*?(\r?\n)?ATCD psy.*?familiaux/.source,
                                                       /ATCD psy.*?familiaux.*?\r?\n(?<atcd_psy_fam>(.|\n|\r)*?)\r?\n.*?(\r?\n)?/.source,
                                                       /Allergies.*?\r?\n(?<allergies>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements en/.source,
-                                                      /Traitements en.*?\r?\n?(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements psycho/.source,
-                                                      /Traitements psycho.*?\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Mode de vi/.source,
+                                                      /Traitements en.*?:\r?\n?(?<tttEntree>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Traitements psycho/.source,
+                                                      /Traitements psycho.*?:\r?\n(?<tttPsyAnte>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Mode de vi/.source,
                                                       /Mode de vi.*?\r?\n(?<mdv>(.|\n|\r)*?)\r?\n.*?\r?\nContact/.source,
                                                       /Contact.*?\r?\n(?<contact>(.|\n|\r)*?)\r?\n.*?(\r?\n)?Anamn/.source,
                                                       /Anamn.*?\r?\n(?<hdlm>(.|\n|\r)*?)\r?\n.*?\r?\nExamen clinique ini/.source,
@@ -775,12 +775,38 @@
                                     })
                                     let $addMedBtn = $('.fm_label_important:contains(Médecin(s))').closest('.fm_grid_cell').prev().find("fm-button[fm-on-click*=Function_AjoutReferent]")
                                     if(!(MedecinsUHDL & 1)){
+                                        if(!(MedecinsUHDL & 2)){
+                                            $addMedBtn.click()
+                                            $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{
+                                                $el.val("HARRY, Adrien").addClass('medUHDL').trigger('input')
+                                                $.waitFor('span:contains(aharry):visible').then($el=>{
+                                                    $el.click().log()
+                                                    $addMedBtn.click()
+                                                    $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{
+                                                        $el.val("MERY, Raphael").addClass('medUHDL').trigger('input')
+                                                        $.waitFor('span:contains(rmery):visible').then($el=>{
+                                                            $el.click()
+                                                        })
+                                                    })
+                                                })
+                                            })
+                                        } else {
+                                            $addMedBtn.click()
+                                            $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{
+                                                $el.val("MERY, Raphael").addClass('medUHDL').trigger('input')
+                                                $.waitFor('span:contains(rmery):visible').then($el=>{
+                                                    $el.click()
+                                                })
+                                            })
+                                        }
+                                    } else if(!(MedecinsUHDL & 2)){
                                         $addMedBtn.click()
-                                        $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{$el.val("MERY, Raphael").addClass('medUHDL')})
-                                    }
-                                    if(!(MedecinsUHDL & 2)){
-                                        $addMedBtn.click()
-                                        $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{$el.val("HARRY, Adrien").addClass('medUHDL')})
+                                        $.waitFor('input.k-input.fm_dropdownlistpractician:not(.medUHDL)').then($el=>{
+                                            $el.val("HARRY, Adrien").addClass('medUHDL').trigger('input')
+                                            $.waitFor('span:contains(aharry):visible').then($el=>{
+                                                $el.click()
+                                            })
+                                        })
                                     }
                                 })
                                 //Histoire de la maladie
@@ -849,7 +875,8 @@
                                             $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.motif ?? ( t ? t : '.')).trigger('input')
                                             break
                                         case "Conclusion de l'examen clinique initial*":
-                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.diagEntree ?? ( t ? t : '.')).trigger('input')
+                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val(
+                                                (i,t) => observData.diagEntree ?(observData.examPsyEntree + " \n\nConclusion :\n" + observData.diagEntree) : ( t ? t : '.')).trigger('input')
                                             break
                                         case "Périmètre abdominal*":
                                         case "Poids*":
@@ -863,13 +890,13 @@
                                             $(el).next().find('input:eq(1)').click()
                                             break
                                         case "Traitement à l'entrée*":
-                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.tttEntree ?? ( t ? t : '.')).trigger('input')
+                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.tttEntree ? observData.tttEntree : ( t ? t : '.')).trigger('input')
                                             break
                                         case "Diagnostic de sortie*":
-                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').val((i,t)=>observData.conclusion ?? ( t ? t : '.')).trigger('input')
+                                            console.log(observData.conclusion)
+                                            $(el).parent().closest('td.fm_grid_cell').parent().next().find('textarea').log().val((i,t)=>observData.conclusion ? observData.conclusion : ( t ? t : '.')).trigger('input')
                                             break
                                         case 'Destination du patient à la sortie*':
-                                            //console.log($(el))
                                             $(el).parent().next().find('input:first').prop('checked',true).click()
                                             break
                                         case "Prescription de sortie *":
