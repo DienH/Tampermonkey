@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251111
+// @version      1.0.251112
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -394,8 +394,8 @@
 //
     else if (location.pathname == "/Module/DS_TC/JDT/Index"){
         function checkTransOpen (){
-            $.waitFor('#inputopen:visible:not(:checked)').then($el=>{
-                $el.click()
+            $.waitFor('#inputopen:visible').then($el=>{
+                $el.not(':checked').click()
                 $('thead .glyphicon-triangle-right').click()
                 let transmissions = {},
                     transIncompletes={}
@@ -407,38 +407,42 @@
                     $('.svg-elts-form', el).each((i,el2)=>{
                         let $infos=$($(el2).data('title')).find('ul'),
                             transInfo={title:$infos.find('li.tool-title').text(),date:$infos.find('li.tool-info:eq(0)').text().split(' (')[0]}
-                        if($infos.find('li.tool-title-c').length){
-                            $infos = $infos.find('tr:eq(1)')
-                            let tmpData=$infos.find('td:eq(0)').text(), tmpAction = $infos.find('td:eq(1)').text(), tmpResultat=$infos.find('td:eq(2)').text()
-                            Object.assign(transInfo, {
-                                type:'cible',
-                                data:tmpData,
-                                action:tmpAction,
-                                resultat:tmpResultat
-                            })
-                            //récupération des transmissions incomplètes
-                            if(tmpData.slice(-3) == "..." || tmpAction.slice(-3) == "..." ||tmpResultat.slice(-3) == "..."){
-                                transIncompletes[nchambre][transInfo.date + '-' + transInfo.title] = $(el2)
-                            }
-                        }else if($infos.find('li.tool-title-mc').length){
-                            let infodata=''
-                            switch(transInfo.title){
-                                case "Macro cible PERMISSION":
-                                    break
-                                default:
-                                    $('div.macro-struct-title', $infos).each((i,el3)=>{
-                                        $(el3).next().log('innerHTML').find('dt').each((j,el4)=>{
-                                            infodata += $(el4).text().trim() + " : " + $(el4).next().text().trim() + "<br>"
+                        if(typeof transmissions[nchambre].trans[transInfo.date + '-' + transInfo.title] == "undefined"){
+                            if($infos.find('li.tool-title-c').length){
+                                $infos = $infos.find('tr:eq(1)')
+                                let tmpData=$infos.find('td:eq(0)').text(), tmpAction = $infos.find('td:eq(1)').text(), tmpResultat=$infos.find('td:eq(2)').text()
+                                Object.assign(transInfo, {
+                                    type:'cible',
+                                    data:tmpData,
+                                    action:tmpAction,
+                                    resultat:tmpResultat
+                                })
+                                //récupération des transmissions incomplètes
+                                if(tmpData.slice(-3) == "..." || tmpAction.slice(-3) == "..." ||tmpResultat.slice(-3) == "..."){
+                                    transIncompletes[nchambre][transInfo.date + '-' + transInfo.title] = $(el2)
+                                }
+                            }else if($infos.find('li.tool-title-mc').length){
+                                switch(transInfo.title){
+                                    /*
+                                    case "Macro cible PERMISSION":
+                                        break
+                                        */
+                                    default:
+                                        $('div.macro-struct-title', $infos).each((i,el3)=>{
+                                            let infodata=''
+                                            $(el3).next().find('dt').log('innerText').each((j,el4)=>{
+                                                infodata += $(el4).text().trim() + " : " + $(el4).next().text().trim() + "<br>"
+                                            })
+                                            transInfo[i+"_"+$(el3).text()] = infodata
                                         })
-                                        transInfo[$(el3).text()] = infodata
-                                    })
-                                    Object.assign(transInfo, {
-                                        type:'macrocible'
-                                    })
+                                        Object.assign(transInfo, {
+                                            type:'macrocible'
+                                        })
+                                }
+                                //log($infos.html())
                             }
-                            //log($infos.html())
+                            transmissions[nchambre].trans[transInfo.date + '-' + transInfo.title ] = transInfo
                         }
-                        transmissions[nchambre].trans[transInfo.date + '-' + transInfo.title ] = transInfo
                     })
                 })
                 let transIncompletesArray = []
@@ -521,7 +525,6 @@
                 try {
                     messageEvData = JSON.parse(ev.data)
                 }catch(e){
-                    checkTransOpen()
                     console.log('Error parsing data', ev.data)
                     return null
                 }
@@ -553,6 +556,14 @@
                         )
                     }
                 })
+            }
+        })
+        $(window).on('click',ev=>{
+            if($(ev.target).filter('[data-bind="foreach:Days"] .glyphicon:visible')){
+                log(ev)
+                $.waitFor('div.loader:visible', 1000).then(
+                    $el=>$.waitFor('div.loader:not(:visible)').then($el2=>checkTransOpen())
+                )
             }
         })
         window.parent.postMessage(JSON.stringify({command:"transmissions_get-CR-UF"}))
