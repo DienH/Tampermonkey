@@ -605,9 +605,9 @@
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         // Gestion des fiches du type Observation / FHR
         if(location.pathname.match(/^\/Dominho\/Main/i)){
-            $('#specialiteSelection').parent().append($('<button class="BoutonClassique"><span title="Psychiatrie">Psychiatrie</span>').click(ev=>{
+            $('#specialiteSelection').parent().append($('<button class="BoutonClassique"><span title="Documents de Psychiatrie">Psychiatrie</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
-            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="FHR">FHR</span>').click(ev=>{
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="FHR de Psychiatrie">FHR</span>').click(ev=>{
                 if(!$('#formulaireSelection li[onclick]:contains(FHR Observation Médicale - Psychiatrie)').click().length){ // ouvrir si présent dans les raccourcis
                     $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
                     $.waitFor('#groupSelection li[onclick]:contains(Observations Médicales)').then($el=>{
@@ -617,29 +617,39 @@
                         })
                     })
                 }
-            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Consult">Consult</span>').click(ev=>{
-                if(!$('#formulaireSelection li[onclick]:contains(Fiche de Consultation Psy)').click().length){ // ouvrir si présent dans les raccourcis
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Observation de Liaison">Liaison</span>').click(ev=>{
+                if(!$('#formulaireSelection li[onclick]:contains(Fiche de Consultation Psy de Liaison)').click().length){ // ouvrir si présent dans les raccourcis
                     $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
                     $.waitFor('#groupSelection li[onclick]:contains(Observations Médicales)').then($el=>{
                         $el.click()
-                        $.waitFor('#formulaireSelection li[onclick]:contains(Fiche de Consultation Psy)').then($el2=>{
+                        $.waitFor('#formulaireSelection li[onclick]:contains(Fiche de Consultation Psy de Liaison)').then($el2=>{
                             $el2.click()
                         })
                     })
                 }
-            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Ordos">Ordos</span>').click(ev=>{
-                if(!$('#formulaireSelection li[onclick]:contains(Ordonnance):contains(Autre)').click().length){ // ouvrir si présent dans les raccourcis
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Observation de Consultation">Consult</span>').click(ev=>{
+                if(!$('#formulaireSelection li[onclick]:contains(Fiche de Consultation Psy):first').click().length){ // ouvrir si présent dans les raccourcis
+                    $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
+                    $.waitFor('#groupSelection li[onclick]:contains(Observations Médicales)').then($el=>{
+                        $el.click()
+                        $.waitFor('#formulaireSelection li[onclick]:contains(Fiche de Consultation Psy):first').then($el2=>{
+                            $el2.click()
+                        })
+                    })
+                }
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Ordonnance de Psy">Ordo</span>').click(ev=>{
+                if(!$('#formulaireSelection li[onclick]:contains(Ordonnance \(Autre \) Psy)').click().length){ // ouvrir si présent dans les raccourcis
                     $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
                     $.waitFor('#groupSelection li[onclick]:contains(Ordonnances)').then($el=>{
                         $el.click()
-                        $.waitFor('#formulaireSelection li[onclick]:contains(Autre)').then($el2=>{
+                        $.waitFor('#formulaireSelection li[onclick]:contains(Ordonnance \(Autre \) Psy)').then($el2=>{
                             $el2.click()
                         })
                     })
                 }
-            })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Commun">Commun médical</span>').click(ev=>{
+            })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Documents Communs">Commun médical</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Commun Médical)').click()
-            })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Transport">BdT</span>').click(ev=>{
+            })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Bon de Transport">BdT</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Commun Médical)').click()
                 $.waitFor('#groupSelection li[onclick]:contains(Cerfa)').then($el=>{
                     $el.click()
@@ -647,7 +657,7 @@
                         $el2.click()
                     })
                 })
-            })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Cerfas">Cerfas</span>').click(ev=>{
+            })).append($('<button class="BoutonPrincipal" style="margin-left:5px;"><span title="Documents Cerfas">Cerfas</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Commun Médical)').click()
                 $.waitFor('#groupSelection li[onclick]:contains(Cerfa)').then($el=>{
                     $el.click()
