@@ -559,7 +559,7 @@
             }
         })
         $(window).on('click',ev=>{
-            if($(ev.target).filter('[data-bind="foreach:Days"] .glyphicon:visible')){
+            if($(ev.target).filter('[data-bind="foreach:Days"] .glyphicon:visible').length){
                 log(ev)
                 $.waitFor('div.loader:visible', 1000).then(
                     $el=>$.waitFor('div.loader:not(:visible)').then($el2=>checkTransOpen())
