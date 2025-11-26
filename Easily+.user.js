@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251112
+// @version      1.0.251113
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -638,7 +638,7 @@
                     })
                 }
             })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Ordonnance de Psy">Ordo</span>').click(ev=>{
-                if(!$('#formulaireSelection li[onclick]:contains(Ordonnance \(Autre \) Psy)').click().length){ // ouvrir si présent dans les raccourcis
+                if(!$('#formulaireSelection li[onclick]:contains(Ordonnance \(Autre\) Psy)').click().length){ // ouvrir si présent dans les raccourcis
                     $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
                     $.waitFor('#groupSelection li[onclick]:contains(Ordonnances)').then($el=>{
                         $el.click()
