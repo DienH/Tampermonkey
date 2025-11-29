@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251113
+// @version      1.0.251129
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1112,6 +1112,33 @@
                     }
                     */
                 }))
+
+
+                //Notification du parapheur
+                    let $visibleContainer = $('.easily-container:visible'),
+                        parapheurID = $('.easily-univers-menu-entry[title="Parapheur \(Parapheur\)"]').click().data('pathid')
+                    $.waitFor('#container-DEFAULT-' + parapheurID + ':visible').then($el=>{
+                setTimeout(()=>{
+                        $el.closest('.easily-container').hide();
+                        $visibleContainer.show()
+                        let $parapheur = $('#module-parapheur')
+                        $parapheur.find('[title="courriers à valider"]')
+                        let n_doc=0
+                        $parapheur.find('.count').each((i,el)=>{
+                            n_doc += Number($(el).text())
+                        }).log()
+                        console.log('bouh', n_doc)
+                        if(n_doc){
+                            if(!$('#parapheurCount').length){
+                                $('.easily-univers-menu-entry[title="Parapheur \(Parapheur\)"]').append($('<span id="parapheurCount">'+n_doc+'</span>'))
+                            } else {
+                                $('#parapheurCount').text(n_doc)
+                            }
+                        } else {
+                            $('#parapheurCount').hide()
+                        }
+                }, 1000)
+                    })
             })
         }
     })
@@ -1416,6 +1443,7 @@
         .area-carrousel img.arrete {background-position: -16px 0}
         .area-carrousel img.arr-prog {background-position: 0 -16px}
         .area-carrousel img[src*=png] {position:absolute;width:16px;}
+        #parapheurCount {padding: 0 3px; min-width: 24px; line-height: 22px;; background-color: #01b7f1; text-align: center; vertical-align: middle; float: right; border-radius: 12px;margin-top:-5px;border:1px solid #005996;color: white; font-weight: 600;}
     `).appendTo('body')
     }
     // Your code here...
