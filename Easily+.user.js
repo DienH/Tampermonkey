@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251129
+// @version      1.0.251115
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1115,10 +1115,10 @@
 
 
                 //Notification du parapheur
-                    let $visibleContainer = $('.easily-container:visible'),
-                        parapheurID = $('.easily-univers-menu-entry[title="Parapheur \(Parapheur\)"]').click().data('pathid')
-                    $.waitFor('#container-DEFAULT-' + parapheurID + ':visible').then($el=>{
-                setTimeout(()=>{
+                let $visibleContainer = $('.easily-container:visible'),
+                    parapheurID = $('.easily-univers-menu-entry[title="Parapheur \(Parapheur\)"]').click().data('pathid')
+                $.waitFor('#container-DEFAULT-' + parapheurID + ':visible').then($el=>{
+                    setTimeout(()=>{
                         $el.closest('.easily-container').hide();
                         $visibleContainer.show()
                         let $parapheur = $('#module-parapheur')
@@ -1137,8 +1137,8 @@
                         } else {
                             $('#parapheurCount').hide()
                         }
-                }, 1000)
-                    })
+                    }, 1000)
+                })
             })
         }
     })
