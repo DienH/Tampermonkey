@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251115
+// @version      1.0.251121
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -368,7 +368,7 @@
 
             //Cacher automatiquement l'alerte sur les EI des traitements
             if(EasilyInfos.hide_warningTTT){
-                $.waitFor('#SyntheseSignaux', 3000).then($el=>{
+                $.waitFor('#SyntheseSignaux', 5000).then($el=>{
                     $el.find('#btnEnregistrer').click()
                 })
             }
@@ -663,8 +663,10 @@
                     $el.click()
                 })
             }))
-        } else if(location.pathname.match(/^\/dominho\/Fiche\/(Open|Create)/i)){
+        } else if(location.pathname.match(/^\/(d|D)ominho\/(f|F)iche\/((O|o)pen|(C|c)reate)/i)){
             if(!unsafeWindow._currentContext){return}
+            log('test')
+            let docType = $('head>title').text().split(' -')[0]
             //Expension des catégories "Contexte", "Sejour" et "Sortie" avec simple click
             $('.fm_grid_cell.fm_group_header.fm_group_header_lightgray, .fm_grid_cell.fm_group_header.fm_group_header_default').off().click(ev=>{
                 //console.log($(ev.target).is('div.fm_group_header_expander'), $(ev.delegateTarget).find('div.fm_group_header_expander.image_expanded_png'))
@@ -924,6 +926,10 @@
                     })
                     $('.fm_group_header_expander.image_expandable_png').click().log()
                     //console.log("Fiche FHR")
+                    break
+                case "Fiche de Consultation Psy":
+                    $('.fm_group_header_label_light:contains(Synthèse)').click()
+                    $('.fm_group_header_default:contains(Observations) .fm_group_header_expander.image_expandable_png').click()
                     break
             }
 
