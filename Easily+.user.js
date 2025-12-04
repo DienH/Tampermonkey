@@ -928,6 +928,7 @@
                     //console.log("Fiche FHR")
                     break
                 case "Fiche de Consultation Psy":
+                case "Fiche de Consultation Psy de Liaison":
                     $('.fm_group_header_label_light:contains(Synthèse)').click()
                     $('.fm_group_header_default:contains(Observations) .fm_group_header_expander.image_expandable_png').click()
                     break
