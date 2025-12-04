@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251121
+// @version      1.0.251122
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -385,6 +385,26 @@
         $('#btnEnregistrer:contains(Continuer)').click()
     }
 
+    // Agenda
+    //css : background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKXSURBVDiNfZJdSFMBGIbfM6c7rvbTNjeVRKeFPxPU8kJkFUqNakQR3nTTReGNlwU2qQslPRgzsAjLFuSKUd4JEgtH1DQwYiIEp9nc9Bzb3ETtJLFxpjvndNNNbu65ffkeeL/vIwwGwyW1Wm1FHkRRFBiGcQFY3Z8RbW1tax6PpyKfgOd5dHV1+YLBoG1/JtPr9ZLJZALHcdjZ2UF1dTVEUQTHceA4DqlUCg0NDTAajclccjkA+Hw+TLjfYn19Db4ZL0KhEKLRKABApVKhsbERPT09n/1+f24BQRBIp3lk9vZAEATC4TBomoZarYbT6QQAKJXKTM5+drudTafTUiQSkRiGkQ7CarVOH1iBpmkMPxgBIOGV+yXGx8extLQEiqLgdI5sffkaEEPLKydIUnWK5//M/bdEAGAYBnWWVhCyIvA8j5aWFoyOjuLGze6tsuaL2ntj743umeXyk9bOSaVS2ZolMJvN+EEHQEh7IEkSGo0GLMviUEklYWlul0uiiNdjg7g95CorKascyKpQX18PiroPmUwGhUIBk8mEaDQKjc4kdz3sQ/znCmxXrkOjNUBWIFdlCbxeL549n8BGIgb/pw+YnZ2FzWbDt3nHbt+jKcTYMGrqmuCbcifTqd+/sgQAQJLFKCwsBADE43E4HA4MDw1o7t66ulFxrKnA83SQj6/Qh892dpyZeTe9mtjmOgAwsNvtbDKZlAKBgLS4uJh1PlEUpVgsJlkslrny0tLHF063b39/80RqPl4VBlAl39zcJILBIABAEAQsLCxk3TqTyUAQhNR6IkEdKS46lxEE3eRgb83lXmqa0Ol057VabUfOL/uHIAi7LMu6AKwBKLWYj37s775W2/9iMpJvLh+68hL9HYVCUfsXADA9PQZbgT0AAAAASUVORK5CYII=);
+    /*
+// association d'un menu à sa plage horaire
+$('ul.context-menu-root').each((i,el)=>{
+    let idSel = $(el).data('contextMenuRoot').selector
+    $(idSel).data('contextMenu', $(el))
+})
+
+// ouverture fiche patient pour récupérer IPP
+$('div.event.chip').on('mouseup', ev=>{
+    if(ev.which == 2){
+        $(ev.currentTarget).contextmenu()
+        $.waitFor('ul.context-menu-root:visible').then($el=>{
+            $el.find('.icon-patEasily').log().trigger('mouseup')
+        })
+    }
+})
+
+*/
 //    ████████ ██████   █████  ███    ██ ███████ ███    ███ ██ ███████ ███████ ██  ██████  ███    ██ ███████
 //       ██    ██   ██ ██   ██ ████   ██ ██      ████  ████ ██ ██      ██      ██ ██    ██ ████   ██ ██
 //       ██    ██████  ███████ ██ ██  ██ ███████ ██ ████ ██ ██ ███████ ███████ ██ ██    ██ ██ ██  ██ ███████
