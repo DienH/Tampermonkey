@@ -333,7 +333,7 @@
 			}
 		}
     });
-	$.waitFor = async (selector, context = document, timeout = 0, delay = 0, checkFrequency = 250) => {
+	$.waitFor = async (selector, context = document, timeout = 0, delay = 0, checkFrequency = 250, checkForAbsence = false) => {
 		let $selection, start = Date.now() + delay, frameRef
 		if (typeof context == "number"){
 			timeout = context
@@ -342,15 +342,20 @@
 			delay = context.delay ?? 0
 			timeout = context.waiTime ?? 0
 			checkFrequency = context.checkFrequency ?? 250
-			context = context.context
+			context = context.context || document
+			checkForAbsence = context.checkForAbsence || context.invertSelector || context.notSelector || false
+		}
+		if(selector.substr(0, 1) == "!"){
+			selector = selector.substr(1)
+			checkForAbsence = true
 		}
 		if (!checkFrequency){
-			while (((($selection = $(selector, context || document)).length === 0) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
+			while ((((!($selection = $(selector, context || document)).length) == checkForAbsence) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
 				await new Promise( resolve => {frameRef=requestAnimationFrame(resolve)} )
 			}
 			cancelAnimationFrame(frameRef)
 		} else {
-			while (((($selection = $(selector, context || document)).length === 0) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
+			while ((((!($selection = $(selector, context || document)).length) == checkForAbsence) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
 				await new Promise( resolve => setTimeout(resolve, checkFrequency))
 			}
 		}
