@@ -333,7 +333,7 @@
 			}
 		}
     });
-	$.waitFor = async (selector, context = document, timeout = 0, delay = 0, checkFrequency = 250, checkForAbsence = false) => {
+	$.waitFor = async (selector, context = document, timeout = 0, delay = 0, checkFrequency = 250, checkForPresence = true) => {
 		let $selection, start = Date.now() + delay, frameRef
 		if (typeof context == "number"){
 			timeout = context
@@ -343,19 +343,22 @@
 			timeout = context.waiTime ?? 0
 			checkFrequency = context.checkFrequency ?? 250
 			context = context.context || document
-			checkForAbsence = context.checkForAbsence || context.invertSelector || context.notSelector || false
-		}
+			checkForPresence = context.checkForPresence || context.invertSelector || context.notSelector || true
+		} else if (typeof context == "boolean"){
+			checkForPresence = context
+			context = document
+        }
 		if(selector.substr(0, 1) == "!"){
 			selector = selector.substr(1)
-			checkForAbsence = true
+			checkForPresence = false
 		}
 		if (!checkFrequency){
-			while ((((!($selection = $(selector, context || document)).length) == checkForAbsence) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
+			while ((((!($selection = $(selector, context || document)).length) === checkForPresence) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
 				await new Promise( resolve => {frameRef=requestAnimationFrame(resolve)} )
 			}
 			cancelAnimationFrame(frameRef)
 		} else {
-			while ((((!($selection = $(selector, context || document)).length) == checkForAbsence) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
+			while ((((!($selection = $(selector, context || document)).length) === checkForPresence) || Date.now() < start) && (!timeout || Date.now() < (start+timeout))) {
 				await new Promise( resolve => setTimeout(resolve, checkFrequency))
 			}
 		}
