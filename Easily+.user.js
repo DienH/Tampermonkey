@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251123
+// @version      1.0.251124
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -409,8 +409,14 @@
                         if(ev.which == 2){
                             $(ev.currentTarget).contextmenu()
                             $.waitFor('ul.context-menu-root:visible').then($el=>{
-                                $el.find('.icon-patEasily').trigger('mouseup')
-                                //setTimeout($el2=>$el2.find('.icon-patEasily').trigger('mouseup'), 500, $el)
+                                if(ev.shiftKey){
+                                    $el.find('.icon-patEasily').trigger('mouseup')
+                                    //setTimeout($el2=>$el2.find('.icon-patEasily').trigger('mouseup'), 500, $el)
+                                    window.parent.postMessage(JSON.stringify({command:"agenda-Codage"}), "*")
+                                } else {
+                                    $el.find('.icon-selectPat').trigger('mouseup')
+                                    window.parent.postMessage(JSON.stringify({command:"agenda-OpenDossier"}), "*")
+                                }
                             })
                         }
                     }).addClass('fastActionMiddleClick')
@@ -1340,6 +1346,34 @@
             case "transmissions_get-CR-UF":
                 frameOrigin.contentWindow.postMessage({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]})
                 break
+
+//       _____                             .___
+//      /  _  \    ____   ____   ____    __| _/____
+//     /  /_\  \  / ___\_/ __ \ /    \  / __ |\__  \
+//    /    |    \/ /_/  >  ___/|   |  \/ /_/ | / __ \_
+//    \____|__  /\___  / \___  >___|  /\____ |(____  /
+//            \//_____/      \/     \/      \/     \/
+
+            case "agenda-OpenDossier":
+                $('[data-applicationname="CapMedecin"]').click()
+                $.waitFor('div.clickable[title="PSYCHIATRIE B CONSULT"]').then($el=>$el.click())
+                $.waitFor('.internal-selection-venue tbody .venue-link:first', 5000).then($el=>$el.click())
+                /*
+                $.waitFor('#module-agenda #blocGauche:visible', 5000).then(()=>{
+                    $('#module-agenda #dossierPatient').log().click()
+                })
+                */
+                break;
+            case "agenda-Codage":
+                $.waitFor('#module-identitepatient-ancrage #module-identitepatient-photo:visible', 5000).then($el=>{
+                    setTimeout(()=>{
+                        let patient_IPP = $('#module-identitepatient-ancrage [data-bind*="text: IPP"]').log().text()
+                        log(patient_IPP)
+                        $('<a target="_blank">').attr('href', `Lancemodule: CORA;${patient_IPP};;LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().remove()
+                        $('.k-window-action[aria-label=Close]').click()
+                    }, 1000)
+                })
+                break;
         }
 
 //       ___ _                                     _                _   _         _
