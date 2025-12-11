@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251124
+// @version      1.0.251125
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1180,19 +1180,32 @@
 
 
                 //Notification du parapheur
+                $.get('https://easily-prod.chu-clermontferrand.fr/Module/Parapheur/MainParapheur/GetCompteurAccueilParapheurPersoAsync/?idIntervenant=', r=>
+                {
+                    let n_doc=r[3].nbMessages + r[4].nbMessages
+                    if(n_doc){
+                        if(!$('#parapheurCount').length){
+                            $('.easily-univers-menu-entry[title="Parapheur \(Parapheur\)"]').append($('<span id="parapheurCount">'+n_doc+'</span>'))
+                        } else {
+                            $('#parapheurCount').text(n_doc)
+                        }
+                    } else {
+                        $('#parapheurCount').hide()
+                    }
+                })
+                /*
                 let $visibleContainer = $('.easily-container:visible'),
                     parapheurID = $('.easily-univers-menu-entry[title="Parapheur \(Parapheur\)"]').click().data('pathid')
                 $.waitFor('#container-DEFAULT-' + parapheurID + ':visible').then($el=>{
                     setTimeout(()=>{
                         $el.closest('.easily-container').hide();
-                        $visibleContainer.show()
+                        $visibleContainer.log().show()
                         let $parapheur = $('#module-parapheur')
                         $parapheur.find('[title="courriers à valider"]')
                         let n_doc=0
                         $parapheur.find('.count').each((i,el)=>{
                             n_doc += Number($(el).text())
-                        }).log()
-                        console.log('bouh', n_doc)
+                        })
                         if(n_doc){
                             if(!$('#parapheurCount').length){
                                 $('.easily-univers-menu-entry[title="Parapheur \(Parapheur\)"]').append($('<span id="parapheurCount">'+n_doc+'</span>'))
@@ -1204,6 +1217,7 @@
                         }
                     }, 1000)
                 })
+                */
             })
         }
     })
