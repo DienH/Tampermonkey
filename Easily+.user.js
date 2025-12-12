@@ -985,6 +985,13 @@
                     $('.fm_group_header_expander.image_expandable_png').click().log()
                     //console.log("Fiche FHR")
                     break
+//    _________                            .__   __
+//    \_   ___ \  ____   ____   ________ __|  |_/  |_
+//    /    \  \/ /  _ \ /    \ /  ___/  |  \  |\   __\
+//    \     \___(  <_> )   |  \\___ \|  |  /  |_|  |
+//     \______  /\____/|___|  /____  >____/|____/__|
+//            \/            \/     \/
+
                 case "Fiche de Consultation Psy":
                 case "Fiche de Consultation Psy de Liaison":
                     $('.fm_group_header_label_light:contains(Synthèse)').click()
