@@ -362,7 +362,11 @@
 				await new Promise( resolve => setTimeout(resolve, checkFrequency))
 			}
 		}
-		return $selection;
+		if($selection.length){
+			return $selection
+		} else {
+			throw new Error(selector)
+		}
 	}
 })($ && $.fn ? $ : jQuery);
 
