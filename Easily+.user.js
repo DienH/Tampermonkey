@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251125
+// @version      1.0.251126
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1146,6 +1146,53 @@
                             $('#EasilyPlusPrefs').dialog('open')
                         }
                     }
+                    if(ev.type == "click"){
+                        if($(ev.target).closest("[data-action=habilitation]").length || $(ev.target).closest('[data-original-title="Cliquez ici pour voir vos habilitations"]').length){
+                            $.waitFor('h4:contains("Vous avez le rôle")').then(()=>{
+                                $.waitFor('#module-habilitation-tab-matrice tbody>tr:visible').then(()=>{
+                                    let nbHabilitations = Number($('#module-habilitation-tab-matrice+div [data-bind="text: totalItems"]:visible').text())
+                                    $('#module-habilitation-tab-matrice+div select.form-control:visible').val('tous').trigger('change')
+                                    $.waitFor(`#module-habilitation-tab-matrice tbody>tr:eq(${nbHabilitations-1}):visible`).then(()=>{
+                                        let current_habilitations={pedo:false, psyA:false, psyB:false, addicto:false, UPP:false}, $habDiv,
+                                            listeCR_hospit = {"1399H": "pedo", "1397H": "psyA", "1398H": "psyB", "1623H": "addicto", "1361U": "UPP"},
+                                            listeCR_hospit_pretty = {"1399H": "Pédo", "1397H": "Psy A", "1398H": "Psy B", "1623H": "Addicto", "1361U": "UPP"}
+                                        $('#module-habilitation-tab-matrice tbody>tr').each((i,el)=>{
+                                            let tempHab = listeCR_hospit[$('td:first', el).text()]
+                                            if (tempHab){
+                                                current_habilitations[tempHab] = true
+                                            }
+                                        })
+                                        $('#module-habilitation .leftbar:first:not(:has(.habTemp-Buttons))').append(
+                                            $habDiv =
+                                            $('<div class="habTemp-Buttons">Ajouter droits temporaires pour :'+
+                                              /*
+                                              '<button class="habTemp hab-Ajouter_UPP" data-codeCR="">UPP</button>'+
+                                              '<button class="habTemp hab-Ajouter_psyA">Psy A</button>'+
+                                              '<button class="habTemp hab-Ajouter_psyB">Psy B</button>'+
+                                              '<button class="habTemp hab-Ajouter_pedo">Pedo</button>'+
+                                              '<button class="habTemp hab-Ajouter_addicto">Addicto</button>'+
+                                              */
+                                              '</div>').click(ev2=>{
+                                                if($(ev2.target).is('.habTemp')){
+                                                    grantTempHabilitation($(ev2.target).data('codecr'))
+                                                }
+                                            })
+                                        )
+                                        for (let codeCR in listeCR_hospit){
+                                            $habDiv.append(`<button class="habTemp hab-Ajouter_${listeCR_hospit[codeCR]}" data-codeCR=${codeCR}>${listeCR_hospit_pretty[codeCR]}</button>`)
+                                        }
+                                        for (let habilitation in current_habilitations){
+                                            if (current_habilitations[habilitation])
+                                            {
+                                                $habDiv.addClass('hab-'+habilitation)
+                                            }
+                                        }
+                                    })
+                                    //grantTempHabilitation()
+                                })
+                            })
+                        }
+                    }
                     break;
                 case "Module":
                 case "module":
@@ -1230,6 +1277,38 @@
     })
 
 
+    // Autorisation temporaire rapide
+    function grantTempHabilitation(codeCR="1361u", autoValidate=true){
+        if(!$('h4:contains("Faire une demande"):contains("temporaire"):visible').length){
+            $(`ul.nav>li:contains("Demandes d'habilitation"):visible a:contains("Faire une demande d'habilitation temporaire")`).click2()
+        }
+        $.waitFor(`label:contains("Choix des services"):visible`).then($el2=>setTimeout(()=>{
+            $el2.click()
+            $.waitFor(`input[placeholder="rechercher un service par code ou libellé de..."]:visible`).then($el3=>setTimeout(()=>{
+                $el3.val(codeCR).trigger("change")
+                $.waitFor(`span[data-bind="click: rechercherServices"]:visible`).then($el4=>setTimeout(()=>{
+                    $el4.click()
+                    $.waitFor(`#module-habilitation-tab-workflow-cr tr:contains(${codeCR.toUpperCase()}) button.glyphicon-plus`).then($el5=>setTimeout(()=>{
+                        $el5.click()
+                        $.waitFor(`label:contains("Synthèse"):visible`).then($el6=>setTimeout(()=>{
+                            $el6.click()
+                            $.waitFor(`button.btn-success[data-bind="enable : allowValidation, click:faireDemande"]:visible`).then($el7=>setTimeout(()=>{
+                                if(autoValidate){
+                                    $el7.click()
+                                    $.waitFor(`button[data-bind="click: RetourPagePrefereeOuFournie(0)"]:visible`).then($el8=>setTimeout(()=>{
+                                        $el8.click()
+                                        if(codeCR.toUpperCase() == "1361U"){
+                                            $.waitFor(`li[title="ASUR (Urgences)"]`).then($el9=>$el9.click())
+                                        }
+                                    },300))
+                                }
+                            },300))
+                        },300))
+                    },300))
+                },300))
+            },300))
+        },300))
+    }
 
 //    ███    ███ ███████ ███████ ███████  █████   ██████  ███████     ███████ ██    ██ ███████ ███    ██ ████████
 //    ████  ████ ██      ██      ██      ██   ██ ██       ██          ██      ██    ██ ██      ████   ██    ██
@@ -1269,28 +1348,7 @@
                 $.waitFor(`ul.nav>li:contains("Demandes d'habilitation"):visible a:contains("Faire une demande d'habilitation temporaire")`).then($el=>{
                     $.waitFor('h4:contains("Vous avez le rôle")').then(()=>setTimeout(()=>{
                         $el.click()
-                        $.waitFor(`label:contains("Choix des services"):visible`).then($el2=>setTimeout(()=>{
-                            $el2.click()
-                            $.waitFor(`input[placeholder="rechercher un service par code ou libellé de..."]:visible`).then($el3=>setTimeout(()=>{
-                                $el3.val("1361u").trigger("change")
-                                $.waitFor(`span[data-bind="click: rechercherServices"]:visible`).then($el4=>setTimeout(()=>{
-                                    $el4.click()
-                                    $.waitFor(`#module-habilitation-tab-workflow-cr tr:contains("URGENCES ET UHCD GM") button.glyphicon-plus`).then($el5=>setTimeout(()=>{
-                                        $el5.click()
-                                        $.waitFor(`label:contains("Synthèse"):visible`).then($el6=>setTimeout(()=>{
-                                            $el6.click()
-                                            $.waitFor(`button.btn-success[data-bind="enable : allowValidation, click:faireDemande"]:visible`).then($el7=>setTimeout(()=>{
-                                                $el7.click()
-                                                $.waitFor(`button[data-bind="click: RetourPagePrefereeOuFournie(0)"]:visible`).then($el8=>setTimeout(()=>{
-                                                    $el8.click()
-                                                    $.waitFor(`li[title="ASUR (Urgences)"]`).then($el9=>$el9.click())
-                                                },300))
-                                            },300))
-                                        },300))
-                                    },300))
-                                },300))
-                            },300))
-                        },300))
+                        grantTempHabilitation()
                     }, 300))
                 })
                 break
@@ -1558,6 +1616,9 @@
         .area-carrousel img.arr-prog {background-position: 0 -16px}
         .area-carrousel img[src*=png] {position:absolute;width:16px;}
         #parapheurCount {padding: 0 3px; min-width: 24px; line-height: 22px;; background-color: #01b7f1; text-align: center; vertical-align: middle; float: right; border-radius: 12px;margin-top:-5px;border:1px solid #005996;color: white; font-weight: 600;}
+        .habTemp-Buttons.hab-psyB.hab-addicto.hab-UPP.hab-psyA.hab-pedo {display:none;}
+        .hab-psyA .hab-Ajouter_psyA, .hab-psyB .hab-Ajouter_psyB, .hab-pedo .hab-Ajouter_pedo, .hab-UPP .hab-Ajouter_UPP, .hab-addicto .hab-Ajouter_addicto {display: none;}
+        .habTemp {margin-left:5px}
     `).appendTo('body')
     }
     // Your code here...
