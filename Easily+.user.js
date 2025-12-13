@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251126
+// @version      1.0.251127
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -370,7 +370,7 @@
             if(EasilyInfos.hide_warningTTT){
                 $.waitFor('#SyntheseSignaux', 5000).then($el=>{
                     $el.find('#btnEnregistrer').click()
-                })
+                }).catch()
             }
 
             //Signature rapide
@@ -397,7 +397,7 @@
     else if(location.href.search("easilynlb-prod.chu-clermontferrand.fr/Agenda/Agenda.Web")+1){
         function createFastActions(){
             $.waitFor('#loading-indicator-navigationContenu:visible').then($el=>{
-                $.waitFor('!#loading-indicator-navigationContenu').then(()=>{
+                $.waitFor('!#loading-indicator-navigationContenu').catch(err=>{
                     /*
                     $('ul.context-menu-root').each((i,el)=>{
                         let idSel = $(el).data('contextMenuRoot').selector
@@ -410,9 +410,19 @@
                             $(ev.currentTarget).contextmenu()
                             $.waitFor('ul.context-menu-root:visible').then($el=>{
                                 if(ev.shiftKey){
-                                    $el.find('.icon-patEasily').trigger('mouseup')
-                                    //setTimeout($el2=>$el2.find('.icon-patEasily').trigger('mouseup'), 500, $el)
-                                    window.parent.postMessage(JSON.stringify({command:"agenda-Codage"}), "*")
+                                    let rdvInfos = {}
+                                    rdvInfos.date = $(ev.currentTarget).closest('td').a('abbr')
+                                    let rdvTitle = $(ev.currentTarget).attr('title')
+                                    try{
+                                        Object.assign(rdvInfos, rdvTitle.match(/\((?<type>\d{4})\)\n.*\n(?<heure>.*)(\n|.)*Statut \: (?<statut>.*)\n/).groups)
+                                        rdvInfos.date = $(ev.currentTarget).closest('td').a('abbr')
+                                        Object.assign(rdvInfos, rdvInfos.heure.match(/(?<heure>\d\d\:\d\d).*\((?<duree>\d{2})min\)/).groups)
+                                        rdvInfos.type = rdvInfos.type == "2842" ? "cs" : (rdvInfos.type == "2862" ? "liaison" : "")
+                                        $el.find('.icon-patEasily').trigger('mouseup')
+                                        //setTimeout($el2=>$el2.find('.icon-patEasily').trigger('mouseup'), 500, $el)
+                                    }catch(e){
+                                    }
+                                    window.parent.postMessage(JSON.stringify({command:"agenda-Codage", "rdv-infos":rdvInfos}), "*")
                                 } else {
                                     $el.find('.icon-selectPat').trigger('mouseup')
                                     window.parent.postMessage(JSON.stringify({command:"agenda-OpenDossier"}), "*")
@@ -420,7 +430,6 @@
                             })
                         }
                     }).addClass('fastActionMiddleClick')
-                    /**/
                 })
             })
         }
@@ -600,7 +609,7 @@
                         })
                         $.waitFor('div.loader:visible', 1000).then(
                             $el=>$.waitFor('div.loader:not(:visible)').then($el2=>checkTransOpen())
-                        )
+                        ).catch(err=>err)
                     } else {
                         $('.nav-cr-uf-secteur span.f_uf').parent().find('select').each((i,el)=>{
                             if($(el).val() != messageEvData.uf){
@@ -611,7 +620,7 @@
                         })
                         $.waitFor('div.loader:visible', 1000).then(
                             $el=>$.waitFor('div.loader:not(:visible)').then($el2=>checkTransOpen())
-                        )
+                        ).catch(err=>err)
                     }
                 })
             }
@@ -621,7 +630,7 @@
                 log(ev)
                 $.waitFor('div.loader:visible', 1000).then(
                     $el=>$.waitFor('div.loader:not(:visible)').then($el2=>checkTransOpen())
-                )
+                ).catch(err=>err)
             }
         })
         window.parent.postMessage(JSON.stringify({command:"transmissions_get-CR-UF"}))
@@ -1247,31 +1256,6 @@
                         $('#parapheurCount').hide()
                     }
                 })
-                /*
-                let $visibleContainer = $('.easily-container:visible'),
-                    parapheurID = $('.easily-univers-menu-entry[title="Parapheur \(Parapheur\)"]').click().data('pathid')
-                $.waitFor('#container-DEFAULT-' + parapheurID + ':visible').then($el=>{
-                    setTimeout(()=>{
-                        $el.closest('.easily-container').hide();
-                        $visibleContainer.log().show()
-                        let $parapheur = $('#module-parapheur')
-                        $parapheur.find('[title="courriers à valider"]')
-                        let n_doc=0
-                        $parapheur.find('.count').each((i,el)=>{
-                            n_doc += Number($(el).text())
-                        })
-                        if(n_doc){
-                            if(!$('#parapheurCount').length){
-                                $('.easily-univers-menu-entry[title="Parapheur \(Parapheur\)"]').append($('<span id="parapheurCount">'+n_doc+'</span>'))
-                            } else {
-                                $('#parapheurCount').text(n_doc)
-                            }
-                        } else {
-                            $('#parapheurCount').hide()
-                        }
-                    }, 1000)
-                })
-                */
             })
         }
     })
@@ -1442,7 +1426,7 @@
                     $.waitFor('.internal-selection-venue tbody .venue-link:first:visible', 5000).then($el=>{
                         $('.area-carrousel-wrapper li:contains(Saisir)').click()
                         //$el.click()
-                    })
+                    }).catch()
                     $.waitFor('.btnPrevious:visible').then($el=>{
                         $el.click(ev=>{
                             $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
@@ -1451,7 +1435,7 @@
                             })
                         })
                     })
-                }, 5000)
+                }, 5000).catch()
                 /*
                 $.waitFor('#module-agenda #blocGauche:visible', 5000).then(()=>{
                     $('#module-agenda #dossierPatient').log().click()
@@ -1459,14 +1443,15 @@
                 */
                 break;
             case "agenda-Codage":
+                console.log(messageEvData)
                 $.waitFor('#module-identitepatient-ancrage #module-identitepatient-photo:visible', 5000).then($el=>{
                     setTimeout(()=>{
                         let patient_IPP = $('#module-identitepatient-ancrage [data-bind*="text: IPP"]').log().text()
                         log(patient_IPP)
-                        $('<a target="_blank">').attr('href', `Lancemodule: CORA;${patient_IPP};;LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().remove()
+                        //$('<a target="_blank">').attr('href', `Lancemodule: CORA;${patient_IPP};;LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().remove()
                         $('.k-window-action[aria-label=Close]').click()
                     }, 1000)
-                })
+                }).catch()
                 break;
         }
 
