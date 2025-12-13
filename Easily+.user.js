@@ -398,13 +398,6 @@
         function createFastActions(){
             $.waitFor('#loading-indicator-navigationContenu:visible').then($el=>{
                 $.waitFor('!#loading-indicator-navigationContenu').catch(err=>{
-                    /*
-                    $('ul.context-menu-root').each((i,el)=>{
-                        let idSel = $(el).data('contextMenuRoot').selector
-                        $(idSel).data('contextMenu', $(el))
-                    })
-                    */
-                    /**/
                     $('div.event.chip:not(.fastActionMiddleClick)').on('mouseup', ev=>{
                         if(ev.which == 2){
                             $(ev.currentTarget).contextmenu()
@@ -415,6 +408,16 @@
                                     let rdvTitle = $(ev.currentTarget).attr('title')
                                     try{
                                         Object.assign(rdvInfos, rdvTitle.match(/\((?<type>\d{4})\)\n.*\n(?<heure>.*)(\n|.)*Statut \: (?<statut>.*)\n/).groups)
+                                        if(rdvInfos.statut != "Réalisé"){
+                                            return
+                                        }
+                                        if(rdvInfos.type == "2842"){
+                                            rdvInfos.lieu = "L02"
+                                            rdvInfos.code = "E"
+                                        } else if (rdvInfos.type == "2862"){
+                                            rdvInfos.lieu = "L09"
+                                            rdvInfos.code = "ECUS"
+                                        }
                                         rdvInfos.date = $(ev.currentTarget).closest('td').a('abbr')
                                         Object.assign(rdvInfos, rdvInfos.heure.match(/(?<heure>\d\d\:\d\d).*\((?<duree>\d{2})min\)/).groups)
                                         rdvInfos.type = rdvInfos.type == "2842" ? "cs" : (rdvInfos.type == "2862" ? "liaison" : "")
@@ -422,7 +425,7 @@
                                         //setTimeout($el2=>$el2.find('.icon-patEasily').trigger('mouseup'), 500, $el)
                                     }catch(e){
                                     }
-                                    window.parent.postMessage(JSON.stringify({command:"agenda-Codage", "rdv-infos":rdvInfos}), "*")
+                                    window.parent.postMessage(JSON.stringify({command:"agenda-Codage", "rdv_infos":rdvInfos}), "*")
                                 } else {
                                     $el.find('.icon-selectPat').trigger('mouseup')
                                     window.parent.postMessage(JSON.stringify({command:"agenda-OpenDossier"}), "*")
@@ -439,6 +442,97 @@
                 if(ev.which == 1){
                     createFastActions()
                 }
+            })
+        })
+        $('.filtreDispoType').on('contextmenu', ev=>{
+            ev.preventDefault()
+            let $codagePrefs = $('<div id="CodageCoraPrefs"></div>').append(`
+<table>
+ <thead>
+  <tr>
+   <th style="width:200px">Planning</th>
+   <th>Acte par défaut</th>
+   <th>Lieu par défaut</th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr class="">
+   <td></td>
+   <td>
+    <select name="acte"">
+     <option value="">---Choisir---</option>
+     <option value="E">Entretien patient</option>
+     <option value="EOS">Entretien obligation de soin</option>
+     <option value="ECUS">Entretien au lit du patient (liaison)</option>
+     <option value="E+AMI">Entretien + Acte infirmier</option>
+     <option value="E+ECG">Entretien + ECG</option>
+     <option value="EA - EF">Entretien famille</option>
+     <option value="ESK">Eskétamine</option>
+    </select>
+   </td>
+   <td>
+    <select name="lieu"">
+     <option value="">---Choisir---</option>
+     <option value="L02">Lieu de soins psychiatriques</option>
+     <option value="L07">Domicile</option>
+     <option value="L09">Unité hospitalisation somatique (MCO, SSR, USLD)</option>
+     <option value="L10">Urgences</option>
+    </select>
+   </td>
+  </tr>
+</tbody></table>`)
+            $codagePrefs.dialog({
+                modal:true,
+                autoOpen:true,
+                title:"Paramétrage codage rapide Cora",
+                minHeight:250,
+                minWidth:680,
+                width:800,
+                height:"auto",
+                resize:"auto",
+                autoResize:true,
+                open:function(ev, ui){
+                    $('.filtreRendezVousType .itemLibelle').each((i,el)=>{
+                        try{
+                            let planning_name = $(el).text(), planning_uf = planning_name.match(/\((?<codeUF>\d{4})\)/).groups.codeUF
+                            $codagePrefs.find('tbody>tr:last')
+                                .find('td:first').text(planning_name.split('(')[0].split('_').map(t=>t.capitalize()).join(' ')).attr('title', "UF : " + planning_uf)
+                                .end().clone().appendTo($codagePrefs.find('tbody'))
+                            }catch(e){
+                            }
+                    })
+                    $codagePrefs.find('tbody>tr:last').remove()
+                },
+                buttons: [
+                    {
+                        text: "Valider",
+                        click: function() {
+                            $(this).find('input').each((i, el)=>{
+                                EasilyInfos[$(el).attr('name')] = $(el).is('[type=checkbox]') ? $(el).is(':checked') : $(el).val()
+
+                                /*
+                        if(['password_store', 'show_bloc'].includes($(el).attr('name'))){ // gestion des checkbox
+                            EasilyInfos.password_store = $(el).is(':checked')
+                        }
+                        */
+                            })
+                            EasilyInfos.password = EasilyInfos.password_store ? EasilyInfos.password : ""
+                            GM_setValue('EasilyInfos', EasilyInfos)
+                            $('.easily-univers-item').filter(':contains(paramétrage)')[EasilyInfos.hide_parametres ? 'hide':'show']().end()
+                                .filter(':contains(pilotage)')[EasilyInfos.hide_pilotage ? 'hide':'show']().end()
+                                .filter(':contains(bloc)')[EasilyInfos.hide_bloc ? 'hide':'show']().end()
+                            $( this ).dialog( "close" );
+                        },
+                        class:'btn-success'
+                    },
+                    {
+                        text: "Annuler",
+                        click: function() {
+                            $( this ).dialog( "close" );
+                        },
+                        class:"btn-danger"
+                    }
+                ]
             })
         })
 
@@ -1443,12 +1537,14 @@
                 */
                 break;
             case "agenda-Codage":
-                console.log(messageEvData)
+                //console.log(messageEvData)
                 $.waitFor('#module-identitepatient-ancrage #module-identitepatient-photo:visible', 5000).then($el=>{
                     setTimeout(()=>{
                         let patient_IPP = $('#module-identitepatient-ancrage [data-bind*="text: IPP"]').log().text()
                         log(patient_IPP)
-                        //$('<a target="_blank">').attr('href', `Lancemodule: CORA;${patient_IPP};;LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().remove()
+                        $('<a target="_blank">').attr('href', `Lancemodule: CORA;${patient_IPP};;LOGINAD=${EasilyInfos.username}`).appendTo('body').click2()
+                            //.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.code ?? "E"}`).click2()
+                            .remove()
                         $('.k-window-action[aria-label=Close]').click()
                     }, 1000)
                 }).catch()
