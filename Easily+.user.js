@@ -426,7 +426,7 @@
         }
         createFastActions()
         $.waitFor('.rsNextDay, .rsPrevDay, .rsToday').then(()=>{
-            $('.rsNextDay, .rsPrevDay, .rsToday').log().on('mouseup', ev=>{
+            $('.rsNextDay, .rsPrevDay, .rsToday').on('mouseup', ev=>{
                 if(ev.which == 1){
                     createFastActions()
                 }
@@ -1318,7 +1318,7 @@
 //
 //
     function receiveMessage_Main(message) {
-        let waitTime = 0, messageEvData, frameOrigin, FHR_channel, clipboardContent
+        let waitTime = 0, messageEvData, frameOrigin, FHR_channel, clipboardContent, $currentContainer, CR_selectionContainerID
         //console.log(message)
         if (typeof message.data == "object"){
             messageEvData = message.data
@@ -1434,9 +1434,24 @@
 //            \//_____/      \/     \/      \/     \/
 
             case "agenda-OpenDossier":
+                $currentContainer = $('.easily-container:visible')
                 $('[data-applicationname="CapMedecin"]').click()
-                $.waitFor('div.clickable[title="PSYCHIATRIE B CONSULT"]').then($el=>$el.click())
-                $.waitFor('.internal-selection-venue tbody .venue-link:first', 5000).then($el=>$el.click())
+                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]').then($el=>{
+                    CR_selectionContainerID = $('.easily-container:visible').attr('id')
+                    $el.click()
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible', 5000).then($el=>{
+                        $('.area-carrousel-wrapper li:contains(Saisir)').click()
+                        //$el.click()
+                    })
+                    $.waitFor('.btnPrevious:visible').then($el=>{
+                        $el.click(ev=>{
+                            $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
+                                $el.hide().log()
+                                $currentContainer.show()
+                            })
+                        })
+                    })
+                }, 5000)
                 /*
                 $.waitFor('#module-agenda #blocGauche:visible', 5000).then(()=>{
                     $('#module-agenda #dossierPatient').log().click()
