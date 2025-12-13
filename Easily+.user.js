@@ -446,7 +446,10 @@
         })
         $('.filtreDispoType').on('contextmenu', ev=>{
             ev.preventDefault()
-            let $codagePrefs = $('<div id="CodageCoraPrefs"></div>').append(`
+            if($('#CodageCoraPrefs').length){
+                $('#CodageCoraPrefs').dialog('open')
+            } else {
+                let $codagePrefs = $('<div id="CodageCoraPrefs"></div>').append(`
 <table>
  <thead>
   <tr>
@@ -456,86 +459,92 @@
   </tr>
  </thead>
  <tbody>
-  <tr class="">
+  <tr>
    <td></td>
    <td>
     <select name="acte"">
-     <option value="">---Choisir---</option>
-     <option value="E">Entretien patient</option>
-     <option value="EOS">Entretien obligation de soin</option>
-     <option value="ECUS">Entretien au lit du patient (liaison)</option>
-     <option value="E+AMI">Entretien + Acte infirmier</option>
-     <option value="E+ECG">Entretien + ECG</option>
-     <option value="EA - EF">Entretien famille</option>
-     <option value="ESK">Eskétamine</option>
+     <option value="">---Aucun---</option>
+     <option value="E" title="E">Entretien patient</option>
+     <option value="EOS" title="EOS">Entretien obligation de soin</option>
+     <option value="ECUS" title="ECUS">Entretien au lit du patient (liaison)</option>
+     <option value="E+AMI" title="E+AMI">Entretien + Acte infirmier</option>
+     <option value="E+ECG" title="E+ECG">Entretien + ECG</option>
+     <option value="EA - EF" title="EA - EF">Entretien famille</option>
+     <option value="ESK" tilte="ESK">Eskétamine</option>
     </select>
    </td>
    <td>
     <select name="lieu"">
-     <option value="">---Choisir---</option>
-     <option value="L02">Lieu de soins psychiatriques</option>
-     <option value="L07">Domicile</option>
-     <option value="L09">Unité hospitalisation somatique (MCO, SSR, USLD)</option>
-     <option value="L10">Urgences</option>
+     <option value="">---Aucun---</option>
+     <option value="L02" title="L02">Lieu de soins psychiatriques</option>
+     <option value="L07" title="L07">Domicile</option>
+     <option value="L09" title="L09">Unité hospitalisation somatique (MCO, SSR, USLD)</option>
+     <option value="L10" title="L10">Urgences</option>
     </select>
    </td>
   </tr>
 </tbody></table>`)
-            $codagePrefs.dialog({
-                modal:true,
-                autoOpen:true,
-                title:"Paramétrage codage rapide Cora",
-                minHeight:250,
-                minWidth:680,
-                width:800,
-                height:"auto",
-                resize:"auto",
-                autoResize:true,
-                open:function(ev, ui){
-                    $('.filtreRendezVousType .itemLibelle').each((i,el)=>{
-                        try{
-                            let planning_name = $(el).text(), planning_uf = planning_name.match(/\((?<codeUF>\d{4})\)/).groups.codeUF
-                            $codagePrefs.find('tbody>tr:last')
-                                .find('td:first').text(planning_name.split('(')[0].split('_').map(t=>t.capitalize()).join(' ')).attr('title', "UF : " + planning_uf)
-                                .end().clone().appendTo($codagePrefs.find('tbody'))
-                            }catch(e){
-                            }
-                    })
-                    $codagePrefs.find('tbody>tr:last').remove()
-                },
-                buttons: [
-                    {
-                        text: "Valider",
-                        click: function() {
-                            $(this).find('input').each((i, el)=>{
-                                EasilyInfos[$(el).attr('name')] = $(el).is('[type=checkbox]') ? $(el).is(':checked') : $(el).val()
-
-                                /*
-                        if(['password_store', 'show_bloc'].includes($(el).attr('name'))){ // gestion des checkbox
-                            EasilyInfos.password_store = $(el).is(':checked')
-                        }
-                        */
-                            })
-                            EasilyInfos.password = EasilyInfos.password_store ? EasilyInfos.password : ""
-                            GM_setValue('EasilyInfos', EasilyInfos)
-                            $('.easily-univers-item').filter(':contains(paramétrage)')[EasilyInfos.hide_parametres ? 'hide':'show']().end()
-                                .filter(':contains(pilotage)')[EasilyInfos.hide_pilotage ? 'hide':'show']().end()
-                                .filter(':contains(bloc)')[EasilyInfos.hide_bloc ? 'hide':'show']().end()
-                            $( this ).dialog( "close" );
-                        },
-                        class:'btn-success'
+                $codagePrefs.dialog({
+                    modal:true,
+                    autoOpen:false,
+                    title:"Paramétrage codage rapide Cora",
+                    minHeight:250,
+                    minWidth:680,
+                    width:800,
+                    height:"auto",
+                    resize:"auto",
+                    autoResize:true,
+                    open:function(ev, ui){
                     },
-                    {
-                        text: "Annuler",
-                        click: function() {
-                            $( this ).dialog( "close" );
+                    buttons: [
+                        {
+                            text: "Valider",
+                            click: function() {
+                                let CodagePrefs = {}
+                                $(this).find('tr').each((i, el)=>{
+                                    let $tds = $('td', el)
+                                    CodagePrefs[$tds.eq(0).data('nom_planning')]={lieu:$tds.eq(2).find('select').val(), acte:$tds.eq(1).find('select').val()}
+                                })
+                                GM_setValue("CoraDefault", CodagePrefs)
+                                $( this ).dialog( "close" );
+                            },
+                            class:'btn-success'
                         },
-                        class:"btn-danger"
+                        {
+                            text: "Annuler",
+                            click: function() {
+                                $( this ).dialog( "close" );
+                            },
+                            class:"btn-danger"
+                        }
+                    ]
+                })
+                let CodagePrefs = GM_getValue("CoraDefault")
+                $('.filtreRendezVousType .itemLibelle').each((i,el)=>{
+                    try{
+                        let planning_name = $(el).text(), planning_uf = planning_name.match(/\((?<codeUF>\d{4})\)/).groups.codeUF
+                        $codagePrefs.find('tbody>tr:last')
+                            .find('td:first').text(planning_name.split(' (')[0].split('_').map(t=>t.capitalize()).join(' ')).attr('title', "UF : " + planning_uf).data('codeUF', planning_uf).attr('data-nom_planning', planning_name.split(' (')[0])
+                            .end().clone().appendTo($codagePrefs.find('tbody'))
+                    }catch(e){
                     }
-                ]
-            })
+                })
+                for (let planning in CodagePrefs){
+                    $codagePrefs.find('[data-nom_planning="'+planning+'"]').parent().find('[name=lieu]').val(CodagePrefs[planning].lieu).end().find('[name=acte]').val(CodagePrefs[planning].acte).end()
+                }
+                $codagePrefs.find('tbody>tr:last').remove()
+                $codagePrefs.dialog('open')
+            }
         })
 
+        let $style = $('#EasilyPlus_Style')
+        if(!$style.length){
+            $('body').append($style = $('<style id="EasilyPlus_Style">'))
+        }
+        $style.html(`
+        .btn-success {background: forestgreen!important;color: white!important;border-radius: 3px;}
+        .btn-danger {background: indianred!important;color: white!important;border-radius: 3px;}
+    `)
     // Agenda
     //css : background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKXSURBVDiNfZJdSFMBGIbfM6c7rvbTNjeVRKeFPxPU8kJkFUqNakQR3nTTReGNlwU2qQslPRgzsAjLFuSKUd4JEgtH1DQwYiIEp9nc9Bzb3ETtJLFxpjvndNNNbu65ffkeeL/vIwwGwyW1Wm1FHkRRFBiGcQFY3Z8RbW1tax6PpyKfgOd5dHV1+YLBoG1/JtPr9ZLJZALHcdjZ2UF1dTVEUQTHceA4DqlUCg0NDTAajclccjkA+Hw+TLjfYn19Db4ZL0KhEKLRKABApVKhsbERPT09n/1+f24BQRBIp3lk9vZAEATC4TBomoZarYbT6QQAKJXKTM5+drudTafTUiQSkRiGkQ7CarVOH1iBpmkMPxgBIOGV+yXGx8extLQEiqLgdI5sffkaEEPLKydIUnWK5//M/bdEAGAYBnWWVhCyIvA8j5aWFoyOjuLGze6tsuaL2ntj743umeXyk9bOSaVS2ZolMJvN+EEHQEh7IEkSGo0GLMviUEklYWlul0uiiNdjg7g95CorKascyKpQX18PiroPmUwGhUIBk8mEaDQKjc4kdz3sQ/znCmxXrkOjNUBWIFdlCbxeL549n8BGIgb/pw+YnZ2FzWbDt3nHbt+jKcTYMGrqmuCbcifTqd+/sgQAQJLFKCwsBADE43E4HA4MDw1o7t66ulFxrKnA83SQj6/Qh892dpyZeTe9mtjmOgAwsNvtbDKZlAKBgLS4uJh1PlEUpVgsJlkslrny0tLHF063b39/80RqPl4VBlAl39zcJILBIABAEAQsLCxk3TqTyUAQhNR6IkEdKS46lxEE3eRgb83lXmqa0Ol057VabUfOL/uHIAi7LMu6AKwBKLWYj37s775W2/9iMpJvLh+68hL9HYVCUfsXADA9PQZbgT0AAAAASUVORK5CYII=);
     /*
@@ -1324,15 +1333,6 @@
                 $el.after($('<button class="btn btn-success btn-sm" style="margin-left:5px" id="btnTransmissions">Transmissions</button>').click(ev=>{
                     $('#transmissionsFrame').dialog('open').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window})
                     document.getElementById('transmissionsFrame').contentWindow.postMessage(JSON.stringify({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]}))
-                    /*
-                    if(!$('#transmissionsFrame').dialog('open').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window}).length){
-                        $('<iframe id="transmissionsFrame" src="/Module/DS_TC/JDT/Index">').dialog()
-                        $.waitFor('div[aria-describedby="transmissionsFrame"]').then($el=>{
-                            $el.height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window}).attr('id', 'transmissionsDialog')
-                        })
-                    } else {
-                    }
-                    */
                 }))
 
 
