@@ -1133,9 +1133,11 @@
                 console.log(messageEvData.rdv_infos)
                 $.waitFor('#infosSession:visible', 5000).then($el2=>{
                     messageEvData.rdv_infos.IEP = $el2.text().split('Venue : ')[1]
-                    $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2()
-                        .attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2()
-                        .remove()
+                    $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
+                        setTimeout($el2=>{
+                            $el2.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
+                        }, 500, $(el))
+                    })
                 })
             }
         })
@@ -1575,9 +1577,11 @@
                             })
                             if($el2.is('.venue-link')){
                                 messageEvData.rdv_infos.IEP = $el2.closest('.grille').find('tr:contains("'+ messageEvData.rdv_infos.date + " " + messageEvData.rdv_infos.heure + '")').data('venuenum')
-                                $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2()
-                                    .attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2()
-                                    .remove()
+                                $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
+                                    setTimeout($el2=>{
+                                        $el2.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
+                                    }, 500, $(el))
+                                })
                                 $('.btnPrevious:visible').click()
                             } else if($el2.log().is('#iframe')){
                                 $el2.on("load", ev=> ev.target.contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*"))
