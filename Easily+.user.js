@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251127
+// @version      1.0.251128
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1243,11 +1243,13 @@
                             // Edition rapide de la FHR ou de la Lettre de Liaison (choix à définir dans les options)
                         } else if ($(ev.target).is('a:contains(Histoire)')){
                             if(ev.type == "mouseup" && ev.which == 2){
-                                $(ev.target).click()
-                                $.waitFor('span.libelledoc:contains(FHR Observation Médicale - Psychiatrie)').then($el=>{
-                                    try{$el.closest('li:has(.iconDependanceDoc)').find('div.iconmodif').click()}catch(e){}
+                                if(!$(ev.target).closest('li').is('selected')){
+                                    $(ev.target).click()
+                                }
+                                $.waitFor('span.libelledoc:contains(FHR Observation Médicale - Psychiatrie):visible').then($el=>{
+                                    try{$el.closest('li:has(.iconDependanceDoc)').find('div.iconmodif:has(.line-expanded-off)').click()}catch(e){}
                                     if(EasilyInfos.fast_edit_Lettre && $el.closest('li:has(.icon-dependance:visible)').length){
-                                        $.waitFor('li:has(span.libelledoc:contains(Lettre de Liaison valant CRH Psy)) div.iconmodif:visible', $el.closest('li:has(.iconDependanceDoc)').next('li')).then($el2=>{
+                                        $.waitFor('.ligneEnfant:has(span.libelledoc:contains(Lettre de Liaison valant CRH Psy)) div.iconmodif:visible:has(.line-expanded-off)', $el.closest('li:has(.iconDependanceDoc)').next('li')).then($el2=>{
                                             try{
                                                 $el2.click()
                                             }catch(e){
@@ -1255,7 +1257,7 @@
                                             $.waitFor('div.edit-document', $el2.closest('li')).then($el3=>$el3.click())
                                         })
                                     } else {
-                                        $.waitFor(find('div.edit-document'), $el.closest('li:has(.iconDependanceDoc)').next('li')).then($el2=>$el2.click())
+                                        $.waitFor('div.edit-document:first', $el.closest('li:has(.iconDependanceDoc)').next('li')).then($el2=>$el2.click())
                                     }
                                 })
                             }
