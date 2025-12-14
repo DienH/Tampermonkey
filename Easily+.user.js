@@ -407,25 +407,22 @@
                                     rdvInfos.date = $(ev.currentTarget).closest('td').a('abbr')
                                     let rdvTitle = $(ev.currentTarget).attr('title')
                                     try{
-                                        Object.assign(rdvInfos, rdvTitle.match(/\((?<type>\d{4})\)\n.*\n(?<heure>.*)(\n|.)*Statut \: (?<statut>.*)\n/).groups)
+                                        Object.assign(rdvInfos, rdvTitle.match(/^(?<type>.+?) \(.+?\)\n.*\n(?<heure>.*)(\n|.)*Statut \: (?<statut>.*)\n/).groups)
                                         if(rdvInfos.statut != "Réalisé"){
                                             return
                                         }
-                                        if(rdvInfos.type == "2842"){
-                                            rdvInfos.lieu = "L02"
-                                            rdvInfos.code = "E"
-                                        } else if (rdvInfos.type == "2862"){
-                                            rdvInfos.lieu = "L09"
-                                            rdvInfos.code = "ECUS"
+                                        let CoraDefault = GM_getValue('CoraDefault',{})
+                                        if(CoraDefault[rdvInfos.type]){
+                                            rdvInfos.lieu = CoraDefault[rdvInfos.type].lieu
+                                            rdvInfos.acte = CoraDefault[rdvInfos.type].acte
                                         }
                                         rdvInfos.date = $(ev.currentTarget).closest('td').a('abbr')
                                         Object.assign(rdvInfos, rdvInfos.heure.match(/(?<heure>\d\d\:\d\d).*\((?<duree>\d{2})min\)/).groups)
-                                        rdvInfos.type = rdvInfos.type == "2842" ? "cs" : (rdvInfos.type == "2862" ? "liaison" : "")
-                                        $el.find('.icon-patEasily').trigger('mouseup')
                                         //setTimeout($el2=>$el2.find('.icon-patEasily').trigger('mouseup'), 500, $el)
+                                        $el.find('.icon-selectPat').trigger('mouseup')
+                                        window.parent.postMessage(JSON.stringify({command:"agenda-Codage", "rdv_infos":rdvInfos}), "*")
                                     }catch(e){
                                     }
-                                    window.parent.postMessage(JSON.stringify({command:"agenda-Codage", "rdv_infos":rdvInfos}), "*")
                                 } else {
                                     $el.find('.icon-selectPat').trigger('mouseup')
                                     window.parent.postMessage(JSON.stringify({command:"agenda-OpenDossier"}), "*")
@@ -1119,6 +1116,30 @@
             //console.log("Pas d'habilitation au module ASUR")
             window.parent.postMessage('{"command":"allowASUR"}', "*")
         }
+        if(location.pathname.match(/TempetePlus\/TempetePlus\.Web\/Pancarte/)){
+            window.addEventListener('message', message=>{
+                let messageEvData
+                if (typeof message.data == "object"){
+                    messageEvData = message.data
+                } else{
+                    try {
+                        messageEvData = JSON.parse(message.data)
+                    }catch(e){
+                        console.log('Error parsing data', message.data)
+                        return null
+                    }
+                }
+            if(messageEvData.command == "agenda-CodageFrame"){
+                console.log(messageEvData.rdv_infos)
+                $.waitFor('#infosSession:visible', 5000).then($el2=>{
+                    messageEvData.rdv_infos.IEP = $el2.text().split('Venue : ')[1]
+                    $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2()
+                        .attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2()
+                        .remove()
+                })
+            }
+        })
+        }
     } else if (location.hostname == "easily-prod.chu-clermontferrand.fr" && window.top == window.self){
         window.addEventListener("message", receiveMessage_Main);
 
@@ -1413,7 +1434,7 @@
                 frameOrigin = el
             }
         })
-        console.log(messageEvData.command)
+        //console.log(messageEvData.command)
         switch(messageEvData.command){
 
 //        _   ___ _   _ ___
@@ -1501,7 +1522,7 @@
 //                          \/     \/     \/      \/        \/     \/               \/     \/
 
             case "transmissions_get-CR-UF":
-                frameOrigin.contentWindow.postMessage({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]})
+                frameOrigin.contentWindow.postMessage(JSON.stringify({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]}))
                 break
 
 //       _____                             .___
@@ -1524,7 +1545,7 @@
                     $.waitFor('.btnPrevious:visible').then($el=>{
                         $el.click(ev=>{
                             $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
-                                $el.hide().log()
+                                $el.hide()
                                 $currentContainer.show()
                             })
                         })
@@ -1537,17 +1558,36 @@
                 */
                 break;
             case "agenda-Codage":
-                //console.log(messageEvData)
-                $.waitFor('#module-identitepatient-ancrage #module-identitepatient-photo:visible', 5000).then($el=>{
-                    setTimeout(()=>{
-                        let patient_IPP = $('#module-identitepatient-ancrage [data-bind*="text: IPP"]').log().text()
-                        log(patient_IPP)
-                        $('<a target="_blank">').attr('href', `Lancemodule: CORA;${patient_IPP};;LOGINAD=${EasilyInfos.username}`).appendTo('body').click2()
-                            //.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.code ?? "E"}`).click2()
-                            .remove()
-                        $('.k-window-action[aria-label=Close]').click()
-                    }, 1000)
-                }).catch()
+                $currentContainer = $('.easily-container:visible')
+                $('[data-applicationname="CapMedecin"]').click()
+                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]').then($el=>{
+                    CR_selectionContainerID = $('.easily-container:visible').attr('id')
+                    $el.click()
+                    messageEvData.rdv_infos.date = (new Date(messageEvData.rdv_infos.date.split('/').reverse())).toLocaleDateString('fr-FR')
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 5000).then($el2=>{
+                        $.waitFor('.infosPatient:visible:first').then($el=>{
+                            messageEvData.rdv_infos.IPP = $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups.IPP
+                            $('.btnPrevious:visible').click(ev=>{
+                                $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
+                                    $el.hide()
+                                    $currentContainer.show()
+                                })
+                            })
+                            if($el2.is('.venue-link')){
+                                messageEvData.rdv_infos.IEP = $el2.closest('.grille').find('tr:contains("'+ messageEvData.rdv_infos.date + " " + messageEvData.rdv_infos.heure + '")').data('venuenum')
+                                $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2()
+                                    .attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2()
+                                    .remove()
+                                $('.btnPrevious:visible').click()
+                            } else if($el2.log().is('#iframe')){
+                                $el2.on("load", ev=> ev.target.contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*"))
+                                setTimeout(()=>{$('.btnPrevious:visible').click()}, 2500)
+                            }
+                            /**/
+                        })
+                        /**/
+                    }).catch(err=>log(err+ " not found."))
+                }, 5000).catch(err=>err)
                 break;
         }
 
