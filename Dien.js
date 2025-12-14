@@ -339,11 +339,13 @@
 			timeout = context
 			context = document
 		} else if (typeof context == "object"){
-			delay = context.delay ?? 0
-			timeout = context.waiTime ?? 0
-			checkFrequency = context.checkFrequency ?? 250
-			context = context.context || document
-			checkForPresence = context.checkForPresence || context.invertSelector || context.notSelector || true
+            if(!(context instanceof $)){
+				delay = context.delay ?? 0
+				timeout = context.waiTime ?? 0
+				checkFrequency = context.checkFrequency ?? 250
+				context = context.context || document
+				checkForPresence = context.checkForPresence || context.invertSelector || context.notSelector || true
+			}
 		} else if (typeof context == "boolean"){
 			checkForPresence = context
 			context = document
