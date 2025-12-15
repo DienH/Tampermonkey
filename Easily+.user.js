@@ -1564,7 +1564,7 @@
             case "agenda-Codage":
                 $currentContainer = $('.easily-container:visible')
                 $('[data-applicationname="CapMedecin"]').click()
-                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]').then($el=>{
+                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
                     CR_selectionContainerID = $('.easily-container:visible').attr('id')
                     $el.click()
                     messageEvData.rdv_infos.date = (new Date(messageEvData.rdv_infos.date.split('/').reverse())).toLocaleDateString('fr-FR')
