@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251128
+// @version      1.0.251129
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -441,6 +441,13 @@
                 }
             })
         })
+        $(window).on('click', ev=>{
+            $('.rsNextDay, .rsPrevDay, .rsToday').on('mouseup', ev=>{
+                if(ev.which == 1){
+                    createFastActions()
+                }
+            })
+        })
         $('.filtreDispoType').on('contextmenu', ev=>{
             ev.preventDefault()
             if($('#CodageCoraPrefs').length){
@@ -832,7 +839,6 @@
             }))
         } else if(location.pathname.match(/^\/(d|D)ominho\/(f|F)iche\/((O|o)pen|(C|c)reate)/i)){
             if(!unsafeWindow._currentContext){return}
-            log('test')
             let docType = $('head>title').text().split(' -')[0]
             //Expension des catégories "Contexte", "Sejour" et "Sortie" avec simple click
             $('.fm_grid_cell.fm_group_header.fm_group_header_lightgray, .fm_grid_cell.fm_group_header.fm_group_header_default').off().click(ev=>{
@@ -1483,7 +1489,7 @@
                         alert_title+= (messageEvData.alert[test].norme ? ", norme " + messageEvData.alert[test].norme : "") + ")\n"
                         important = ( messageEvData.alert[test].alert == "très faible" || messageEvData.alert[test].alert == "très élevé")
                     }
-                    $img = $('.area-carrousel li:contains(Biologie):not(:contains(Pres))').attr('title', alert_title).find('img')
+                    $img = $('.area-carrousel li:contains(Biologie):not(:contains(Pres))').attr('title', alert_title).find('img.labInfo')
                     if(important){
                         $img.attr('source', "https://easilynlb-prod.chu-clermontferrand.fr/TempetePlus/TempetePlus.Web/Content/Images/alerte.png").css({width:"16px", "position":"absolute"})
                     } else {
@@ -1539,13 +1545,13 @@
             case "agenda-OpenDossier":
                 $currentContainer = $('.easily-container:visible')
                 $('[data-applicationname="CapMedecin"]').click()
-                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]').then($el=>{
+                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
                     CR_selectionContainerID = $('.easily-container:visible').attr('id')
                     $el.click()
-                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible', 5000).then($el=>{
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 5000).then($el2=>{
                         $('.area-carrousel-wrapper li:contains(Saisir)').click()
                         //$el.click()
-                    }).catch()
+                    }).catch(err=>err)
                     $.waitFor('.btnPrevious:visible').then($el=>{
                         $el.click(ev=>{
                             $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
@@ -1564,7 +1570,7 @@
             case "agenda-Codage":
                 $currentContainer = $('.easily-container:visible')
                 $('[data-applicationname="CapMedecin"]').click()
-                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
+                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible', 5000).then($el=>{
                     CR_selectionContainerID = $('.easily-container:visible').attr('id')
                     $el.click()
                     messageEvData.rdv_infos.date = (new Date(messageEvData.rdv_infos.date.split('/').reverse())).toLocaleDateString('fr-FR')
@@ -1585,7 +1591,7 @@
                                     }, 500, $(el))
                                 })
                                 $('.btnPrevious:visible').click()
-                            } else if($el2.log().is('#iframe')){
+                            } else if($el2.is('#iframe')){
                                 $el2.on("load", ev=> ev.target.contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*"))
                                 setTimeout(()=>{$('.btnPrevious:visible').click()}, 2500)
                             }
@@ -1593,7 +1599,7 @@
                         })
                         /**/
                     }).catch(err=>log(err+ " not found."))
-                }, 5000).catch(err=>err)
+                }).catch(err=>err)
                 break;
         }
 
@@ -1757,6 +1763,7 @@
         .area-carrousel img.arrete {background-position: -16px 0}
         .area-carrousel img.arr-prog {background-position: 0 -16px}
         .area-carrousel img[src*=png] {position:absolute;width:16px;}
+        .area-carrousel .imgRefreshListe {background: url(/Modules/CM_Histoire/Content/Images/refresh.png) no-repeat; cursor: pointer; display: block!important; width: 16px; height: 13px;position: absolute; right: 0; bottom: 0;}
         #parapheurCount {padding: 0 3px; min-width: 24px; line-height: 22px;; background-color: #01b7f1; text-align: center; vertical-align: middle; float: right; border-radius: 12px;margin-top:-5px;border:1px solid #005996;color: white; font-weight: 600;}
         .habTemp-Buttons.hab-psyB.hab-addicto.hab-UPP.hab-psyA.hab-pedo {display:none;}
         .hab-psyA .hab-Ajouter_psyA, .hab-psyB .hab-Ajouter_psyB, .hab-pedo .hab-Ajouter_pedo, .hab-UPP .hab-Ajouter_UPP, .hab-addicto .hab-Ajouter_addicto {display: none;}
@@ -1772,18 +1779,27 @@ function changementContextePatient(){
     let EasilyInfos = GM_getValue('EasilyInfos',{"user":"", "password":""})
     //<i class='fa fa-carret'></i>
     let $ = unsafeWindow.jQuery
-    if($('.area-carrousel:visible li:contains(Prescrire):not(.easily_plus)').length){
+    if($('.area-carrousel:visible li:contains(Histoire):not(.easily_plus)').length){
+        $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
+        $('.area-carrousel li:contains(Biologie)').append($('<img src class="imgRefreshListe" title="Actualiser">').click(ev=>{
+            if($(ev.target).parent(':contains(Pres)').length){
+                $('#presBioFrame').attr("src", "https://cyberlab.chu-clermontferrand.fr")
+            }else{
+                 $('#cyberlabFrame').attr("src", "https://cyberlab.chu-clermontferrand.fr")
+            }
+        })).filter(':not(:contains(Pres))').find('img:first').addClass('labInfo').end()
+        /*/
         $('.area-carrousel-wrapper li:not(.menu-links)>a:contains("Liens")').append("<i class='fa fa-caret-down' style='margin-left:5px;'></i>").parent().addClass("menu-links")
             .append("<li class='li_links'></li><li class='li_links'></li>")
-        $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
+        /**/
 
-        $.waitFor('.area-carrousel:visible li:contains(Prescrire):not(.easily_plus)').then($el=>{
-            $el.addClass('easily_plus')
+        $.waitFor('.area-carrousel:visible li:contains(Histoire):not(.easily_plus)', 5000).then($el=>{
+            $el.addClass('easily_plus').click()
             $('li:contains(Biologie):not(:contains(Pres Bio))', '.area-carrousel').click()
             setTimeout(()=>{
-                $('.area-carrousel:visible').eq(1).find('li:eq(1)').click()
+                $('.area-carrousel:visible').eq(1).find('li:contains(Histoire)').click()
             }, 1000)
-        })
+        }).catch(err=>err)
         $.waitFor('#module-bioboxes-imagerie').then($el=>{
             $el.not(':has(#xploreFrame)').html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
         })
