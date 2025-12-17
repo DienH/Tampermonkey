@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251129
+// @version      1.0.251130
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -67,7 +67,7 @@
 
             window.onmessage = msg=>{
                 window.name=msg.data.windowName ?? ""
-                console.log(msg.data)
+                //console.log(msg.data)
                 if(msg.data.IPP){
                     if(window.name == "resultats"){
                         $('#pat_Code').val(msg.data.IPP)
@@ -396,57 +396,55 @@
 
     else if(location.href.search("easilynlb-prod.chu-clermontferrand.fr/Agenda/Agenda.Web")+1){
         function createFastActions(){
+            $('div.event.chip:not(.fastActionMiddleClick)').on('mouseup', ev=>{
+                if(ev.which == 2){
+                    $(ev.currentTarget).contextmenu()
+                    $.waitFor('ul.context-menu-root:visible').then($el=>{
+                        if(ev.shiftKey){
+                            let rdvInfos = {}
+                            rdvInfos.date = $(ev.currentTarget).closest('td').a('abbr')
+                            let rdvTitle = $(ev.currentTarget).attr('title')
+                            try{
+                                Object.assign(rdvInfos, rdvTitle.match(/^(?<type>.+?) \(.+?\)\n.*\n(?<heure>.*)(\n|.)*Statut \: (?<statut>.*)\n/).groups)
+                                if(rdvInfos.statut != "Réalisé"){
+                                    return
+                                }
+                                let CoraDefault = GM_getValue('CoraDefault',{})
+                                if(CoraDefault[rdvInfos.type]){
+                                    rdvInfos.lieu = CoraDefault[rdvInfos.type].lieu
+                                    rdvInfos.acte = CoraDefault[rdvInfos.type].acte
+                                }
+                                rdvInfos.date = $(ev.currentTarget).closest('td').a('abbr')
+                                Object.assign(rdvInfos, rdvInfos.heure.match(/(?<heure>\d\d\:\d\d).*\((?<duree>\d{2})min\)/).groups)
+                                //setTimeout($el2=>$el2.find('.icon-patEasily').trigger('mouseup'), 500, $el)
+                                $el.find('.icon-selectPat').trigger('mouseup')
+                                window.parent.postMessage(JSON.stringify({command:"agenda-Codage", "rdv_infos":rdvInfos}), "*")
+                            }catch(e){
+                            }
+                        } else {
+                            $el.find('.icon-selectPat').trigger('mouseup')
+                            window.parent.postMessage(JSON.stringify({command:"agenda-OpenDossier"}), "*")
+                        }
+                    })
+                }
+            }).addClass('fastActionMiddleClick')
+        }
+        function waitForCreateFastActions(){
             $.waitFor('#loading-indicator-navigationContenu:visible').then($el=>{
                 $.waitFor('!#loading-indicator-navigationContenu').catch(err=>{
-                    $('div.event.chip:not(.fastActionMiddleClick)').on('mouseup', ev=>{
-                        if(ev.which == 2){
-                            $(ev.currentTarget).contextmenu()
-                            $.waitFor('ul.context-menu-root:visible').then($el=>{
-                                if(ev.shiftKey){
-                                    let rdvInfos = {}
-                                    rdvInfos.date = $(ev.currentTarget).closest('td').a('abbr')
-                                    let rdvTitle = $(ev.currentTarget).attr('title')
-                                    try{
-                                        Object.assign(rdvInfos, rdvTitle.match(/^(?<type>.+?) \(.+?\)\n.*\n(?<heure>.*)(\n|.)*Statut \: (?<statut>.*)\n/).groups)
-                                        if(rdvInfos.statut != "Réalisé"){
-                                            return
-                                        }
-                                        let CoraDefault = GM_getValue('CoraDefault',{})
-                                        if(CoraDefault[rdvInfos.type]){
-                                            rdvInfos.lieu = CoraDefault[rdvInfos.type].lieu
-                                            rdvInfos.acte = CoraDefault[rdvInfos.type].acte
-                                        }
-                                        rdvInfos.date = $(ev.currentTarget).closest('td').a('abbr')
-                                        Object.assign(rdvInfos, rdvInfos.heure.match(/(?<heure>\d\d\:\d\d).*\((?<duree>\d{2})min\)/).groups)
-                                        //setTimeout($el2=>$el2.find('.icon-patEasily').trigger('mouseup'), 500, $el)
-                                        $el.find('.icon-selectPat').trigger('mouseup')
-                                        window.parent.postMessage(JSON.stringify({command:"agenda-Codage", "rdv_infos":rdvInfos}), "*")
-                                    }catch(e){
-                                    }
-                                } else {
-                                    $el.find('.icon-selectPat').trigger('mouseup')
-                                    window.parent.postMessage(JSON.stringify({command:"agenda-OpenDossier"}), "*")
-                                }
-                            })
-                        }
-                    }).addClass('fastActionMiddleClick')
+                    createFastActions()
                 })
             })
         }
-        createFastActions()
         $.waitFor('.rsNextDay, .rsPrevDay, .rsToday').then(()=>{
             $('.rsNextDay, .rsPrevDay, .rsToday').on('mouseup', ev=>{
                 if(ev.which == 1){
-                    createFastActions()
+                    waitForCreateFastActions()
                 }
             })
         })
         $(window).on('click', ev=>{
-            $('.rsNextDay, .rsPrevDay, .rsToday').on('mouseup', ev=>{
-                if(ev.which == 1){
-                    createFastActions()
-                }
-            })
+            createFastActions()
         })
         $('.filtreDispoType').on('contextmenu', ev=>{
             ev.preventDefault()
@@ -1123,6 +1121,7 @@
             window.parent.postMessage('{"command":"allowASUR"}', "*")
         }
         if(location.pathname.match(/TempetePlus\/TempetePlus\.Web\/Pancarte/)){
+            console.warn('Pancarte ready')
             window.addEventListener('message', message=>{
                 let messageEvData
                 if (typeof message.data == "object"){
@@ -1137,14 +1136,19 @@
                 }
             if(messageEvData.command == "agenda-CodageFrame"){
                 console.log(messageEvData.rdv_infos)
-                $.waitFor('#infosSession:visible', 5000).then($el2=>{
-                    messageEvData.rdv_infos.IEP = $el2.text().split('Venue : ')[1]
-                    $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
-                        setTimeout($el2=>{
-                            $el2.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
-                        }, 500, $(el))
+                if(!window.codageStarted){
+                    window.codageStarted = true
+                    $.waitFor('#infosSession:visible', 5000).then($el2=>{
+                        messageEvData.rdv_infos.IEP = $el2.text().split('Venue : ')[1]
+                        console.log(`Démarrage de CORA (IPP:${messageEvData.rdv_infos.IPP}; IEP:${messageEvData.rdv_infos.IEP}; Login:LOGINAD=${EasilyInfos.username})`)
+                        $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
+                            setTimeout($el2=>{
+                                console.log('Lancement du module de codage')
+                                $el2.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
+                            }, 500, $(el))
+                        })
                     })
-                })
+                }
             }
         })
         }
@@ -1574,7 +1578,7 @@
                     CR_selectionContainerID = $('.easily-container:visible').attr('id')
                     $el.click()
                     messageEvData.rdv_infos.date = (new Date(messageEvData.rdv_infos.date.split('/').reverse())).toLocaleDateString('fr-FR')
-                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 5000).then($el2=>{
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 10000).then($el2=>{
                         $.waitFor('.infosPatient:visible:first').then($el=>{
                             messageEvData.rdv_infos.IPP = $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups.IPP
                             $('.btnPrevious:visible').click(ev=>{
@@ -1592,8 +1596,16 @@
                                 })
                                 $('.btnPrevious:visible').click()
                             } else if($el2.is('#iframe')){
-                                $el2.on("load", ev=> ev.target.contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*"))
-                                setTimeout(()=>{$('.btnPrevious:visible').click()}, 2500)
+                                setTimeout(()=>{
+                                    $el2[0].contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*")
+                                }, 1000)
+                                    /*
+                                $el2.on("load", ev=> {
+                                    ev.target.contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*")
+                                    setTimeout(()=>{$('.btnPrevious:visible').click()}, 2500)
+                                })[0].contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*")
+                                */
+                                //setTimeout(()=>{$('.btnPrevious:visible').click()}, 5000)
                             }
                             /**/
                         })
@@ -1610,14 +1622,16 @@
 //                         |___/                        |_|
         if (µ._data && µ._data.PatientId){
             try{
-                µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
-                Object.assign(µ.currentPatient, $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups)
-                //µ.currentPatient.IPP = $('.infosPatient:visible:first').text().split(' : ')[1]
-                //µ.currentPatient.DDN = $('.infosPatient:visible:first').text().split('le ')[1].split(" (")[0]
-                µ.currentPatient.sexe = µ._data.PatientSexe == "Femme" ? "f" : "m"
-                µ.currentPatient.ID = µ._data.PatientId
-                µ.currentPatient.IEP = µ._data.VenueNumero
-                console.log('Changement de patient pour : ' + µ.currentPatient.nom + " " + µ.currentPatient.prenom)
+                if(µ._data.PatientId != µ.currentPatient.ID){
+                    µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
+                    Object.assign(µ.currentPatient, $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups)
+                    //µ.currentPatient.IPP = $('.infosPatient:visible:first').text().split(' : ')[1]
+                    //µ.currentPatient.DDN = $('.infosPatient:visible:first').text().split('le ')[1].split(" (")[0]
+                    µ.currentPatient.sexe = µ._data.PatientSexe == "Femme" ? "f" : "m"
+                    µ.currentPatient.ID = µ._data.PatientId
+                    µ.currentPatient.IEP = µ._data.VenueNumero
+                    console.log('Changement de patient pour : ' + µ.currentPatient.nom + " " + µ.currentPatient.prenom)
+                }
                 changementContextePatient()
             }catch(e){
             }
@@ -1763,7 +1777,7 @@
         .area-carrousel img.arrete {background-position: -16px 0}
         .area-carrousel img.arr-prog {background-position: 0 -16px}
         .area-carrousel img[src*=png] {position:absolute;width:16px;}
-        .area-carrousel .imgRefreshListe {background: url(/Modules/CM_Histoire/Content/Images/refresh.png) no-repeat; cursor: pointer; display: block!important; width: 16px; height: 13px;position: absolute; right: 0; bottom: 0;}
+        .area-carrousel .imgRefreshListe {cursor: pointer; display: block!important; width: 16px; height: 13px;position: absolute; right: 0; bottom: 0;}
         #parapheurCount {padding: 0 3px; min-width: 24px; line-height: 22px;; background-color: #01b7f1; text-align: center; vertical-align: middle; float: right; border-radius: 12px;margin-top:-5px;border:1px solid #005996;color: white; font-weight: 600;}
         .habTemp-Buttons.hab-psyB.hab-addicto.hab-UPP.hab-psyA.hab-pedo {display:none;}
         .hab-psyA .hab-Ajouter_psyA, .hab-psyB .hab-Ajouter_psyB, .hab-pedo .hab-Ajouter_pedo, .hab-UPP .hab-Ajouter_UPP, .hab-addicto .hab-Ajouter_addicto {display: none;}
@@ -1781,7 +1795,7 @@ function changementContextePatient(){
     let $ = unsafeWindow.jQuery
     if($('.area-carrousel:visible li:contains(Histoire):not(.easily_plus)').length){
         $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
-        $('.area-carrousel li:contains(Biologie)').append($('<img src class="imgRefreshListe" title="Actualiser">').click(ev=>{
+        $('.area-carrousel li:contains(Biologie)').append($('<img src="/Modules/CM_Histoire/Content/Images/refresh.png" class="imgRefreshListe" title="Actualiser">').click(ev=>{
             if($(ev.target).parent(':contains(Pres)').length){
                 $('#presBioFrame').attr("src", "https://cyberlab.chu-clermontferrand.fr")
             }else{
