@@ -1098,13 +1098,13 @@
                     $('.fm_group_header_expander.image_expandable_png').click().log()
                     //console.log("Fiche FHR")
                     break
-//    _________                            .__   __
-//    \_   ___ \  ____   ____   ________ __|  |_/  |_
-//    /    \  \/ /  _ \ /    \ /  ___/  |  \  |\   __\
-//    \     \___(  <_> )   |  \\___ \|  |  /  |_|  |
-//     \______  /\____/|___|  /____  >____/|____/__|
-//            \/            \/     \/
 
+//       ___                      _ _
+//      / __\___  _ __  ___ _   _| | |_
+//     / /  / _ \| '_ \/ __| | | | | __|
+//    / /__| (_) | | | \__ \ |_| | | |_
+//    \____/\___/|_| |_|___/\__,_|_|\__|
+//
                 case "Fiche de Consultation Psy":
                 case "Fiche de Consultation Psy de Liaison":
                     $('.fm_group_header_label_light:contains(Synthèse)').click()
@@ -1120,8 +1120,17 @@
             //console.log("Pas d'habilitation au module ASUR")
             window.parent.postMessage('{"command":"allowASUR"}', "*")
         }
+
+//       ___                           _
+//      / _ \__ _ _ __   ___ __ _ _ __| |_ ___
+//     / /_)/ _` | '_ \ / __/ _` | '__| __/ _ \
+//    / ___/ (_| | | | | (_| (_| | |  | ||  __/
+//    \/    \__,_|_| |_|\___\__,_|_|   \__\___|
+//
         if(location.pathname.match(/TempetePlus\/TempetePlus\.Web\/Pancarte/)){
-            console.warn('Pancarte ready')
+            $.waitFor('#infosSession:visible', 5000).then($el2=>{
+                window.parent.postMessage(JSON.stringify({command:"pancarte-Ready", IEP: $el2.text().split('Venue : ')[1]}), "*")
+            })
             window.addEventListener('message', message=>{
                 let messageEvData
                 if (typeof message.data == "object"){
@@ -1134,23 +1143,23 @@
                         return null
                     }
                 }
-            if(messageEvData.command == "agenda-CodageFrame"){
-                console.log(messageEvData.rdv_infos)
-                if(!window.codageStarted){
-                    window.codageStarted = true
-                    $.waitFor('#infosSession:visible', 5000).then($el2=>{
-                        messageEvData.rdv_infos.IEP = $el2.text().split('Venue : ')[1]
-                        console.log(`Démarrage de CORA (IPP:${messageEvData.rdv_infos.IPP}; IEP:${messageEvData.rdv_infos.IEP}; Login:LOGINAD=${EasilyInfos.username})`)
-                        $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
-                            setTimeout($el2=>{
-                                console.log('Lancement du module de codage')
-                                $el2.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
-                            }, 500, $(el))
+                if(messageEvData.command == "agenda-CodageFrame"){
+                    //console.log(messageEvData.rdv_infos)
+                    if(!window.codageStarted){
+                        window.codageStarted = true
+                        $.waitFor('#infosSession:visible', 5000).then($el2=>{
+                            messageEvData.rdv_infos.IEP = $el2.text().split('Venue : ')[1]
+                            console.log(`Démarrage de CORA (IPP:${messageEvData.rdv_infos.IPP}; IEP:${messageEvData.rdv_infos.IEP}; Login:LOGINAD=${EasilyInfos.username})`)
+                            $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
+                                setTimeout($el2=>{
+                                    console.log('Lancement du module de codage')
+                                    $el2.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
+                                }, 500, $(el))
+                            })
                         })
-                    })
+                    }
                 }
-            }
-        })
+            })
         }
     } else if (location.hostname == "easily-prod.chu-clermontferrand.fr" && window.top == window.self){
         window.addEventListener("message", receiveMessage_Main);
@@ -1573,6 +1582,7 @@
                 break;
             case "agenda-Codage":
                 $currentContainer = $('.easily-container:visible')
+                µ.codageCora = true
                 $('[data-applicationname="CapMedecin"]').click()
                 $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible', 5000).then($el=>{
                     CR_selectionContainerID = $('.easily-container:visible').attr('id')
@@ -1612,6 +1622,11 @@
                         /**/
                     }).catch(err=>log(err+ " not found."))
                 }).catch(err=>err)
+                break;
+            case "pancarte-Ready":
+                if(µ.codageCora = true){
+                    µ.codageCora = false
+                }
                 break;
         }
 
