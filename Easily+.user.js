@@ -1278,6 +1278,7 @@
                                     } else {
                                         $.waitFor('div.edit-document:first', $el.closest('li:has(.iconDependanceDoc)').next('li')).then($el2=>$el2.click())
                                     }
+                                    $.waitFor('.delete-panier:visible', 5000).then($el=>$el.click()).catch(err=>err)
                                 })
                             }
                         }
