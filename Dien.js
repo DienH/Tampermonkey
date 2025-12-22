@@ -413,7 +413,7 @@ async function waitForElement(selector) {
     return $selection;
 }
 async function waitForFrame(frame) {
-	if(typeof frame =! "object") return
+	if(typeof frame != "object") return
     if(typeof frame.nodeName == "undefined"){
 		if(typeof frame[0] != "undefined"){
 			if(frame[0].nodeName && frame[0].nodeName == "IFRAME"){
