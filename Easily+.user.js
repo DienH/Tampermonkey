@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.251130
+// @version      1.0.251131
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -442,6 +442,7 @@
                     waitForCreateFastActions()
                 }
             })
+            createFastActions()
         })
         $(window).on('click', ev=>{
             createFastActions()
@@ -738,7 +739,7 @@
                 ).catch(err=>err)
             }
         })
-        window.parent.postMessage(JSON.stringify({command:"transmissions_get-CR-UF"}))
+        window.parent.postMessage(JSON.stringify({command:"transmissions_get-CR-UF"}), "*")
         $('body').not(':has(#EasilyPlus_Style)').append($('<style id="EasilyPlus_Style">').html(`
     nav.navbar, .nav-cr-uf-secteur {display:none;}
     #module-ds-tc-jdt .table-residents>table>tbody {height: calc(100vh - 110px) !important;}
@@ -1130,7 +1131,7 @@
         if(location.pathname.match(/TempetePlus\/TempetePlus\.Web\/Pancarte/)){
             $.waitFor('#infosSession:visible', 5000).then($el2=>{
                 window.parent.postMessage(JSON.stringify({command:"pancarte-Ready", IEP: $el2.text().split('Venue : ')[1]}), "*")
-            })
+            }).catch(err=>err)
             window.addEventListener('message', message=>{
                 let messageEvData
                 if (typeof message.data == "object"){
@@ -1156,7 +1157,7 @@
                                     $el2.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
                                 }, 500, $(el))
                             })
-                        })
+                        }).catch(err=>err)
                     }
                 }
             })
@@ -1377,7 +1378,7 @@
                 }
                 $el.after($('<button class="btn btn-success btn-sm" style="margin-left:5px" id="btnTransmissions">Transmissions</button>').click(ev=>{
                     $('#transmissionsFrame').dialog('open').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window})
-                    document.getElementById('transmissionsFrame').contentWindow.postMessage(JSON.stringify({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]}))
+                    document.getElementById('transmissionsFrame').contentWindow.postMessage(JSON.stringify({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]}), "*")
                 }))
 
 
@@ -1546,7 +1547,7 @@
 //                          \/     \/     \/      \/        \/     \/               \/     \/
 
             case "transmissions_get-CR-UF":
-                frameOrigin.contentWindow.postMessage(JSON.stringify({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]}))
+                frameOrigin.contentWindow.postMessage(JSON.stringify({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]}), "*")
                 break
 
 //       _____                             .___
@@ -1559,10 +1560,10 @@
             case "agenda-OpenDossier":
                 $currentContainer = $('.easily-container:visible')
                 $('[data-applicationname="CapMedecin"]').click()
-                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
+                $.waitFor(EasilyInfos.CR ? 'div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible' : "div.clickable:contains(CONSULT):visible:first").then($el=>{
                     CR_selectionContainerID = $('.easily-container:visible').attr('id')
                     $el.click()
-                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 5000).then($el2=>{
+                    $.waitFor('.internal-selection-venue tbody .venue-link:visible:first, #iframe[src*="TempetePlus.Web/Pancarte"]', 5000).then($el2=>{
                         $('.area-carrousel-wrapper li:contains(Saisir)').click()
                         //$el.click()
                     }).catch(err=>err)
@@ -1574,7 +1575,7 @@
                             })
                         })
                     })
-                }, 5000).catch()
+                }, 5000).catch(err=>log("t'as mal codé ton truc"))
                 /*
                 $.waitFor('#module-agenda #blocGauche:visible', 5000).then(()=>{
                     $('#module-agenda #dossierPatient').log().click()
@@ -1610,17 +1611,8 @@
                                 setTimeout(()=>{
                                     $el2[0].contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*")
                                 }, 1000)
-                                    /*
-                                $el2.on("load", ev=> {
-                                    ev.target.contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*")
-                                    setTimeout(()=>{$('.btnPrevious:visible').click()}, 2500)
-                                })[0].contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*")
-                                */
-                                //setTimeout(()=>{$('.btnPrevious:visible').click()}, 5000)
                             }
-                            /**/
                         })
-                        /**/
                     }).catch(err=>log(err+ " not found."))
                 }).catch(err=>err)
                 break;
