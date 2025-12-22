@@ -412,6 +412,25 @@ async function waitForElement(selector) {
     }
     return $selection;
 }
+async function waitForFrame(frame) {
+	if(typeof frame =! "object") return
+    if(typeof frame.nodeName == "undefined"){
+		if(typeof frame[0] != "undefined"){
+			if(frame[0].nodeName && frame[0].nodeName == "IFRAME"){
+				frame = frame[0]
+			} else {
+				return
+			}
+		} else
+			return
+	} else if(frame.nodeName != "IFRAME"){
+		return
+	}
+    while ( typeof frame.contentWindow == "undefined") {
+        await new Promise( resolve => setTimeout(resolve, 250) )
+    }
+    return frame.contentWindow;
+}
 
 function getPath(win, n){
 	if (!(typeof win === "object" && win.document)) win = window;
