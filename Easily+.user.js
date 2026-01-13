@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260101
+// @version      1.0.260105
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -443,24 +443,76 @@
                 }
             })
         })
-        if(!$('#agendasPrefs').length){
-            $('#navigationChoixAgendaListe')
-                .after($('<div id="agendasPrefs" style="display:inline-block;" title="Agendas sauvegardés"></div'))
-                .after($('<span id="removeAgendasPrefs" class="fa fa-minus-square"></span>').click(ev=>{
-                let current_planning = $('#navigationChoixAgenda .k-input').text()
-                $('#agendasPrefs [value="'+current_planning+'"]').remove()
-                $(ev.target).hide()
-                $('#addAgendasPrefs').show()
-            })).after($('<span id="addAgendasPrefs" class="fa fa-plus-square"></span>').click(ev=>{
-                let current_planning = $('#navigationChoixAgenda .k-input').text()
-                $('#agendasPrefs').append($('<button value="'+current_planning+'">'+current_planning.match(/^(?<nom>[A-Z]+)/).groups.nom+'</button>').click(ev=>{
-                    $('#navigationChoixAgenda>.k-dropdown').click()
-                    $.waitFor
+        $.waitFor("#navigationChoixAgenda .k-input:visible").then($el=>{
+            if(!$('#agendasPrefs').length){
+                $('#navigationChoixAgendaListe')
+                    .after($('<div id="agendasPrefs" style="display:inline-block;" title="Agendas sauvegardés"></div'))
+                    .after($('<span id="removeAgendasPrefs" class="fa fa-minus-square"></span>').hide().click(ev=>{
+                    let current_planning = $('#navigationChoixAgenda .k-input').text()
+                    $('#agendasPrefs [value="'+current_planning+'"]').remove()
+                    $(ev.target).hide()
+                    $('#addAgendasPrefs').show()
+                    let CS_prefs = GM_getValue("CS_prefs", [])
+                    for (let k in CS_prefs){
+                        if(CS_prefs[k].long == current_planning){
+                            CS_prefs.splice(k, 1)
+                        }
+                    }
+                    GM_setValue("CS_prefs", CS_prefs)
+                })).after($('<span id="addAgendasPrefs" class="fa fa-plus-square"></span>').click(ev=>{
+                    let current_planning = {long:$('#navigationChoixAgenda .k-input').text()}
+                    current_planning.short = current_planning.long.match(/^(?<nom>[A-Z]+)/).groups.nom
+                    $('#agendasPrefs').append($('<button value="'+current_planning.long+'">'+current_planning.short+'</button>').click(ev=>{
+                        let $planning_selector = $('#navigationChoixAgenda>.k-dropdown'), selected_planning = $(ev.target).value
+                        if($planning_selector.text() == selected_planning){
+                            return
+                        }
+                        $planning_selector.click()
+                        $.waitFor('.comboAgendaSection:visible', 5000).then(()=>{
+                            console.log("a")
+                            $('.comboAgendaItem:contains('+selected_planning+')').click().log()
+                        }).catch(err=>log(err))
+                    }))
+                    $(ev.target).hide()
+                    $('#removeAgendasPrefs').show()
+                    let CS_prefs = GM_getValue("CS_prefs", [])
+                    CS_prefs.push(current_planning)
+                    GM_setValue("CS_prefs", CS_prefs)
                 }))
-                $(ev.target).hide()
-                $('#removeAgendasPrefs').show()
-            }))
-        }
+                let CS_prefs = GM_getValue("CS_prefs", [])
+                for (let k in CS_prefs){
+                    $('#agendasPrefs').append($('<button value="'+CS_prefs[k].long+'">'+CS_prefs[k].short+'</button>').click(ev=>{
+                        let $planning_selector = $('#navigationChoixAgenda>.k-dropdown'), selected_planning = $(ev.target).val()
+                        if($planning_selector.text() == selected_planning){
+                            return
+                        }
+                        $planning_selector.click()
+                        $.waitFor('.comboAgendaSection:visible', 5000).then(()=>{
+                            $('.comboAgendaItem:contains('+selected_planning+')').click().log()
+                        }).catch(err=>log(err))
+                    }).contextmenu(ev=>{
+                        ev.preventDefault()
+                        $(ev.target).attr('contenteditable', 'true').focus().on('blur', ev=>{
+                            let CS_prefs = GM_getValue("CS_prefs", [])
+                            $(ev.target).attr('contenteditable',false).off('blur')
+                            for (let k in CS_prefs){
+                                if(CS_prefs[k].long == $(ev.target).val()){
+                                    console.log($(ev.target).text())
+                                    CS_prefs[k].short = $(ev.target).text()
+                                    GM_setValue("CS_prefs", CS_prefs)
+                                    return
+                                }
+                            }
+                        })
+                    }))
+                    let current_planning = $('#navigationChoixAgenda .k-input').text()
+                    if(CS_prefs[k].long == current_planning){
+                        $('#removeAgendasPrefs').show()
+                        $('#addAgendasPrefs').hide()
+                    }
+                }
+            }
+        })
         $(window).on('click', ev=>{
             createFastActions()
         })
