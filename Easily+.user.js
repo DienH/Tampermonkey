@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260105
+// @version      1.0.260106
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -428,6 +428,7 @@
                     })
                 }
             }).addClass('fastActionMiddleClick')
+            $('#dvCalMain').off('mouseenter', ".event", createFastActions)
         }
         function waitForCreateFastActions(){
             $.waitFor('#loading-indicator-navigationContenu:visible').then($el=>{
@@ -469,26 +470,7 @@
                         }
                         $planning_selector.click()
                         $.waitFor('.comboAgendaSection:visible', 5000).then(()=>{
-                            console.log("a")
-                            $('.comboAgendaItem:contains('+selected_planning+')').click().log()
-                        }).catch(err=>log(err))
-                    }))
-                    $(ev.target).hide()
-                    $('#removeAgendasPrefs').show()
-                    let CS_prefs = GM_getValue("CS_prefs", [])
-                    CS_prefs.push(current_planning)
-                    GM_setValue("CS_prefs", CS_prefs)
-                }))
-                let CS_prefs = GM_getValue("CS_prefs", [])
-                for (let k in CS_prefs){
-                    $('#agendasPrefs').append($('<button value="'+CS_prefs[k].long+'">'+CS_prefs[k].short+'</button>').click(ev=>{
-                        let $planning_selector = $('#navigationChoixAgenda>.k-dropdown'), selected_planning = $(ev.target).val()
-                        if($planning_selector.text() == selected_planning){
-                            return
-                        }
-                        $planning_selector.click()
-                        $.waitFor('.comboAgendaSection:visible', 5000).then(()=>{
-                            $('.comboAgendaItem:contains('+selected_planning+')').click().log()
+                            $('.comboAgendaItem:contains('+selected_planning+')').click()
                         }).catch(err=>log(err))
                     }).contextmenu(ev=>{
                         ev.preventDefault()
@@ -505,6 +487,38 @@
                             }
                         })
                     }))
+                    $(ev.target).hide()
+                    $('#removeAgendasPrefs').show()
+                    let CS_prefs = GM_getValue("CS_prefs", [])
+                    CS_prefs.push(current_planning)
+                    GM_setValue("CS_prefs", CS_prefs)
+                }))
+                let CS_prefs = GM_getValue("CS_prefs", [])
+                for (let k in CS_prefs){
+                    $('#agendasPrefs').append($('<button contenteditable value="'+CS_prefs[k].long+'">'+CS_prefs[k].short+'</button>').click(ev=>{
+                        let $planning_selector = $('#navigationChoixAgenda>.k-dropdown'), selected_planning = $(ev.target).val()
+                        if($planning_selector.text() == selected_planning){
+                            return
+                        }
+                        $planning_selector.click()
+                        $.waitFor('.comboAgendaSection:visible', 5000).then(()=>{
+                            $('.comboAgendaItem:contains('+selected_planning+')').click()
+                        }).catch(err=>log(err))
+                    }).contextmenu(ev=>{
+                        ev.preventDefault()
+                        $(ev.target).on('blur', ev=>{
+                            let CS_prefs = GM_getValue("CS_prefs", [])
+                            $(ev.target).off('blur')
+                            for (let k in CS_prefs){
+                                if(CS_prefs[k].long == $(ev.target).val()){
+                                    CS_prefs[k].short = $(ev.target).text()
+                                    GM_setValue("CS_prefs", CS_prefs)
+                                    return
+                                }
+                            }
+                        })
+                        //setTimeout($el=>$el.focus(), 500, $(ev.target))
+                    }))
                     let current_planning = $('#navigationChoixAgenda .k-input').text()
                     if(CS_prefs[k].long == current_planning){
                         $('#removeAgendasPrefs').show()
@@ -516,6 +530,7 @@
         $(window).on('click', ev=>{
             createFastActions()
         })
+        $('#dvCalMain').on('mouseenter', ".event", createFastActions)
         $('.filtreDispoType').on('contextmenu', ev=>{
             ev.preventDefault()
             if($('#CodageCoraPrefs').length){
@@ -1239,8 +1254,10 @@
         window.addEventListener("message", receiveMessage_Main);
 
         if(GM_getValue('fromLogin', false)){
+            setTimeout(()=>{
 
-            setTimeout(()=>{console.log(GM_getValue('fromLogin', false));GM_setValue('fromLogin', false);$(window).click()}, 1500)
+                GM_setValue('fromLogin', false);$(window).click()
+            }, 1500)
         }
     }
 
@@ -1775,11 +1792,11 @@
   </tr>
   <tr class="option-info_password_store">
    <td>Enregistrer le MdP ?</td>
-   <td><input type="checkbox" name="password_store" ${EasilyInfos.password_store ? "checked" : ""}></td>
+   <td><input type="checkbox" name="password_store" id="EasilyPlus_password_store" ${EasilyInfos.password_store ? "checked" : ""}></td>
   </tr>
   <tr class="option-info_password">
    <td>Password</td>
-   <td><input type="password" name="password" value="${EasilyInfos.password ? EasilyInfos.password : ""}"></td>
+   <td><input type="password" name="password" value="${EasilyInfos.password ? EasilyInfos.password : ""}" oninput="document.getElementById('EasilyPlus_password_store').checked = !!this.value"></td>
   </tr>
   <tr class="option-info_tel_service">
    <td>Téléphone service</td>
@@ -1792,6 +1809,15 @@
   <tr class="option-info_UF">
    <td>Numéro UF</td>
    <td><input type="tel" pattern="[0-4][0-9]{3}" name="UF" value="${EasilyInfos.UF ? EasilyInfos.UF : ""}" placeholder="Ex : 2838"></td>
+  </tr>
+  <tr class="option-demarrage">
+   <td>Page à afficher au démarrage</td>
+   <td>
+    <label><input type="radio" name="page_demarrage" value="default" ${EasilyInfos.page_demarrage == "default" ? "checked" : ""}> Défaut</label>
+    <label><input type="radio" name="page_demarrage" value="CS" ${EasilyInfos.page_demarrage =="CS" ? "checked" : ""}> Consultation</label>
+    <label><input type="radio" name="page_demarrage" value="Hospit" ${EasilyInfos.page_demarrage =="Hospit" ? "checked" : ""}> Hospitalisation</label>
+    <label><input type="radio" name="page_demarrage" value="Urg" ${EasilyInfos.page_demarrage =="Urg" ? "checked" : ""}> Urgences</label>
+   </td>
   </tr>
   <tr class="option-cacher_Bloc">
    <td>Menus à cacher</td>
@@ -1935,8 +1961,9 @@ function changementContextePatient(){
         .after($last_left_tab.clone().attr('id', 'urg_patient').find('a').text('Urg').attr('id','').end().click(ev=>{
             $(ev.currentTarget).siblings('.selected').removeClass('selected').end().addClass('selected')
             $('#area-content-1')
-                .filter(':not(:has(#area-content-1-urg)').append('<div id="area-content-1-urg" style="display:none;"><iframe style="width:100%;height:100%;" src="https://easilynlb-prod.chu-clermontferrand.fr/Urgences/Urgences.Web/">').end()
+                .filter(':not(:has(#area-content-1-urg)').append('<div id="area-content-1-urg" style="display:none; height: calc(100% - 7px); width: calc(100% - 7px);"><iframe style="width:100%;height:100%;" src="https://easilynlb-prod.chu-clermontferrand.fr/Urgences/Urgences.Web/Recherche/Index?easilyAction=afficherDernierPassage">').end()
             .find('[id^=area-content-1]').hide().end().find('#area-content-1-urg').show()
+
         }))
 
     }
