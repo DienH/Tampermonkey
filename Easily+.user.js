@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260106
+// @version      1.0.260107
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1255,13 +1255,14 @@
 
         if(GM_getValue('fromLogin', false)){
             setTimeout(()=>{
-
-                GM_setValue('fromLogin', false);$(window).click()
+                GM_setValue('fromLogin', false)
+                $(window).click()
+                $('')
             }, 1500)
         }
     }
 
-       // auto-relogon
+    // auto-relogon
     $('.verrouillage-nom').click(ev=>{
         if(EasilyInfos.password_store){$("#password-popup").val(EasilyInfos.password)}
         $("button.deverrouillage-button").click()
@@ -1271,6 +1272,60 @@
     $('.easily-univers-item').filter(':contains(paramétrage)')[EasilyInfos.hide_parametres ? 'hide':'show']().end()
     .filter(':contains(pilotage)')[EasilyInfos.hide_pilotage ? 'hide':'show']().end()
     .filter(':contains(bloc)')[EasilyInfos.hide_bloc ? 'hide':'show']().end()
+
+    $('.easily-univers-menu-entry').on('mouseup', ev=>{
+        if(ev.which == 3){
+            $.waitFor('.favoris-ctxmenu.easily-ctxmenu:not(.custom-fav-menus)').then($el=>{
+                $el.addClass('custom-fav-menus')
+
+                let selectedMenu = $('.easily-univers-item.selected').text().trim().capitalize(), selectedAction = $el.closest('.easily-univers-menu-entry').attr('title')
+                $el.find('p').text('Définir par défaut pour cet utilisateur').clone().text((selectedAction == EasilyInfos.defaultConnectionAction ? "Supprimer" : "Définir") + " comme action à la connexion ici").appendTo($el).click(ev=>{
+                    ev.preventDefault()
+                    ev.stopPropagation()
+                    ev.stopImmediatePropagation()
+                    let clickedAction = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
+                    if(clickedAction == EasilyInfos.defaultConnectionAction){
+                        EasilyInfos.defaultConnectionAction = ""
+                        log(clickedAction + ' supprimé comme action par défaut à la connexion ici')
+                    } else {
+                        EasilyInfos.defaultConnectionAction = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
+                        log(EasilyInfos.defaultConnectionAction + ' définit comme action par défaut à la connexion ici')
+                    }
+                    GM_setValue("EasilyInfos", EasilyInfos)
+                    $('#easily-univers-menu').hide()
+                }).contextmenu(ev=>{
+                    ev.preventDefault()
+                    ev.stopPropagation()
+                    ev.stopImmediatePropagation()
+                }).end().clone().text((selectedAction == EasilyInfos.defaultsMenusClick[selectedMenu] ? "Supprimer " : "Définir")+ " comme action par défaut du menu " + selectedMenu).appendTo($el).click(ev=>{
+                    ev.preventDefault()
+                    ev.stopPropagation()
+                    ev.stopImmediatePropagation()
+                    let clickedAction = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
+                    if(clickedAction == EasilyInfos.defaultsMenusClick[selectedMenu]){
+                        EasilyInfos.defaultsMenusClick[selectedMenu] = ""
+                        log(clickedAction + ' supprimé comme action par défaut du menu ' + selectedMenu)
+                    } else {
+                        EasilyInfos.defaultsMenusClick[selectedMenu] = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
+                        log(EasilyInfos.defaultsMenusClick[selectedMenu] + ' définit comme action par défaut du menu ' + selectedMenu)
+                    }
+                    GM_setValue("EasilyInfos", EasilyInfos)
+                    $('#easily-univers-menu').hide()
+                }).contextmenu(ev=>{
+                    ev.preventDefault()
+                    ev.stopPropagation()
+                    ev.stopImmediatePropagation()
+                })
+            })
+        }
+    })
+    if(location.href.search("https://easily-prod.chu-clermontferrand.fr/medecin")+1 || location.href.search("https://easily-prod.chu-clermontferrand.fr/Medecin")+1){
+        if(EasilyInfos.defaultConnectionAction){
+            $.waitFor('.easily-container').then($el=>{
+                $('.easily-univers-menu-entry[title="'+EasilyInfos.defaultConnectionAction+'"]').click()
+            })
+        }
+    }
 
 
 //    ███    ███  ██████  ██    ██ ███████ ███████     ███████ ██    ██ ███████ ███    ██ ████████ ███████
@@ -1375,19 +1430,25 @@
                         }
                     }
 
+                    // En cours - édition rapide de lettre de liaison
                     if($('img[src*="word.png"][title="Lettre de Liaison valant CRH Psy"]').length){
                     }
+
                     //Gestion du menu
                     if($(ev.target).closest('#easily-univers').length){
-                        if($(ev.target).is('a:contains("urgences")')){
-                            $('li[title="ASUR (Urgences)"]').click()
-                        } else if($(ev.target).is('a:contains("hospitalisation")')){
-                            $('li[title="Patients en psy (WorklistsHospitalisation)"]').click()
-                            unsafeWindow.isHospitalisationLoaded = false
-                        } else if($(ev.target).is('a:contains("consultation")')){
-                            $('li[title="Gestion des agendas (Agenda)"]')
-                            .click()
-                                /*
+                        let selectedMenu = $(ev.target).text().trim().capitalize()
+                        switch(ev.type){
+                            case "click":
+                                $(`li[title="${EasilyInfos.defaultsMenusClick[selectedMenu]}"]`).click()
+                                if($(ev.target).is('a:contains("urgences")')){
+                                    //$(`li[data-applicationname="${EasilyInfos.defaultsMenusClick.urgences}"]`).click()
+                                } else if($(ev.target).is('a:contains("hospitalisation")')){
+                                    //$(`li[data-applicationname="${EasilyInfos.defaultsMenusClick.hospitalisation}"]`).click()
+                                    //$('li[title="Patients en psy (WorklistsHospitalisation)"]').click()
+                                    unsafeWindow.isHospitalisationLoaded = false
+                                } else if($(ev.target).is('a:contains("consultation")')){
+                                    //$('li[title="Gestion des agendas (Agenda)"]').click()
+                                    /*
                                 .each((i,el)=>{
                                 let pathID = $(el).data('pathid'), $currentContainer = $('.easily-container:visible')
                                 log(pathID)
@@ -1399,6 +1460,16 @@
                                 }
                             })
                                 */
+                                }
+                                break
+                            case "contextmenu":
+                                if($(ev.target).closest('.easily-univers-item').length){
+                                    ev.preventDefault()
+                                } else if($(ev.target).is('.easily-univers-menu-entry')){
+                                }
+                                break
+                            case "mouseup":
+                                break
                         }
                     }
                     if($(ev.target).is('div.username')){
