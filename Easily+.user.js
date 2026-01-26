@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260107
+// @version      1.0.260108
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -27,9 +27,13 @@
 (function() {
     'use strict';
     if (!GM_getValue('EasilyInfos', false)){
-        GM_setValue('EasilyInfos', {user:"",password:"", nom:"", prenom:"", trajectoirePassword:"", phone:""});
+        GM_setValue('EasilyInfos', {user:"",password:"", nom:"", prenom:"", trajectoirePassword:"", phone:"", defaultsMenusClick:{}});
     }
     let EasilyInfos = GM_getValue('EasilyInfos',{"user":"", "password":""})
+    if(typeof EasilyInfos.defaultsMenusClick == "undefined"){
+        EasilyInfos.defaultsMenusClick={}
+        GM_setValue('EasilyInfos', EasilyInfos)
+    }
     var µ = unsafeWindow
     var log = console.log
     µ.currentPatient = {id:'', nom:'', prenom:'',ddn:'', IPP:''}
@@ -1322,7 +1326,10 @@
     if(location.href.search("https://easily-prod.chu-clermontferrand.fr/medecin")+1 || location.href.search("https://easily-prod.chu-clermontferrand.fr/Medecin")+1){
         if(EasilyInfos.defaultConnectionAction){
             $.waitFor('.easily-container').then($el=>{
-                $('.easily-univers-menu-entry[title="'+EasilyInfos.defaultConnectionAction+'"]').click()
+                let contained_ID = $el.attr('id').match(/container\-DEFAULT\-(?<id>\d+)/).groups.id, defaultActionID = $('.easily-univers-menu-entry[title="'+EasilyInfos.defaultConnectionAction+'"]').data('pathid')
+                if(contained_ID != defaultActionID){
+                    $('.easily-univers-menu-entry[title="'+EasilyInfos.defaultConnectionAction+'"]').click()
+                }
             })
         }
     }
