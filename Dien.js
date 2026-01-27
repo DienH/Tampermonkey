@@ -337,7 +337,7 @@
 			} else {
 				this.each((i,el)=>{
 					if($(el).is('iframe') && el.contentWindow){
-						el.contentWindow.postMessage(message, targetOrigin="*", transfer)
+						el.contentWindow.postMessage(message, targetOrigin, transfer)
 					}
 				})
 			}
