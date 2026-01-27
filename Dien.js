@@ -58,21 +58,21 @@
 			this.data;
 		})//*/;
         },
-	copyText(){
-		navigator.clipboard.writeText($(this).text())
-	},
-	//replace text with given text. Can completely replace a text node containing a string with a new Text
-	replaceText(...args){
-		if (1 < arguments.length < 4){
-            let searchT, replaceT
-			if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
-				$(this).textNodes(searchT, (typeof arguments[2] === "boolean") && arguments[2]).each(function(){
-					this.data=replaceT;
-				});
-				return this;
+		copyText(){
+			navigator.clipboard.writeText($(this).text())
+		},
+		//replace text with given text. Can completely replace a text node containing a string with a new Text
+		replaceText(...args){
+			if (1 < arguments.length < 4){
+	            let searchT, replaceT
+				if ((typeof (searchT=arguments[0]) && typeof (replaceT=arguments[1])) === "string"){
+					$(this).textNodes(searchT, (typeof arguments[2] === "boolean") && arguments[2]).each(function(){
+						this.data=replaceT;
+					});
+					return this;
+				}
 			}
-		}
-	},
+		},
         // return href attribute or change href attribute
         href(link){
             let changeLink = (typeof link === "string") ? true : false;
@@ -81,85 +81,85 @@
         },
         //attribute or property shortcut
         a(array, attribute, value) {
-	    if (typeof array !== "boolean") {
-		value = attribute
-		attribute = array
-		array = false
-	    }
-	    let attr = $(this).attr(attribute);
-	    let useAttr = (typeof attr === "undefined") ? false : true;
-	    if (typeof value === "undefined") {
-		if (array) {
-		    let elements = $(this),
-			vals = [];
-		    for (var i = 0; typeof (elements[i]) != 'undefined'; vals.push(useAttr ? elements[i++].getAttribute(attribute) : elements[i++][attribute]));
-		    return vals
-		} else {
-		    return (useAttr ? attr : $(this).prop(attribute));
-		}
-	    } else {
-		return $(this)[useAttr ? 'attr':'prop'](attribute, value);
-	    }
-	},
-	src(newSrc){
-		if (typeof newSrc == "string" || typeof newSrc == "function")
-		{
-			return this.attr("src", newSrc)
-		} else {
-			return this.attr("src")
-		}
-	},
-	id(newID){
-		if (typeof newID == "string" || typeof newID == "function")
-		{
-			return this.attr("id", newID)
-		} else {
-			return this.attr("id")
-		}
-	},
-	up(selector){
-		return this.parent(selector)
-	},
-	child(selector){
-		return this.children(selector)
-	},
+		    if (typeof array !== "boolean") {
+			value = attribute
+			attribute = array
+			array = false
+		    }
+		    let attr = $(this).attr(attribute);
+		    let useAttr = (typeof attr === "undefined") ? false : true;
+		    if (typeof value === "undefined") {
+			if (array) {
+			    let elements = $(this),
+				vals = [];
+			    for (var i = 0; typeof (elements[i]) != 'undefined'; vals.push(useAttr ? elements[i++].getAttribute(attribute) : elements[i++][attribute]));
+			    return vals
+			} else {
+			    return (useAttr ? attr : $(this).prop(attribute));
+			}
+		    } else {
+			return $(this)[useAttr ? 'attr':'prop'](attribute, value);
+		    }
+		},
+		src(newSrc){
+			if (typeof newSrc == "string" || typeof newSrc == "function")
+			{
+				return this.attr("src", newSrc)
+			} else {
+				return this.attr("src")
+			}
+		},
+		id(newID){
+			if (typeof newID == "string" || typeof newID == "function")
+			{
+				return this.attr("id", newID)
+			} else {
+				return this.attr("id")
+			}
+		},
+		up(selector){
+			return this.parent(selector)
+		},
+		child(selector){
+			return this.children(selector)
+		},
 		do(callback){
 			return this.eq(0).each(callback).end();
 		},
-	class(newClassString){
-		let classesList = [], classesAddList = [], classesRemoveList = []
-		if (typeof newClassString == "undefined"){
-			return this.attr("class")
-		} else if (typeof newClassString == "string"){
-			if (newClassString.startsWith("+ ") || newClassString.startsWith("- "))
-			{
-				newClassString = " "+newClassString
-				classesList = newClassString.split(" + ")
-				classesList = classesList.map(function(t,i){return (i>0 ? "+ ":"")+t}).join("\n\t\n").split(" - ").map(function(t,i){return (i>0 ? "- ":"")+t}).join("\n\t\n").split("\n\t\n").slice(1)
-				classesAddList = (" "+classesList.filter(t=>t.startsWith("+ ")).join(" ")).replace(/ \+ /g, " ")
-				classesRemoveList = (" "+classesList.filter(t=>t.startsWith("- ")).join(" ")).replace(/ - /g, " ")
+		class(newClassString){
+			let classesList = [], classesAddList = [], classesRemoveList = []
+			if (typeof newClassString == "undefined"){
+				return this.attr("class")
+			} else if (typeof newClassString == "string"){
+				if (newClassString.startsWith("+ ") || newClassString.startsWith("- "))
+				{
+					newClassString = " "+newClassString
+					classesList = newClassString.split(" + ")
+					classesList = classesList.map(function(t,i){return (i>0 ? "+ ":"")+t}).join("\n\t\n").split(" - ").map(function(t,i){return (i>0 ? "- ":"")+t}).join("\n\t\n").split("\n\t\n").slice(1)
+					classesAddList = (" "+classesList.filter(t=>t.startsWith("+ ")).join(" ")).replace(/ \+ /g, " ")
+					classesRemoveList = (" "+classesList.filter(t=>t.startsWith("- ")).join(" ")).replace(/ - /g, " ")
+					return this.addClass(classesAddList).removeClass(classesRemoveList)
+				} else {
+					return this.attr("class", newClassString)
+				}
+			} else if (typeof newClassString == "object") {
+				classesAddList = newClassString["+"]+" "+newClassString.add
+				classesRemoveList = newClassString["-"]+" "+newClassString.remove
 				return this.addClass(classesAddList).removeClass(classesRemoveList)
-			} else {
-				return this.attr("class", newClassString)
 			}
-		} else if (typeof newClassString == "object") {
-			classesAddList = newClassString["+"]+" "+newClassString.add
-			classesRemoveList = newClassString["-"]+" "+newClassString.remove
-			return this.addClass(classesAddList).removeClass(classesRemoveList)
-		}
-	},
-	classList(){
-		let classesList = {}
-		$(this).each(function(){
-			Object.values(this.classList).forEach(function(c){classesList[c]=true})
-		})
-		return Object.keys(classesList)
-	},
+		},
+		classList(){
+			let classesList = {}
+			$(this).each(function(){
+				Object.values(this.classList).forEach(function(c){classesList[c]=true})
+			})
+			return Object.keys(classesList)
+		},
 
-        // jQuery implementation of Mutation observer
-        observe(options, callback, name) {
+	   // jQuery implementation of Mutation observer
+		observe(options, callback, name) {
 			let listOptions = {
-				"text":"characterData",
+			"text":"characterData",
 				"characterData":"characterData",
 				"string":"characterData",
 				"attributes":"attributes",
@@ -170,67 +170,67 @@
 				"subtree":"subtree",
 				"recursive":"subtree",
 				"sub":"subtree"
-                }, opt={};
-            if(typeof options === "string"){
-                options = options.split(" ");
-            }
+				}, opt={};
+			if(typeof options === "string"){
+				options = options.split(" ");
+			}
 			if (Array.isArray(options)) {
 				for (var i of options){
 					opt[listOptions[i]]=true;
 				}
-            }
-
-            opt = $.type(options) === "object" ? options : (Object.keys(opt).length) ? opt : {attributes: true, childList:true, characterData:true, subtree:true };
-            let nameObserver = name || options.name || ((typeof callback === "string") ? callback : "observer"+Date.now());
-            let mutationObserver = new MutationObserver((typeof callback === "function") ? callback : options);
-            return this.each(function() {
-                var node = this;
-                if(!node.observers) node.observers = {};
-                node.observers[nameObserver] = mutationObserver;
-                node.observers[nameObserver].observe(node, opt);
-            });
-        },
-        changes(o, cb, n) {
-            return this.observe(o, cb, n);
-        },
-        disconnect(name) {
-            return this.each(function(){
-                if (this.observers) {
+			}
+	
+			opt = $.type(options) === "object" ? options : (Object.keys(opt).length) ? opt : {attributes: true, childList:true, characterData:true, subtree:true };
+			let nameObserver = name || options.name || ((typeof callback === "string") ? callback : "observer"+Date.now());
+			let mutationObserver = new MutationObserver((typeof callback === "function") ? callback : options);
+			return this.each(function() {
+				var node = this;
+				if(!node.observers) node.observers = {};
+				node.observers[nameObserver] = mutationObserver;
+				node.observers[nameObserver].observe(node, opt);
+			});
+		},
+		changes(o, cb, n) {
+			return this.observe(o, cb, n);
+		},
+		disconnect(name) {
+			return this.each(function(){
+				if (this.observers) {
 					for (let i in this.observers){
 						this.observers[i].disconnect();
 					}
-                }
-            });
-        },
-
-        //open Href URL of a link
-        url(){
-            $(this).each(function(){
-                if (this.href && $(this).href().split("#")[0]){
-                    window.location.href = this.href;
-                }
-            });
-            return this;
-        },
-        openUrl(){
-            return $(this).url();
-        },
-        //return the coordinates of the center of the first element, or place the center of all selected elements at new coordinates
-        middle(coord){
-            if (typeof coord === "undefined" || (typeof coord !== "object" && typeof coord !== "function")){
-                let middle = {X : 0, Y : 0}, $el
-                if (($el = $(this).first())){
-                    middle.X = $el.offset().left + Math.round($el.outerWidth()/2);
-                    middle.Y = $el.offset().top + Math.round($el.outerHeight()/2);
-                }
-                return middle;
-            }/*else if((typeof coord === "object" && (coord.X || coord.left || coord.x) && (coord.Y || coord.top || coord.y)) || typeof coord === "function"){
+				}
+			});
+		},
+	
+		//open Href URL of a link
+		url(){
+			$(this).each(function(){
+				if (this.href && $(this).href().split("#")[0]){
+					window.location.href = this.href;
+				}
+			});
+			return this;
+		},
+		openUrl(){
+			return $(this).url();
+		},
+		//return the coordinates of the center of the first element, or place the center of all selected elements at new coordinates
+		middle(coord){
+			if (typeof coord === "undefined" || (typeof coord !== "object" && typeof coord !== "function")){
+				let middle = {X : 0, Y : 0}, $el
+				if (($el = $(this).first())){
+					middle.X = $el.offset().left + Math.round($el.outerWidth()/2);
+					middle.Y = $el.offset().top + Math.round($el.outerHeight()/2);
+				}
+				return middle;
+			}/*else if((typeof coord === "object" && (coord.X || coord.left || coord.x) && (coord.Y || coord.top || coord.y)) || typeof coord === "function"){
 				$(this).each(function(){
 					$(this).
 					offset(coord);
 				});
 			}*/
-        },
+		},
 		center() {
 				this.css("position","absolute");
 				this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() + "px");
@@ -244,75 +244,75 @@
 				}
 			})
 		},
-	click2(){
-		return this.each((i,el)=>el.click())
-	},
-        fakeClick(){
-            return this.each(function(){
-                var middle = $(this).middle();
-                var click = new MouseEvent("click", {
-                    button:1,
-                    buttons:1,
-                    bubbles: true,
-                    cancelable: true,
-                    view: window,
-                    clientX : middle.X,
-                    clientY : middle.Y
-                });
-                this.dispatchEvent(click);
-            });
-        },
-	hidden(display){
-        let dispNone
-		if (typeof display === "boolean") {dispNone = display}else{dispNone = false};
-		return this.each(function(){
-			this.style.visibility = 'hidden';
-			if (dispNone) this.style.display = 'none';
-		});
-	},
-	visible(display){
-        let dispNone
-		if (typeof display === "text") {dispNone = true}else{dispNone = false};
-		return this.each(function(){
-			this.style.visibility = 'visible';
-			if (dispNone) this.style.display = display;
-		});
-	},
-	toggleV(display){
-        let dispNone
-		if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};
-		return this.each(function(){
-			if (this.style.visibility === 'visible'){
+		click2(){
+			return this.each((i,el)=>el.click())
+		},
+		fakeClick(){
+			return this.each(function(){
+				var middle = $(this).middle();
+				var click = new MouseEvent("click", {
+					button:1,
+					buttons:1,
+					bubbles: true,
+					cancelable: true,
+					view: window,
+					clientX : middle.X,
+					clientY : middle.Y
+				});
+				this.dispatchEvent(click);
+			});
+		},
+		hidden(display){
+	        let dispNone
+			if (typeof display === "boolean") {dispNone = display}else{dispNone = false};
+			return this.each(function(){
 				this.style.visibility = 'hidden';
-			}else{
+				if (dispNone) this.style.display = 'none';
+			});
+		},
+		visible(display){
+	        let dispNone
+			if (typeof display === "text") {dispNone = true}else{dispNone = false};
+			return this.each(function(){
 				this.style.visibility = 'visible';
+				if (dispNone) this.style.display = display;
+			});
+		},
+		toggleV(display){
+	        let dispNone
+			if (typeof display === "text" || (typeof display === "boolean" && display)) {dispNone = true}else{dispNone = false};
+			return this.each(function(){
+				if (this.style.visibility === 'visible'){
+					this.style.visibility = 'hidden';
+				}else{
+					this.style.visibility = 'visible';
+				}
+			});
+		},
+		log(...thing){
+			if (thing.length){
+				if (typeof thing[0] == "function"){
+					console.log(thing[0](this))
+				} else if (typeof thing[0] == "string"){
+					let array = []
+					$(this).each((i,el)=>{
+						array.push($(el).a(thing[0]))
+					})
+					console.log(array)
+				}else{
+					console.log(...thing);
+				}
+			} else {
+				console.log(this);
 			}
-		});
-	},
-	log(...thing){
-		if (thing.length){
-			if (typeof thing[0] == "function"){
-				console.log(thing[0](this))
-			} else if (typeof thing[0] == "string"){
-				let array = []
-				$(this).each((i,el)=>{
-					array.push($(el).a(thing[0]))
-				})
-				console.log(array)
-			}else{
-				console.log(...thing);
-			}
-		} else {
-			console.log(this);
-		}
-    		return this
-	},
-	lt(index){
-		return this.slice(0,index)
-	},
-	gt(index){
-		return this.slice(index+1)
-	},
+	    		return this
+		},
+		lt(index){
+			return this.slice(0,index)
+		},
+		gt(index){
+			return this.slice(index+1)
+		},
 		dispatchEvent(type, options){
 			let types = []
 			if(typeof type == "string"){
@@ -331,6 +331,17 @@
 					el.dispatchEvent(ev)
 				})
 			}
+		},
+		postMessage(message, targetOrigin="*", transfer=null){
+			if(typeof message == "function"){
+			} else {
+				this.each((i,el)=>{
+					if($(el).is('iframe') && el.contentWindow){
+						el.contentWindow.postMessage(message, , targetOrigin="*", transfer)
+					}
+				}
+			}
+			return this
 		}
     });
 	$.waitFor = async (selector, context = document, timeout = 0, delay = 0, checkFrequency = 250, checkForPresence = true) => {
