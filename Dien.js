@@ -332,7 +332,7 @@
 				})
 			}
 		},
-		postMessage(message, targetOrigin="*", transfer=null){
+		postMessage(message, targetOrigin=window.location.origin, transfer){
 			if(typeof message == "function"){
 			} else {
 				this.each((i,el)=>{
