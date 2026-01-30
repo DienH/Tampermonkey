@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260108
+// @version      1.0.260110
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -368,21 +368,24 @@
 //
     else if(location.href.search("https://easilynlb-prod.chu-clermontferrand.fr/ePrescriptionWeb/")+1){
         $(window).on('click', ev=>{
-            //console.log(ev)
 
             //Cacher automatiquement l'alerte sur les EI des traitements
             if(EasilyInfos.hide_warningTTT){
                 $.waitFor('#SyntheseSignaux', 5000).then($el=>{
                     $el.find('#btnEnregistrer').click()
-                }).catch()
+                }).catch(err=>err)
             }
 
             //Signature rapide
             if($(ev.target).is('div.Alignement:contains(Mot de passe)')){
-                //console.log('bouh')
                 if($('#UtilisateurLogin').val() == EasilyInfos.username){
                     $('#UtilisateurPassword').val(EasilyInfos.password)
                     $('#SignatureBox #btnSigner').click2()
+                }
+            } else if($(ev.target).is('.SignatureAction div:has(#UtilisateurPassword)')){
+                if($('#UtilisateurLogin').val() == EasilyInfos.username){
+                    $('#UtilisateurPassword').val(EasilyInfos.password)
+                    $('.SignatureAction #btnContinuer').click2()
                 }
             }
         })
@@ -432,7 +435,7 @@
                     })
                 }
             }).addClass('fastActionMiddleClick')
-            $('#dvCalMain').off('mouseenter', ".event", createFastActions)
+            $('#dvCalMain').off('mouseover', ".event", createFastActions)
         }
         function waitForCreateFastActions(){
             $.waitFor('#loading-indicator-navigationContenu:visible').then($el=>{
@@ -534,7 +537,7 @@
         $(window).on('click', ev=>{
             createFastActions()
         })
-        $('#dvCalMain').on('mouseenter', ".event", createFastActions)
+        $('#dvCalMain').on('mouseover', ".event", createFastActions)
         $('.filtreDispoType').on('contextmenu', ev=>{
             ev.preventDefault()
             if($('#CodageCoraPrefs').length){
@@ -1221,9 +1224,9 @@
 //    \/    \__,_|_| |_|\___\__,_|_|   \__\___|
 //
         if(location.pathname.match(/TempetePlus\/TempetePlus\.Web\/Pancarte/)){
-            $.waitFor('#infosSession:visible', 5000).then($el2=>{
+            $.waitFor('#infosSession', 10000).then($el2=>{
                 window.parent.postMessage(JSON.stringify({command:"pancarte-Ready", IEP: $el2.text().split('Venue : ')[1]}), "*")
-            })
+            }).catch(err=>log(err))
             window.addEventListener('message', message=>{
                 let messageEvData
                 if (typeof message.data == "object"){
@@ -1240,16 +1243,19 @@
                     //console.log(messageEvData.rdv_infos)
                     if(!window.codageStarted){
                         window.codageStarted = true
-                        $.waitFor('#infosSession:visible', 5000).then($el2=>{
-                            messageEvData.rdv_infos.IEP = $el2.text().split('Venue : ')[1]
-                            console.log(`Démarrage de CORA (IPP:${messageEvData.rdv_infos.IPP}; IEP:${messageEvData.rdv_infos.IEP}; Login:LOGINAD=${EasilyInfos.username})`)
-                            $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
-                                setTimeout($el2=>{
-                                    console.log('Lancement du module de codage')
-                                    $el2.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
-                                }, 500, $(el))
-                            })
-                        })
+                        $.waitFor('#infosSession:visible', 10000).then($el2=>{
+                            if(messageEvData.rdv_info){
+                                messageEvData.rdv_infos.IEP = $el2.text().split('Venue : ')[1]
+                                console.log(`Démarrage de CORA (IPP:${messageEvData.rdv_infos.IPP}; IEP:${messageEvData.rdv_infos.IEP}; Login:LOGINAD=${EasilyInfos.username})`)
+                                $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
+                                    setTimeout($el2=>{
+                                        $el2.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
+                                    }, 500, $(el))
+                                })
+                            } else if(messageEvData.IPP){
+                                $el2.wrapInner(`<a href="Lancemodule: CORA;${messageEvData.IPP};${$el2.text().split('Venue : ')[1]};LOGINAD=${EasilyInfos.username}"></a>`)
+                            }
+                        }).catch(err=>log(err))
                     }
                 }
             })
@@ -1642,7 +1648,7 @@
                 frameOrigin = el
             }
         })
-        //console.log(messageEvData.command)
+        console.log(messageEvData.command)
         switch(messageEvData.command){
 
 //        _   ___ _   _ ___
@@ -1759,58 +1765,58 @@
                         })
                     })
                 }, 5000).catch()
-                /*
-                $.waitFor('#module-agenda #blocGauche:visible', 5000).then(()=>{
-                    $('#module-agenda #dossierPatient').log().click()
-                })
-                */
                 break;
             case "agenda-Codage":
                 $currentContainer = $('.easily-container:visible')
                 µ.codageCora = true
                 $('[data-applicationname="CapMedecin"]').click()
+                messageEvData.rdv_infos.date = (new Date(messageEvData.rdv_infos.date.split('/').reverse())).toLocaleDateString('fr-FR')
+                µ.CoraRDV_infos = messageEvData.rdv_infos
                 $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible', 5000).then($el=>{
                     CR_selectionContainerID = $('.easily-container:visible').attr('id')
                     $el.click()
-                    messageEvData.rdv_infos.date = (new Date(messageEvData.rdv_infos.date.split('/').reverse())).toLocaleDateString('fr-FR')
-                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 10000).then($el2=>{
-                        $.waitFor('.infosPatient:visible:first').then($el=>{
-                            messageEvData.rdv_infos.IPP = $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups.IPP
+                    $.waitFor('.btnPrevious:visible').then($el=>{
+                        $el.click(ev=>{
+                            $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
+                                $el.hide()
+                                $currentContainer.show()
+                            })
+                        })
+                    })
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible', 10000).then($el2=>{
+                        $.waitFor('.infosPatient:visible:first').then($el3=>{
+                            messageEvData.rdv_infos.IPP = $el3.text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups.IPP
                             $('.btnPrevious:visible').click(ev=>{
                                 $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
                                     $el.hide()
                                     $currentContainer.show()
                                 })
                             })
-                            if($el2.is('.venue-link')){
-                                messageEvData.rdv_infos.IEP = $el2.closest('.grille').find('tr:contains("'+ messageEvData.rdv_infos.date + " " + messageEvData.rdv_infos.heure + '")').data('venuenum')
-                                $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
-                                    setTimeout($el2=>{
-                                        $el2.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
-                                    }, 500, $(el))
-                                })
-                                $('.btnPrevious:visible').click()
-                            } else if($el2.is('#iframe')){
-                                setTimeout(()=>{
-                                    $el2[0].contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*")
-                                }, 1000)
-                                    /*
-                                $el2.on("load", ev=> {
-                                    ev.target.contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*")
-                                    setTimeout(()=>{$('.btnPrevious:visible').click()}, 2500)
-                                })[0].contentWindow.postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: messageEvData.rdv_infos}), "*")
-                                */
-                                //setTimeout(()=>{$('.btnPrevious:visible').click()}, 5000)
-                            }
-                            /**/
+                            messageEvData.rdv_infos.IEP = $el2.closest('.grille').find('tr:contains("'+ messageEvData.rdv_infos.date + " " + messageEvData.rdv_infos.heure + '")').data('venuenum')
+                            $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
+                                setTimeout($el4=>{
+                                    $el4.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
+                                }, 500, $(el))
+                            })
+                            $('.btnPrevious:visible').click()
                         })
-                        /**/
-                    }).catch(err=>log(err+ " not found."))
-                }).catch(err=>err)
+                    }).catch(err=>err)
+                }).catch(err=>log(err+ " non trouvé."))
                 break;
             case "pancarte-Ready":
-                if(µ.codageCora = true){
+                if(µ.codageCora == true){
                     µ.codageCora = false
+                    //log(µ.CoraRDV_infos)
+                    if(µ.CoraRDV_infos){
+                        µ.CoraRDV_infos.IEP = messageEvData.IEP
+                        if(typeof µ.CoraRDV_infos.IPP == "undefined"){
+                            µ.CoraRDV_infos.IPP = $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}).* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP
+                        }
+                        $('#iframe[src*="TempetePlus.Web/Pancarte"]').postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: µ.CoraRDV_infos}), "*")
+                    }
+                    setTimeout(()=>{$('.btnPrevious:visible').click()}, 1000)
+                } else {
+                    $('#iframe[src*="TempetePlus.Web/Pancarte"]').postMessage(JSON.stringify({command:"agenda-CodageFrame", IPP: $('.infosPatient:visible:first').text().match(/le \d{2}\/\d{2}\/\d{4}.* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP}), "*")
                 }
                 break;
         }
