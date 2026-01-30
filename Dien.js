@@ -1,4 +1,11 @@
-
+(function($) {
+	if (!$ || !$.fn){return false}
+	$.expr[":"].containsI = function (a, i, m) {return (a.textContent || a.innerText || "")
+		.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").indexOf(m[3].toUpperCase()
+		.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))>=0;};
+    $.fn.extend({
+        //select all text nodes within selected elements, or text nodes containing filter text
+        textNodes(...args) {
             let filter = "", i = 0, a = [], recursive = false, lastArg, that, reg, keep,
             $sel = $();
             while(arguments[i]){
