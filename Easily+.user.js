@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260110
+// @version      1.0.260111
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -351,9 +351,20 @@
         //console.log((location.pathname + location.hash) == "/XaIntranet/#/UserLogin")
         if((location.pathname + location.hash) == "/XaIntranet/#/UserLogin"){
             $.waitFor('#txtUSERNAME input').then(el=>{
-                $(el).val(EasilyInfos.username).each((i,elem)=>{elem.dispatchEvent(new Event('change'))})
-                $('#txpPASSWORD input').val(EasilyInfos.password).each((i,elem)=>{elem.dispatchEvent(new Event('change'))})
-                $('#btnVALIDER>a').click2()
+                $(el).val(EasilyInfos.username).each((i,elem)=>{
+                    $(elem).on('change', ev=>{
+                        $('#txpPASSWORD input').val(EasilyInfos.password).each((j,elem2)=>{
+                            $(elem2).on('updateValueFromGrid', ev2=>{
+                                setTimeout(()=>$('#btnVALIDER>a').click2(), 100)
+                            })
+                            elem2.dispatchEvent(new Event('change'))
+                            elem2.dispatchEvent(new Event('updateValueFromGrid'))
+                            /**/
+                        })
+                    })
+                    elem.dispatchEvent(new Event('change'))
+                    elem.dispatchEvent(new Event('updateValueFromGrid'))
+                })
             })
         }
         return true
@@ -975,8 +986,8 @@
                 case 'FHR Observation Médicale - Psychiatrie':
 //    ______________ _____________
 //    \_   _____/   |   \______   \
-//     |    __)/    ~    \       _/
-//     |     \ \    Y    /    |   \
+//     |    __)/    .    \       _/
+//     |     \ \    Ý    /    |   \
 //     \___  /  \___|_  /|____|_  /
 //         \/         \/        \/
                     $('.header.headerScrolling>div:not([id])>div:first').clone().appendTo($('.header.headerScrolling>div:not([id])')).find('.ToolbarButtonImage').attr('class', 'ToolbarButtonImage image__envoyer-a-la-frappe_png').attr('icone', 'image__envoyer-a-la-frappe_png').siblings().remove().end()
@@ -1211,17 +1222,24 @@
         }
 
 
-        // ASUR - absence d'habilitation
+//     █████  ███████ ██    ██ ██████
+//    ██   ██ ██      ██    ██ ██   ██
+//    ███████ ███████ ██    ██ ██████
+//    ██   ██      ██ ██    ██ ██   ██
+//    ██   ██ ███████  ██████  ██   ██
+//
+//
         if($(".titleContainer").text().trim() == "Vous n'êtes pas habilité(e) à visualiser ce module."){
             //console.log("Pas d'habilitation au module ASUR")
             window.parent.postMessage('{"command":"allowASUR"}', "*")
         }
 
-//       ___                           _
-//      / _ \__ _ _ __   ___ __ _ _ __| |_ ___
-//     / /_)/ _` | '_ \ / __/ _` | '__| __/ _ \
-//    / ___/ (_| | | | | (_| (_| | |  | ||  __/
-//    \/    \__,_|_| |_|\___\__,_|_|   \__\___|
+//    ██████   █████  ███    ██  ██████  █████  ██████  ████████ ███████
+//    ██   ██ ██   ██ ████   ██ ██      ██   ██ ██   ██    ██    ██
+//    ██████  ███████ ██ ██  ██ ██      ███████ ██████     ██    █████
+//    ██      ██   ██ ██  ██ ██ ██      ██   ██ ██   ██    ██    ██
+//    ██      ██   ██ ██   ████  ██████ ██   ██ ██   ██    ██    ███████
+//
 //
         if(location.pathname.match(/TempetePlus\/TempetePlus\.Web\/Pancarte/)){
             $.waitFor('#infosSession', 10000).then($el2=>{
@@ -1387,7 +1405,7 @@
                             } else if(ev.which == 2){
                                 $('#presBioFrame').attr('src', 'https://cyberlab.chu-clermontferrand.fr')
                             }
-                        } else if ($(ev.target).is('a:contains(Imagerie)')){
+                        } else if ($(ev.target).is('.openPACS')){
                             if(ev.type == "click"){
                                 window.open(`Lancemodule: IMAGES_PATIENT;${unsafeWindow.currentPatient.IPP};LOGINAD=${EasilyInfos.username}`)
                             }
@@ -1764,7 +1782,7 @@
                             })
                         })
                     })
-                }, 5000).catch()
+                }, 5000).catch(err=>err)
                 break;
             case "agenda-Codage":
                 $currentContainer = $('.easily-container:visible')
@@ -1806,7 +1824,7 @@
             case "pancarte-Ready":
                 if(µ.codageCora == true){
                     µ.codageCora = false
-                    //log(µ.CoraRDV_infos)
+                    log(µ.CoraRDV_infos)
                     if(µ.CoraRDV_infos){
                         µ.CoraRDV_infos.IEP = messageEvData.IEP
                         if(typeof µ.CoraRDV_infos.IPP == "undefined"){
@@ -1983,6 +2001,9 @@
         img[src*="MyHopLogo"] {display:none;}
         #transmissionsFrame {width:100%!important;height:calc(100% - 25px)!important;padding:0!important}
         #specialiteSelection{display:none;}
+        .area-carrousel img.rechercher {
+              background: url(/Modules/CM_Histoire/Images/rechercher.png) no-repeat;
+              height: 16px;width: 16px;display: inline-block;vertical-align: text-bottom;-webkit-print-color-adjust: exact;display:initial!important;position:absolute;}
         .area-carrousel img.warning, .area-carrousel img.vide, .area-carrousel img.signe,.area-carrousel img.arrete, .area-carrousel img.arr-prog {
               background: url(/Modules/WorklistsHospitalisation/Content/images/prescription/sprite_prescription.png) no-repeat;
               height: 16px;width: 16px;display: inline-block;vertical-align: text-bottom;-webkit-print-color-adjust: exact;display:initial!important;position:absolute;}
@@ -2010,6 +2031,7 @@ function changementContextePatient(){
     let $ = unsafeWindow.jQuery
     if($('.area-carrousel:visible li:contains(Histoire):not(.easily_plus)').length){
         $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
+        $('.area-carrousel-wrapper li>a:contains("Imagerie")').siblings('img').addClass('rechercher').addClass('rechercher openPACS')
         $('.area-carrousel li:contains(Biologie)').append($('<img src="/Modules/CM_Histoire/Content/Images/refresh.png" class="imgRefreshListe" title="Actualiser">').click(ev=>{
             if($(ev.target).parent(':contains(Pres)').length){
                 $('#presBioFrame').attr("src", "https://cyberlab.chu-clermontferrand.fr")
