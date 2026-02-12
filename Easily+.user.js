@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260111
+// @version      1.0.260112
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1229,9 +1229,12 @@
 //    ██   ██ ███████  ██████  ██   ██
 //
 //
-        if($(".titleContainer").text().trim() == "Vous n'êtes pas habilité(e) à visualiser ce module."){
-            //console.log("Pas d'habilitation au module ASUR")
-            window.parent.postMessage('{"command":"allowASUR"}', "*")
+        if(location.pathname.match(/Urgences\/Urgences\.Web/)){
+            if($(".titleContainer").text().trim() == "Vous n'êtes pas habilité(e) à visualiser ce module."){
+                //console.log("Pas d'habilitation au module ASUR")
+                window.parent.postMessage('{"command":"allowASUR"}', "*")
+            }
+            window.addEventListener('message', receiveMessage_Main)
         }
 
 //    ██████   █████  ███    ██  ██████  █████  ██████  ████████ ███████
@@ -1471,27 +1474,6 @@
                         switch(ev.type){
                             case "click":
                                 $(`li[title="${EasilyInfos.defaultsMenusClick[selectedMenu]}"]`).click()
-                                if($(ev.target).is('a:contains("urgences")')){
-                                    //$(`li[data-applicationname="${EasilyInfos.defaultsMenusClick.urgences}"]`).click()
-                                } else if($(ev.target).is('a:contains("hospitalisation")')){
-                                    //$(`li[data-applicationname="${EasilyInfos.defaultsMenusClick.hospitalisation}"]`).click()
-                                    //$('li[title="Patients en psy (WorklistsHospitalisation)"]').click()
-                                    unsafeWindow.isHospitalisationLoaded = false
-                                } else if($(ev.target).is('a:contains("consultation")')){
-                                    //$('li[title="Gestion des agendas (Agenda)"]').click()
-                                    /*
-                                .each((i,el)=>{
-                                let pathID = $(el).data('pathid'), $currentContainer = $('.easily-container:visible')
-                                log(pathID)
-                                if(!$('#container-DEFAULT-'+pathID).length){
-                                    $(el).click()
-                                } else {
-                                    $('#container-DEFAULT-'+pathID).log().css('display', 'block')
-                                    $currentContainer.hide()
-                                }
-                            })
-                                */
-                                }
                                 break
                             case "contextmenu":
                                 if($(ev.target).closest('.easily-univers-item').length){
@@ -1837,6 +1819,21 @@
                     $('#iframe[src*="TempetePlus.Web/Pancarte"]').postMessage(JSON.stringify({command:"agenda-CodageFrame", IPP: $('.infosPatient:visible:first').text().match(/le \d{2}\/\d{2}\/\d{4}.* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP}), "*")
                 }
                 break;
+//
+//     /\ /\ _ __ __ _
+//    / / \ \ '__/ _` |
+//    \ \_/ / | | (_| |
+//     \___/|_|  \__, |
+//               |___/
+            case "afficherDernierPassageUrg":
+                $.waitFor('!#saving_status_container:visible').catch(err=>{
+                    $('.lien-affichage.m-recherche:not(.selected)').click()
+                    $.waitFor('#BtnRecherchePatientEnSession:visible', 5000).then($el=>{
+                        $el.click().log()
+                        log('Affichage des passages aux urg')
+                    })
+                })
+                break;
         }
 
 //       ___ _                                     _                _   _         _
@@ -2067,7 +2064,9 @@ function changementContextePatient(){
         .after($last_left_tab.clone().attr('id', 'urg_patient').find('a').text('Urg').attr('id','').end().click(ev=>{
             $(ev.currentTarget).siblings('.selected').removeClass('selected').end().addClass('selected')
             $('#area-content-1')
-                .filter(':not(:has(#area-content-1-urg)').append('<div id="area-content-1-urg" style="display:none; height: calc(100% - 7px); width: calc(100% - 7px);"><iframe style="width:100%;height:100%;" src="https://easilynlb-prod.chu-clermontferrand.fr/Urgences/Urgences.Web/Recherche/Index?easilyAction=afficherDernierPassage">').end()
+                .filter(':not(:has(#area-content-1-urg)')
+                .append($('<div id="area-content-1-urg" style="display:none; height: calc(100% - 7px); width: calc(100% - 7px);"><iframe style="width:100%;height:100%;" src="https://easilynlb-prod.chu-clermontferrand.fr/Urgences/Urgences.Web/">')
+                        .find('iframe').on('load', ev=>$(ev.target).postMessage(JSON.stringify({command:'afficherDernierPassageUrg'}), '*'))).end()
             .find('[id^=area-content-1]').hide().end().find('#area-content-1-urg').show()
 
         }))
