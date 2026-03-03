@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260113
+// @version      1.0.260114
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
