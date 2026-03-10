@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260114
+// @version      1.0.260115
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -415,7 +415,7 @@
     else if(location.href.search("easilynlb-prod.chu-clermontferrand.fr/Agenda/Agenda.Web")+1){
         function createFastActions(){
             $('div.event.chip:not(.fastActionMiddleClick)').on('mouseup', ev=>{
-                if(ev.which == 2){
+                if(ev.button == 1){
                     $(ev.currentTarget).contextmenu()
                     $.waitFor('ul.context-menu-root:visible').then($el=>{
                         if(ev.shiftKey){
@@ -444,6 +444,15 @@
                             window.parent.postMessage(JSON.stringify({command:"agenda-OpenDossier"}), "*")
                         }
                     })
+                } else if(ev.button == 2){
+                    $.waitFor('ul.context-menu-list:visible', 2000).then($el=>{
+                        if((ev.delegateTarget.title.split('\n')[0] == "PSYB_SISMOTHERAPIE") && !$el.children('li.icon-CR_sismo').length){
+                            $('<li class="context-menu-item icon icon-CR_sismo"><span>Ouvrir CR Sismo</span></li><li class="context-menu-item context-menu-separator not-selectable"></li>').insertBefore($el.children('li.icon-selectPat'))
+                                .filter('li.icon-CR_sismo').click(ev=>{
+                                $(ev.delegateTarget).siblings('.icon-selectPat').trigger('mouseup')
+                            })
+                        }
+                    }).catch(err=>err)
                 }
             }).addClass('fastActionMiddleClick')
             $('#dvCalMain').off('mouseover', ".event", createFastActions)
@@ -457,7 +466,7 @@
         }
         $.waitFor('.rsNextDay, .rsPrevDay, .rsToday').then(()=>{
             $('.rsNextDay, .rsPrevDay, .rsToday').on('mouseup', ev=>{
-                if(ev.which == 1){
+                if(ev.button == 0){
                     waitForCreateFastActions()
                 }
             })
@@ -653,6 +662,9 @@
         #addAgendasPrefs:hover {color:green}
         #removeAgendasPrefs {vertical-align: middle; padding: 0 5px; font-size: medium; cursor:pointer;}
         #removeAgendasPrefs:hover {color:red}
+        .context-menu-item.icon.icon-CR_sismo {font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Verdana, sans-serif !important; background-image: url("https://easily-prod.chu-clermontferrand.fr/Modules/WorklistsHospitalisation/Content/images/word.png");}
+        .context-menu-item.icon.icon-CR_sismo:hover {cursor:pointer;background-color:#39f;}
+        .context-menu-item.icon {line-height: 18px;}
     `)
     // Agenda
     //css : background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKXSURBVDiNfZJdSFMBGIbfM6c7rvbTNjeVRKeFPxPU8kJkFUqNakQR3nTTReGNlwU2qQslPRgzsAjLFuSKUd4JEgtH1DQwYiIEp9nc9Bzb3ETtJLFxpjvndNNNbu65ffkeeL/vIwwGwyW1Wm1FHkRRFBiGcQFY3Z8RbW1tax6PpyKfgOd5dHV1+YLBoG1/JtPr9ZLJZALHcdjZ2UF1dTVEUQTHceA4DqlUCg0NDTAajclccjkA+Hw+TLjfYn19Db4ZL0KhEKLRKABApVKhsbERPT09n/1+f24BQRBIp3lk9vZAEATC4TBomoZarYbT6QQAKJXKTM5+drudTafTUiQSkRiGkQ7CarVOH1iBpmkMPxgBIOGV+yXGx8extLQEiqLgdI5sffkaEEPLKydIUnWK5//M/bdEAGAYBnWWVhCyIvA8j5aWFoyOjuLGze6tsuaL2ntj743umeXyk9bOSaVS2ZolMJvN+EEHQEh7IEkSGo0GLMviUEklYWlul0uiiNdjg7g95CorKascyKpQX18PiroPmUwGhUIBk8mEaDQKjc4kdz3sQ/znCmxXrkOjNUBWIFdlCbxeL549n8BGIgb/pw+YnZ2FzWbDt3nHbt+jKcTYMGrqmuCbcifTqd+/sgQAQJLFKCwsBADE43E4HA4MDw1o7t66ulFxrKnA83SQj6/Qh892dpyZeTe9mtjmOgAwsNvtbDKZlAKBgLS4uJh1PlEUpVgsJlkslrny0tLHF063b39/80RqPl4VBlAl39zcJILBIABAEAQsLCxk3TqTyUAQhNR6IkEdKS46lxEE3eRgb83lXmqa0Ol057VabUfOL/uHIAi7LMu6AKwBKLWYj37s775W2/9iMpJvLh+68hL9HYVCUfsXADA9PQZbgT0AAAAASUVORK5CYII=);
@@ -916,16 +928,16 @@
                     })
                 }
             })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Ordonnance de Psy">Ordo</span>').click(ev=>{
-                if(!$('#formulaireSelection li[onclick]:contains(Ordonnance \(Autre\) Psy)').click().length){ // ouvrir si présent dans les raccourcis
+                if(!$('#formulaireSelection li[onclick]:contains("Ordonnance (Autre) Psy")').click().length){ // ouvrir si présent dans les raccourcis
                     $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
-                    $.waitFor('#formulaireSelection li[onclick]:contains(Ordonnance \(Autre \) Psy)', 1000).then($el2=>{
-                        $el2.click()
+                    $.waitFor('#formulaireSelection li[onclick]:contains("Ordonnance (Autre) Psy")', 500).then($el1=>{
+                        $el1.click()
                     }).catch(err=>{
                         $.waitFor('#groupSelection li[onclick]:contains(Ordonnances)').then($el=>{
                             $el.click()
-                            $.waitFor('#formulaireSelection li[onclick]:contains(Ordonnance \(Autre \) Psy)', 1000).then($el2=>{
+                            $.waitFor('#formulaireSelection li[onclick]:contains("Ordonnance (Autre) Psy")', 1000).then($el2=>{
                                 $el2.click()
-                            })
+                            }).catch(err=>err)
                         })
                     })
                 }
@@ -945,6 +957,9 @@
                     $el.click()
                 })
             }))
+            $('body').append($('<style>').text(`
+            #dossierSpecialite {height: calc(100% - 30px)!important;}
+            `))
         } else if(location.pathname.match(/^\/(d|D)ominho\/(f|F)iche\/((O|o)pen|(C|c)reate)/i)){
             if(!unsafeWindow._currentContext){return}
             let docType = $('head>title').text().split(' -')[0]
@@ -1267,7 +1282,7 @@
                     //console.log(messageEvData.rdv_infos)
                     if(typeof window.codageStarted == "undefined" || !window.codageStarted){
                         window.codageStarted = true
-                        $.waitFor('#infosSession:visible', 10000).then($el2=>{
+                        $.waitFor('#infosSession', 10000).then($el2=>{
                             if(messageEvData.rdv_infos){
                                 if(typeof messageEvData.rdv_infos.IEP == "undefined" || !messageEvData.rdv_infos.IEP){
                                     messageEvData.rdv_infos.IEP = $el2.text().split('Venue : ')[1]
@@ -1311,7 +1326,7 @@
         .filter(':contains(bloc)')[EasilyInfos.hide_bloc ? 'hide':'show']().end()
 
     $('.easily-univers-menu-entry').on('mouseup', ev=>{
-        if(ev.which == 3){
+        if(ev.button == 2){
             $.waitFor('.favoris-ctxmenu.easily-ctxmenu:not(.custom-fav-menus)').then($el=>{
                 $el.addClass('custom-fav-menus')
 
@@ -1411,7 +1426,7 @@
                                         µ.currentPatient.DDN = $('.infosPatient').text().split('le ')[1].split(" (")[0]
                                     }
                                 }
-                            } else if(ev.which == 2){
+                            } else if(ev.button == 1){
                                 $('#presBioFrame').attr('src', 'https://cyberlab.chu-clermontferrand.fr')
                             }
                         } else if ($(ev.target).is('img.synthese')){
@@ -1444,7 +1459,7 @@
                                         µ.currentPatient.DDN = $('.infosPatient').text().split('le ')[1].split(" (")[0]
                                     }
                                 }
-                            } else if(ev.type == "mouseup" && ev.which == 2){
+                            } else if(ev.type == "mouseup" && ev.button == 1){
                                 let labo_url = 'http://intranet/intranet/Outils/APICyberlab/Default.aspx?'+
                                     btoa('Class=Patient&Method=ViewReport&LoginName=aharry&Password=Clermont63!&Organization=CLERMONT&Object='+µ.currentPatient.IPP+'&patientBirthDate='+µ.currentPatient.DDN.split('/').reverse().join('')+'&LastXdays=3650&OnClose=Login.jsp&showQueryFields=F')
                                 window.open(labo_url, '_tab')
@@ -1452,7 +1467,7 @@
 
                             // Edition rapide de la FHR ou de la Lettre de Liaison (choix à définir dans les options)
                         } else if ($(ev.target).is('a:contains(Histoire)')){
-                            if(ev.type == "mouseup" && ev.which == 2){
+                            if(ev.type == "mouseup" && ev.button == 1){
                                 if(!$(ev.target).closest('li').is('selected')){
                                     $(ev.target).click()
                                 }
@@ -1503,7 +1518,17 @@
                     } else if ($(ev.target).is('.bris-de-glace select[name=motifs]')){
                         $(ev.target).on('change', ev=>{
                             if($(ev.target).val() == "Réponse à une demande d'avis médical"){
-                                $('.bris-de-glace #password-bdg').val(EasilyInfos.password).change()
+                                $('.bris-de-glace #password-bdg').val(EasilyInfos.password).on('change', e=>{
+                                    $('.bris-glace-continuer').click()
+                                    setTimeout(()=>{
+                                        $('.application-shortcuts:visible span:contains("Dossier clinique du patient")').click()
+                                        $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
+                                            $el.click()
+                                        }, 5000).catch(err=>{
+                                            log(err)
+                                        })
+                                    }, 500)
+                                }).change()
                             }
                         })
                     } else if ($(ev.target).is('.logo-produit')){
@@ -1672,7 +1697,7 @@
                 frameOrigin = el
             }
         })
-        console.log(messageEvData.command)
+        console.log(messageEvData.command, messageEvData)
         switch(messageEvData.command){
 
 //        _   ___ _   _ ___
@@ -1856,15 +1881,28 @@
 //    \ \_/ / | | (_| |
 //     \___/|_|  \__, |
 //               |___/
+            case "afficherASUR":
+                $('[title="ASUR (Urgences)"]').click()
+                break
             case "afficherDernierPassageUrg":
                 $.waitFor('!#saving_status_container:visible').catch(err=>{
                     $('.lien-affichage.m-recherche:not(.selected)').click()
-                    $.waitFor('#BtnRecherchePatientEnSession:visible', 5000).then($el=>{
-                        $el.click().log()
-                        log('Affichage des passages aux urg')
-                    })
+                    if($('h2:contains("Une erreur est survenue lors du traitement de votre demande !")').length){
+                        window.parent.postMessage(JSON.stringify({command:"afficherASUR"}), "*")
+                    }
+                    $.waitFor('#frameRecherche:visible', 5000).then($el=>{
+                        $el.postMessage(JSON.stringify({command:"RechercheASUR-afficherDerniersPassages"}))
+                    }).catch(err=>log(err))
                 })
-                break;
+                break
+            case "RechercheASUR-afficherDerniersPassages":
+                $('iframe[src*=RechercheParPatient]').postMessage(JSON.stringify({command:"RechercheASUR-frame-afficherDerniersPassage"}))
+                break
+            case "RechercheASUR-frame-afficherDerniersPassage":
+                $.waitFor('#BtnRecherchePatientEnSession:visible', 5000).then($el=>{
+                    $el.click()
+                }).catch(err=>log(err))
+                break
         }
 
 //       ___ _                                     _                _   _         _
@@ -1882,6 +1920,15 @@
                     µ.currentPatient.sexe = µ._data.PatientSexe == "Femme" ? "f" : "m"
                     µ.currentPatient.ID = µ._data.PatientId
                     µ.currentPatient.IEP = µ._data.VenueNumero
+                    µ.currentPatient.Hospit = $('.bandeauInfoPatient:visible chambre').length
+                    if (µ.currentPatient.Hospit){
+                        µ.currentPatient.HospitPsy = (!!µ._data.CRCode && µ._data.CRCode in {"1399H": "pedo", "1397H": "psyA", "1398H": "psyB", "1623H": "addicto", "1361U": "UPP"})
+                        if(!µ.currentPatient.HospitPsy){
+                            µ.currentPatient.HospitPsy = !!$('.bandeau-component:visible .headerHover p:contains("CR :")').text().match(/PSYCHIATRIE/)
+                        }
+                    } else {
+                        µ.currentPatient.HospitPsy = false
+                    }
                     console.log('Changement de patient pour : ' + µ.currentPatient.nom + " " + µ.currentPatient.prenom)
                 }
                 changementContextePatient()
@@ -2077,9 +2124,15 @@ function changementContextePatient(){
         $.waitFor('.area-carrousel:visible li:contains(Histoire):not(.easily_plus)', 5000).then($el=>{
             $el.addClass('easily_plus').click()
             $('li:contains(Biologie):not(:contains(Pres Bio))', '.area-carrousel').click()
+            $('li:contains(Prescrire)', '.area-carrousel').click()
             setTimeout(()=>{
-                $('.area-carrousel:visible').eq(1).find('li:contains(Histoire)').click()
-            }, 1000)
+                $('.area-carrousel:visible li:contains(Histoire)').click()
+                if(unsafeWindow.currentPatient.HospitPsy){
+                    $('.area-carrousel:visible li:contains(Prescrire)').click()
+                } else {
+                    $('.area-carrousel:visible li:contains(Saisir)').click()
+                }
+            }, 500)
         }).catch(err=>err)
         $.waitFor('#module-bioboxes-imagerie').then($el=>{
             $el.not(':has(#xploreFrame)').html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
@@ -2097,7 +2150,7 @@ function changementContextePatient(){
             $(ev.currentTarget).siblings('.selected').removeClass('selected').end().addClass('selected')
             $('#area-content-1')
                 .filter(':not(:has(#area-content-1-urg)')
-                .append($('<div id="area-content-1-urg" style="display:none; height: calc(100% - 7px); width: calc(100% - 7px);"><iframe style="width:100%;height:100%;" src="https://easilynlb-prod.chu-clermontferrand.fr/Urgences/Urgences.Web/">')
+                .append($('<div id="area-content-1-urg" style="display:none; height: calc(100% - 7px); width: calc(100% - 7px);"><iframe id="area-content-1-urg" style="width:100%;height:100%;" src="https://easilynlb-prod.chu-clermontferrand.fr/Urgences/Urgences.Web/">')
                         .find('iframe').on('load', ev=>$(ev.target).postMessage(JSON.stringify({command:'afficherDernierPassageUrg'}), '*'))).end()
             .find('[id^=area-content-1]').hide().end().find('#area-content-1-urg').show()
 
