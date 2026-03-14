@@ -159,7 +159,7 @@
 	   // jQuery implementation of Mutation observer
 		observe(options, callback, name) {
 			let listOptions = {
-				"t","characterData",
+				"t":"characterData",
 				"text":"characterData",
 				"characterData":"characterData",
 				"string":"characterData",
@@ -183,7 +183,7 @@
 					opt[listOptions[i]]=true;
 				}
 			}
-	
+
 			opt = $.type(options) === "object" ? options : (Object.keys(opt).length) ? opt : {attributes: true, childList:true, characterData:true, subtree:true };
 			let nameObserver = name || options.name || ((typeof callback === "string") ? callback : "observer"+Date.now());
 			let mutationObserver = new MutationObserver((typeof callback === "function") ? callback : options);
