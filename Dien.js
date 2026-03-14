@@ -159,14 +159,18 @@
 	   // jQuery implementation of Mutation observer
 		observe(options, callback, name) {
 			let listOptions = {
+				"t","characterData",
 				"text":"characterData",
 				"characterData":"characterData",
 				"string":"characterData",
+				"a":"attributes",
 				"attributes":"attributes",
 				"attr":"attributes",
+				"c":"childList",
 				"childList":"childList",
 				"child":"childList",
 				"children":"childList",
+				"s":"subtree",
 				"subtree":"subtree",
 				"recursive":"subtree",
 				"sub":"subtree"
