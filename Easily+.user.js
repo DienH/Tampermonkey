@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260115
+// @version      1.0.260314
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -450,6 +450,7 @@
                             $('<li class="context-menu-item icon icon-CR_sismo"><span>Ouvrir CR Sismo</span></li><li class="context-menu-item context-menu-separator not-selectable"></li>').insertBefore($el.children('li.icon-selectPat'))
                                 .filter('li.icon-CR_sismo').click(ev=>{
                                 $(ev.delegateTarget).siblings('.icon-selectPat').trigger('mouseup')
+                                window.parent.postMessage(JSON.stringify({command:"agenda-Sismo_openCR"}), "*")
                             })
                         }
                     }).catch(err=>err)
@@ -1301,6 +1302,14 @@
                 }
             })
         }
+
+//    ██████  ██████  ██ ███    ██  ██████ ██ ██████   █████  ██
+//    ██   ██ ██   ██ ██ ████   ██ ██      ██ ██   ██ ██   ██ ██
+//    ██████  ██████  ██ ██ ██  ██ ██      ██ ██████  ███████ ██
+//    ██      ██   ██ ██ ██  ██ ██ ██      ██ ██      ██   ██ ██
+//    ██      ██   ██ ██ ██   ████  ██████ ██ ██      ██   ██ ███████
+//
+//
     } else if (location.hostname == "easily-prod.chu-clermontferrand.fr" && window.top == window.self){
         window.addEventListener("message", receiveMessage_Main);
 
@@ -1311,66 +1320,67 @@
                 $('')
             }, 1500)
         }
-    }
 
-    // auto-relogon
-    $('.verrouillage-nom').click(ev=>{
-        if(EasilyInfos.password_store){$("#password-popup").val(EasilyInfos.password)}
-        $("button.deverrouillage-button").click()
-    })
+        // auto-relogon
+        $('.verrouillage-nom').click(ev=>{
+            if(EasilyInfos.password_store){$("#password-popup").val(EasilyInfos.password)}
+            $("button.deverrouillage-button").click()
+        })
 
-    //Gestion affichage du menu
-    $('.easily-univers-item').on('mouseenter', getParapheurNotif)
-        .filter(':contains(paramétrage)')[EasilyInfos.hide_parametres ? 'hide':'show']().end()
-        .filter(':contains(pilotage)')[EasilyInfos.hide_pilotage ? 'hide':'show']().end()
-        .filter(':contains(bloc)')[EasilyInfos.hide_bloc ? 'hide':'show']().end()
+        //Gestion affichage du menu
+        $('.easily-univers-item').on('mouseenter', getParapheurNotif)
+            .filter(':contains(paramétrage)')[EasilyInfos.hide_parametres ? 'hide':'show']().end()
+            .filter(':contains(pilotage)')[EasilyInfos.hide_pilotage ? 'hide':'show']().end()
+            .filter(':contains(bloc)')[EasilyInfos.hide_bloc ? 'hide':'show']().end()
 
-    $('.easily-univers-menu-entry').on('mouseup', ev=>{
-        if(ev.button == 2){
-            $.waitFor('.favoris-ctxmenu.easily-ctxmenu:not(.custom-fav-menus)').then($el=>{
-                $el.addClass('custom-fav-menus')
+        $('.easily-univers-menu-entry').on('mouseup', ev=>{
+            if(ev.button == 2){
+                $.waitFor('.favoris-ctxmenu.easily-ctxmenu:not(.custom-fav-menus)').then($el=>{
+                    $el.addClass('custom-fav-menus')
 
-                let selectedMenu = $('.easily-univers-item.selected').text().trim().capitalize(), selectedAction = $el.closest('.easily-univers-menu-entry').attr('title')
-                $el.find('p').text('Définir par défaut pour cet utilisateur').clone().text((selectedAction == EasilyInfos.defaultConnectionAction ? "Supprimer" : "Définir") + " comme action à la connexion ici").appendTo($el).click(ev=>{
-                    ev.preventDefault()
-                    ev.stopPropagation()
-                    ev.stopImmediatePropagation()
-                    let clickedAction = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
-                    if(clickedAction == EasilyInfos.defaultConnectionAction){
-                        EasilyInfos.defaultConnectionAction = ""
-                        log(clickedAction + ' supprimé comme action par défaut à la connexion ici')
-                    } else {
-                        EasilyInfos.defaultConnectionAction = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
-                        log(EasilyInfos.defaultConnectionAction + ' définit comme action par défaut à la connexion ici')
-                    }
-                    GM_setValue("EasilyInfos", EasilyInfos)
-                    $('#easily-univers-menu').hide()
-                }).contextmenu(ev=>{
-                    ev.preventDefault()
-                    ev.stopPropagation()
-                    ev.stopImmediatePropagation()
-                }).end().clone().text((selectedAction == EasilyInfos.defaultsMenusClick[selectedMenu] ? "Supprimer " : "Définir")+ " comme action par défaut du menu " + selectedMenu).appendTo($el).click(ev=>{
-                    ev.preventDefault()
-                    ev.stopPropagation()
-                    ev.stopImmediatePropagation()
-                    let clickedAction = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
-                    if(clickedAction == EasilyInfos.defaultsMenusClick[selectedMenu]){
-                        EasilyInfos.defaultsMenusClick[selectedMenu] = ""
-                        log(clickedAction + ' supprimé comme action par défaut du menu ' + selectedMenu)
-                    } else {
-                        EasilyInfos.defaultsMenusClick[selectedMenu] = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
-                        log(EasilyInfos.defaultsMenusClick[selectedMenu] + ' définit comme action par défaut du menu ' + selectedMenu)
-                    }
-                    GM_setValue("EasilyInfos", EasilyInfos)
-                    $('#easily-univers-menu').hide()
-                }).contextmenu(ev=>{
-                    ev.preventDefault()
-                    ev.stopPropagation()
-                    ev.stopImmediatePropagation()
+                    let selectedMenu = $('.easily-univers-item.selected').text().trim().capitalize(), selectedAction = $el.closest('.easily-univers-menu-entry').attr('title')
+                    $el.find('p').text('Définir par défaut pour cet utilisateur').clone().text((selectedAction == EasilyInfos.defaultConnectionAction ? "Supprimer" : "Définir") + " comme action à la connexion ici").appendTo($el).click(ev=>{
+                        ev.preventDefault()
+                        ev.stopPropagation()
+                        ev.stopImmediatePropagation()
+                        let clickedAction = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
+                        if(clickedAction == EasilyInfos.defaultConnectionAction){
+                            EasilyInfos.defaultConnectionAction = ""
+                            log(clickedAction + ' supprimé comme action par défaut à la connexion ici')
+                        } else {
+                            EasilyInfos.defaultConnectionAction = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
+                            log(EasilyInfos.defaultConnectionAction + ' définit comme action par défaut à la connexion ici')
+                        }
+                        GM_setValue("EasilyInfos", EasilyInfos)
+                        $('#easily-univers-menu').hide()
+                    }).contextmenu(ev=>{
+                        ev.preventDefault()
+                        ev.stopPropagation()
+                        ev.stopImmediatePropagation()
+                    }).end().clone().text((selectedAction == EasilyInfos.defaultsMenusClick[selectedMenu] ? "Supprimer " : "Définir")+ " comme action par défaut du menu " + selectedMenu).appendTo($el).click(ev=>{
+                        ev.preventDefault()
+                        ev.stopPropagation()
+                        ev.stopImmediatePropagation()
+                        let clickedAction = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
+                        if(clickedAction == EasilyInfos.defaultsMenusClick[selectedMenu]){
+                            EasilyInfos.defaultsMenusClick[selectedMenu] = ""
+                            log(clickedAction + ' supprimé comme action par défaut du menu ' + selectedMenu)
+                        } else {
+                            EasilyInfos.defaultsMenusClick[selectedMenu] = $(ev.target).closest('.easily-univers-menu-entry').attr('title')
+                            log(EasilyInfos.defaultsMenusClick[selectedMenu] + ' définit comme action par défaut du menu ' + selectedMenu)
+                        }
+                        GM_setValue("EasilyInfos", EasilyInfos)
+                        $('#easily-univers-menu').hide()
+                    }).contextmenu(ev=>{
+                        ev.preventDefault()
+                        ev.stopPropagation()
+                        ev.stopImmediatePropagation()
+                    })
                 })
-            })
-        }
-    })
+            }
+        })
+        $('#easily-maincontent').observe("attributes child", mainContentObserver)
+    }
     if(location.href.search("https://easily-prod.chu-clermontferrand.fr/medecin")+1 || location.href.search("https://easily-prod.chu-clermontferrand.fr/Medecin")+1){
         if(EasilyInfos.defaultConnectionAction){
             $.waitFor('.easily-container').then($el=>{
@@ -1818,6 +1828,35 @@
                     log(err)
                 })
                 break;
+            case "agenda-Sismo_openCR":
+                $currentContainer = $('.easily-container:visible')
+                $('[data-applicationname="CapMedecin"]').click()
+                $('#container-DEFAULT-'+$('[data-applicationname="CapMedecin"]').data('pathid')).show()
+                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
+                    CR_selectionContainerID = $('.easily-container:visible').attr('id')
+                    /**/
+                    $el.click()
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 5000).then($el2=>{
+                        $('.area-carrousel-wrapper li:contains(Saisir)').click()
+                        $('.area-carrousel-wrapper li:contains(Histoire)').click()
+                        $.waitFor('[title^="PSY AD ECT"]', 5000).then($el=>{
+                            editDocument($el.eq(0).log())
+                        }).catch(err=>err)
+                        //$el.click()
+                    }).catch(err=>err)
+                    $.waitFor('.btnPrevious:visible').then($el=>{
+                        $el.click(ev=>{
+                            $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
+                                $el.hide()
+                                $currentContainer.show()
+                            })
+                        })
+                    })
+                    /**/
+                }, 5000).catch(err=>{
+                    log(err)
+                })
+                break;
             case "agenda-Codage":
                 $currentContainer = $('.easily-container:visible')
                 µ.codageCora = true
@@ -1936,6 +1975,39 @@
             }
         }
     }
+
+//    ███    ███ ██    ██ ████████  █████  ████████ ██  ██████  ███    ██ ███████     ███████ ██    ██ ███████ ███    ██ ████████ ███████
+//    ████  ████ ██    ██    ██    ██   ██    ██    ██ ██    ██ ████   ██ ██          ██      ██    ██ ██      ████   ██    ██    ██
+//    ██ ████ ██ ██    ██    ██    ███████    ██    ██ ██    ██ ██ ██  ██ ███████     █████   ██    ██ █████   ██ ██  ██    ██    ███████
+//    ██  ██  ██ ██    ██    ██    ██   ██    ██    ██ ██    ██ ██  ██ ██      ██     ██       ██  ██  ██      ██  ██ ██    ██         ██
+//    ██      ██  ██████     ██    ██   ██    ██    ██  ██████  ██   ████ ███████     ███████   ████   ███████ ██   ████    ██    ███████
+//
+//
+
+function mainContentObserver(mutationsList){
+    for (let mutation of mutationsList){
+        switch (mutation.type){
+            case "childList":
+                log({added:mutation.addedNodes, removed:mutation.removedNodes})
+                $(mutation.addedNodes).each((i,el)=>{
+                    if(el.id === "container-DEFAULT-278"){
+                        $.waitFor('#container:visible').then($el=>{
+                            $el.append($('<div class="module-bandeaupatient"><div class="btnPrevious capMedecin-Retour"></div></div>').find('.capMedecin-Retour').click(ev=>{
+                                $('.easily-container:visible').hide().prev().show()
+                            }).end())
+                        })
+                    }
+                })
+                break
+            case "attribute":
+                log(mutation)
+                break
+            case "characterData":
+                break
+        }
+    }
+}
+
 
 
 //     ██████  ██████  ████████ ██  ██████  ███    ██ ███████
@@ -2094,12 +2166,25 @@
         .habTemp-Buttons.hab-psyB.hab-addicto.hab-UPP.hab-psyA.hab-pedo {display:none;}
         .hab-psyA .hab-Ajouter_psyA, .hab-psyB .hab-Ajouter_psyB, .hab-pedo .hab-Ajouter_pedo, .hab-UPP .hab-Ajouter_UPP, .hab-addicto .hab-Ajouter_addicto {display: none;}
         .habTemp {margin-left:5px}
+        #module-capmedecin [data-cr="${btoa((EasilyInfos.CR).split('').join('\x00')+'\x00')}"]{background-color:green;}
+        .btnPrevious.capMedecin-Retour {display:inline;position:absolute;top:0;left:0;}
+        .btnPrevious.capMedecin-Retour:before {color:#005996;}
+        .btnPrevious.capMedecin-Retour:after {color:white;}
     `).appendTo('body')
     }
     // Your code here...
 })();
 
-
+function editDocument(lineElement){
+    let $ = unsafeWindow.jQuery
+    let ul=$(lineElement).parents('ul')[0], ul0=ul[Object.keys(ul).filter(t=>(t.search('__ko__')+1))[0]]
+    unsafeWindow.$easily.module.CM_Histoire.modifierDocument(ul0[Object.keys(ul0).filter(t=>(t.search('__ko__')+1))[0]].context.$data)
+    /*
+    try{$(lineElement).parents('li').next().find('.ligneExpanded').observe("c", mutL=>{
+        $('.edit-document').click()
+    }).end().end().find('.iconmodif>.line-expanded-off').click()}catch(e){}
+    */
+}
 
 function changementContextePatient(){
     let EasilyInfos = GM_getValue('EasilyInfos',{"user":"", "password":""})
