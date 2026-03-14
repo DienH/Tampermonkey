@@ -449,8 +449,8 @@
                         if((ev.delegateTarget.title.split('\n')[0] == "PSYB_SISMOTHERAPIE") && !$el.children('li.icon-CR_sismo').length){
                             $('<li class="context-menu-item icon icon-CR_sismo"><span>Ouvrir CR Sismo</span></li><li class="context-menu-item context-menu-separator not-selectable"></li>').insertBefore($el.children('li.icon-selectPat'))
                                 .filter('li.icon-CR_sismo').click(ev=>{
-                                $(ev.delegateTarget).siblings('.icon-selectPat').trigger('mouseup')
                                 window.parent.postMessage(JSON.stringify({command:"agenda-Sismo_openCR"}), "*")
+                                $(ev.delegateTarget).siblings('.icon-selectPat').trigger('mouseup')
                             })
                         }
                     }).catch(err=>err)
@@ -1380,6 +1380,13 @@
             }
         })
         $('#easily-maincontent').observe("attributes child", mainContentObserver)
+        if(!EasilyInfos.ID){
+            try{
+                EasilyInfos.ID = $('.easily-header-user script:contains(getPhoto)').text().match(/getPhotoIntervenant\((?<intervenantID>\d{4})/).groups.intervenantID
+                GM_setValue("EasilyInfos", EasilyInfos)
+            }catch(e){
+            }
+        }
     }
     if(location.href.search("https://easily-prod.chu-clermontferrand.fr/medecin")+1 || location.href.search("https://easily-prod.chu-clermontferrand.fr/Medecin")+1){
         if(EasilyInfos.defaultConnectionAction){
@@ -1709,6 +1716,32 @@
         })
         console.log(messageEvData.command, messageEvData)
         switch(messageEvData.command){
+            case "SetPatient":
+                if(µ.setPatientAction){
+                    switch (µ.setPatientAction){
+                        case "sismo-openCR":
+                            $.post('/Module/CM_Histoire/Home/ObtenirListeDocumentsPatient', `dateMin=2023-03-13T23%3A00%3A00.218Z&dateMax=&intervenantId=${EasilyInfos.ID}&patientId=${messageEvData.data.patientID}&modeGHT=false`, r=>{
+                                for(let doc of r.LstDocuments){
+                                    if(doc.Resume && doc.Resume.search('PSY AD ECT') == 0){
+                                        if(typeof unsafeWindow.$easily.module.CM_Histoire == "object"){
+                                            unsafeWindow.$easily.module.CM_Histoire.modifierDocument(doc)
+                                        } else {
+                                            $.post('https://easily-prod.chu-clermontferrand.fr/Module/CM_Histoire/Home/Index', 'PatientID=62191', r=>{
+                                                $(r).filter('script').eq(0).appendTo('.easily-container:visible')
+                                                setTimeout(()=>{
+                                                    unsafeWindow.$easily.module.CM_Histoire.modifierDocument(doc)
+                                                }, 500)
+                                            })
+                                        }
+                                        break
+                                    }
+                                }
+                            })
+                            break
+                    }
+                    µ.setPatientAction = ""
+                }
+                break
 
 //        _   ___ _   _ ___
 //       /_\ / __| | | | _ \
@@ -1829,19 +1862,20 @@
                 })
                 break;
             case "agenda-Sismo_openCR":
+                //µ.setPatientAction = "sismo-openCR"
+                /**/
                 $currentContainer = $('.easily-container:visible')
                 $('[data-applicationname="CapMedecin"]').click()
                 $('#container-DEFAULT-'+$('[data-applicationname="CapMedecin"]').data('pathid')).show()
                 $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
                     CR_selectionContainerID = $('.easily-container:visible').attr('id')
-                    /**/
                     $el.click()
                     $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 5000).then($el2=>{
                         $('.area-carrousel-wrapper li:contains(Saisir)').click()
                         $('.area-carrousel-wrapper li:contains(Histoire)').click()
-                        $.waitFor('[title^="PSY AD ECT"]', 5000).then($el=>{
+                        $.waitFor('.resumedoc:contains("PSY AD ECT")', 5000).then($el=>{
                             editDocument($el.eq(0).log())
-                        }).catch(err=>err)
+                        }).catch(err=>log(err))
                         //$el.click()
                     }).catch(err=>err)
                     $.waitFor('.btnPrevious:visible').then($el=>{
@@ -1852,10 +1886,10 @@
                             })
                         })
                     })
-                    /**/
                 }, 5000).catch(err=>{
                     log(err)
                 })
+                /**/
                 break;
             case "agenda-Codage":
                 $currentContainer = $('.easily-container:visible')
@@ -2246,3 +2280,6 @@ function changementContextePatient(){
     // Lancemodule: SYNTHESE_PAT;${IPP};LOGINAD=${username}   == Synthèse Logon
     // Lancemodule: IMAGES_PATIENT;${IPP};LOGINAD=${username}     == PACS
 }
+
+// Liste patients hospitalisés
+//  $.get(`https://easily-prod.chu-clermontferrand.fr/module/worklistshospitalisation/Main/LoadWorklist?ufCodes=${code_UF}&view=1&worklistType=4`, r=>log(r.data))
