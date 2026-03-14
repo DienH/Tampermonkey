@@ -159,12 +159,12 @@
 	   // jQuery implementation of Mutation observer
 		observe(options, callback, name) {
 			let listOptions = {
-			"text":"characterData",
+				"text":"characterData",
 				"characterData":"characterData",
 				"string":"characterData",
 				"attributes":"attributes",
 				"attr":"attributes",
-				"childList":"childlist",
+				"childList":"childList",
 				"child":"childList",
 				"children":"childList",
 				"subtree":"subtree",
@@ -196,8 +196,12 @@
 		disconnect(name) {
 			return this.each(function(){
 				if (this.observers) {
-					for (let i in this.observers){
-						this.observers[i].disconnect();
+					if (typeof name == "undefined"){
+						for (let i in this.observers){
+							this.observers[i].disconnect();
+						}
+					} else if (typeof name == "string" && this.observers[name]){
+						this.observers[name].disconnect();
 					}
 				}
 			});
