@@ -223,7 +223,7 @@
                         bilan.status=$(info_bilan).text()
                     }else if($(info_bilan).is('.sampleCollectionTime')){
                         try{
-                            Object.assign(bilan, $(info_bilan).text().match(/(?<date>\d{2}\/\d{2}\/\d{4})(.|\n|\s)?(?<time>\d{2}:\d{2})/).groups)
+                            Object.assign(bilan, $(info_bilan).text().match(/(?<date>\d{1,2}\/\d{1,2}\/\d{4})(.|\n|\s)?(?<time>\d{2}:\d{2})/).groups)
                         }catch(e){
                             $(info_bilan).log('innerText')
                         }
@@ -692,7 +692,7 @@
                 let transmissions = {},
                     transIncompletes={}
                 $('table.table>tbody>tr').each((i,el)=>{
-                    let infosPatient = $('.tdPat', el).text().trim().match(/(?<nom>([A-Z]|\s|-)+) (?<prenom>([A-Z][a-z]+|\s|-)+) (?<ddn>[0-9]{2}\/[0-9]{2}\/[0-9]{4})/).groups,
+                    let infosPatient = $('.tdPat', el).text().trim().match(/(?<nom>([A-Z]|\s|-)+) (?<prenom>([A-Z][a-z]+|\s|-)+) (?<ddn>[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4})/).groups,
                         nchambre=$('span[data-bind="text:NumeroLit"]', el).text().trim()
                     transmissions[nchambre]={patient:infosPatient,trans:{}}
                     transIncompletes[nchambre] = {}
@@ -1508,7 +1508,25 @@
                     }
 
                     // En cours - édition rapide de lettre de liaison
-                    if($('img[src*="word.png"][title="Lettre de Liaison valant CRH Psy"]').length){
+                    if($(ev.target).is('img[src*="word.png"][title="Lettre de Liaison valant CRH Psy"]') || $(ev.target).is('img[src*="word.png"][title="CRH Complémentaire (Hors FHR) Psy"]')){
+                        if(ev.type=="contextmenu"){
+                            ev.preventDefault()
+                            let currentUF = $('#dropdownUF').val().split(':')[1]
+                            $(ev.target).parents('tr').children('td:eq(2)').find('span[ng-click*=openConteneur]').click()
+                            $.waitFor('.area-carrousel-wrapper li:contains(Histoire):visible', 5000).then($el=>{
+                                $el.click()
+                                $.get(`https://easily-prod.chu-clermontferrand.fr/module/worklistshospitalisation/Main/LoadWorklist?ufCodes=${currentUF}&view=1&worklistType=4`, r=>{
+                                    for (let crh of r.data.filter(p=>p.numeroVenue == unsafeWindow._data.VenueNumero)[0].compteRenduHospitalisation){
+                                        if((crh.titre == 'CRH Complémentaire (Hors FHR) Psy') || (crh.titre == 'Lettre de Liaison valant CRH Psy')){
+                                            $.waitFor(`[docid=${crh.id}]`).then($el2=>{
+                                                editDocument($el2)
+                                            })
+                                            break
+                                        }
+                                    }
+                                })
+                            }).catch(err=>err)
+                        }
                     }
 
                     //Gestion du menu
@@ -1911,7 +1929,7 @@
                     })
                     $.waitFor('.internal-selection-venue tbody .venue-link:first:visible', 10000).then($el2=>{
                         $.waitFor('.infosPatient:visible:first').then($el3=>{
-                            messageEvData.rdv_infos.IPP = $el3.text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups.IPP
+                            messageEvData.rdv_infos.IPP = $el3.text().match(/le (?<DDN>\d{1,2}\/\d{1,2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups.IPP
                             $('.btnPrevious:visible').click(ev=>{
                                 $.waitFor('#'+CR_selectionContainerID+':visible', 2000).then($el=>{
                                     $el.hide()
@@ -1938,14 +1956,14 @@
                     if(µ.CoraRDV_infos){
                         µ.CoraRDV_infos.IEP = messageEvData.IEP
                         if(typeof µ.CoraRDV_infos.IPP == "undefined"){
-                            µ.CoraRDV_infos.IPP = $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}).* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP
+                            µ.CoraRDV_infos.IPP = $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{1,2}\/\d{1,2}\/\d{4}).* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP
                         }
                         //log(µ.CoraRDV_infos)
                         $('#iframe[src*="TempetePlus.Web/Pancarte"]').postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: µ.CoraRDV_infos}), "*")
                     }
                     setTimeout(()=>{$('.btnPrevious:visible').click()}, 2000)
                 } else {
-                    $('#iframe[src*="TempetePlus.Web/Pancarte"]').postMessage(JSON.stringify({command:"agenda-CodageFrame", IPP: $('.infosPatient:visible:first').text().match(/le \d{2}\/\d{2}\/\d{4}.* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP}), "*")
+                    $('#iframe[src*="TempetePlus.Web/Pancarte"]').postMessage(JSON.stringify({command:"agenda-CodageFrame", IPP: $('.infosPatient:visible:first').text().match(/le \d{1,2}\/\d{1,2}\/\d{4}.* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP}), "*")
                 }
                 break;
 //
@@ -1987,7 +2005,7 @@
             try{
                 if(µ._data.PatientId != µ.currentPatient.ID){
                     µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
-                    Object.assign(µ.currentPatient, $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{2}\/\d{2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups)
+                    Object.assign(µ.currentPatient, $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{1,2}\/\d{1,2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups)
                     //µ.currentPatient.IPP = $('.infosPatient:visible:first').text().split(' : ')[1]
                     //µ.currentPatient.DDN = $('.infosPatient:visible:first').text().split('le ')[1].split(" (")[0]
                     µ.currentPatient.sexe = µ._data.PatientSexe == "Femme" ? "f" : "m"
@@ -2178,7 +2196,7 @@ function mainContentObserver(mutationsList){
 
     if(!$('#EasilyPlus_Style').length){
         $('<style id="EasilyPlus_Style">').html(`
-        img[src*="word.png"]:not([title="Lettre de Liaison valant CRH Psy"]) {filter: grayscale(1);}
+        img[src*="word.png"]:not([title="Lettre de Liaison valant CRH Psy"]):not([title="CRH Complémentaire (Hors FHR) Psy"]) {filter: grayscale(1);}
         img[src*="MyHopLogo"] {display:none;}
         #transmissionsFrame {width:100%!important;height:calc(100% - 25px)!important;padding:0!important}
         #specialiteSelection{display:none;}
@@ -2210,8 +2228,13 @@ function mainContentObserver(mutationsList){
 })();
 
 function editDocument(lineElement){
-    let $ = unsafeWindow.jQuery
-    let ul=$(lineElement).parents('ul')[0], ul0=ul[Object.keys(ul).filter(t=>(t.search('__ko__')+1))[0]]
+    let $ = unsafeWindow.jQuery, ul, ul0
+    if($(lineElement).is('.ligneEnfant')){
+        ul=$(lineElement)[0]
+    } else {
+        ul=$(lineElement).parents('ul')[0]
+    }
+    ul0=ul[Object.keys(ul).filter(t=>(t.search('__ko__')+1))[0]]
     unsafeWindow.$easily.module.CM_Histoire.modifierDocument(ul0[Object.keys(ul0).filter(t=>(t.search('__ko__')+1))[0]].context.$data)
     /*
     try{$(lineElement).parents('li').next().find('.ligneExpanded').observe("c", mutL=>{
