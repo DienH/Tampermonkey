@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260314
+// @version      1.0.260315
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -453,12 +453,6 @@
                                 $(ev.delegateTarget).siblings('.icon-selectPat').trigger('mouseup')
                             })
                             µ.jQuery($el.children('li.context-menu-separator:eq(0)')).clone(true).insertBefore($el.children('li.icon-selectPat'))
-                            /*
-                            $('<li class="context-menu-item icon icon-CR_sismo"><span>Ouvrir CR Sismo</span></li><li class="context-menu-item context-menu-separator not-selectable"></li>').insertBefore($el.children('li.icon-selectPat'))
-                                .filter('li.icon-CR_sismo').click(ev=>{
-                                window.parent.postMessage(JSON.stringify({command:"agenda-Sismo_openCR"}), "*")
-                                $(ev.delegateTarget).siblings('.icon-selectPat').trigger('mouseup')
-                            })*/
                         }
                     }).catch(err=>err)
                 }
@@ -1895,22 +1889,22 @@
                 $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
                     CR_selectionContainerID = $('.easily-container:visible').attr('id')
                     $el.click()
-                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 5000).then($el2=>{
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 10000).then($el2=>{
                         $('.area-carrousel-wrapper li:contains(Saisir)').click()
                         $('.area-carrousel-wrapper li:contains(Histoire)').click()
-                        $.waitFor('.resumedoc:contains("PSY AD ECT")', 5000).then($el=>{
+                        $.waitFor('.resumedoc:contains("PSY AD ECT Séance")', 10000).then($el=>{
                             editDocument($el.eq(0).log())
                         }).catch(err=>log(err))
-                        //$el.click()
-                    }).catch(err=>err)
-                    $.waitFor('.btnPrevious:visible').then($el=>{
-                        $el.click(ev=>{
-                            $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
-                                $el.hide()
-                                $currentContainer.show()
+                        $.waitFor('.btnPrevious:visible').then($el=>{
+                            $el.click(ev=>{
+                                $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
+                                    $el.hide()
+                                    $currentContainer.show()
+                                })
                             })
                         })
-                    })
+                        //$el.click()
+                    }).catch(err=>err)
                 }, 5000).catch(err=>{
                     log(err)
                 })
