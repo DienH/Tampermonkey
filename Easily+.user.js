@@ -446,12 +446,19 @@
                     })
                 } else if(ev.button == 2){
                     $.waitFor('ul.context-menu-list:visible', 2000).then($el=>{
-                        if((ev.delegateTarget.title.split('\n')[0] == "PSYB_SISMOTHERAPIE") && !$el.children('li.icon-CR_sismo').length){
+                        if((ev.delegateTarget.title.split('\n')[0].search("SISMOTHERAPIE")+1) && !$el.children('li.icon-CR_sismo').length){
+                            µ.jQuery($el.children('li.icon-selectPat')).clone(true).addClass('icon-CR_sismo').removeClass('icon-selectPat').find('span').text("Ouvrir CR Sismo").end().insertBefore($el.children('li.icon-selectPat'))
+                                .click(ev=>{
+                                window.parent.postMessage(JSON.stringify({command:"agenda-Sismo_openCR"}), "*")
+                                $(ev.delegateTarget).siblings('.icon-selectPat').trigger('mouseup')
+                            })
+                            µ.jQuery($el.children('li.context-menu-separator:eq(0)')).clone(true).insertBefore($el.children('li.icon-selectPat'))
+                            /*
                             $('<li class="context-menu-item icon icon-CR_sismo"><span>Ouvrir CR Sismo</span></li><li class="context-menu-item context-menu-separator not-selectable"></li>').insertBefore($el.children('li.icon-selectPat'))
                                 .filter('li.icon-CR_sismo').click(ev=>{
                                 window.parent.postMessage(JSON.stringify({command:"agenda-Sismo_openCR"}), "*")
                                 $(ev.delegateTarget).siblings('.icon-selectPat').trigger('mouseup')
-                            })
+                            })*/
                         }
                     }).catch(err=>err)
                 }
