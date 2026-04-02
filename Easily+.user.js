@@ -1975,6 +1975,7 @@
 //               |___/
             case "afficherASUR":
                 $('[title="ASUR (Urgences)"]').click()
+                $('#easily-header:hidden').show()
                 break
             case "afficherDernierPassageUrg":
                 $.waitFor('!#saving_status_container:visible').catch(err=>{
