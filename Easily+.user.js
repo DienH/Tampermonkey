@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260315
+// @version      1.0.260316
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1886,7 +1886,7 @@
                 $currentContainer = $('.easily-container:visible')
                 $('[data-applicationname="CapMedecin"]').click()
                 $('#container-DEFAULT-'+$('[data-applicationname="CapMedecin"]').data('pathid')).show()
-                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
+                $.waitFor('div.clickable[data-cr="'+(btoa(((EasilyInfos.CR ? EasilyInfos.CR.substr(0,4) : "1398")+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
                     CR_selectionContainerID = $('.easily-container:visible').attr('id')
                     $el.click()
                     $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 10000).then($el2=>{
