@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260316
+// @version      1.0.260317
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -899,12 +899,12 @@
         if(location.pathname.match(/^\/Dominho\/Main/i)){
             $('#specialiteSelection').parent().append($('<button class="BoutonClassique"><span title="Documents de Psychiatrie">Psychiatrie</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
-            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="FHR de Psychiatrie">FHR</span>').click(ev=>{
-                if(!$('#formulaireSelection li[onclick]:contains(FHR Observation Médicale - Psychiatrie)').click().length){ // ouvrir si présent dans les raccourcis
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="CRH UHDL">CRH</span>').click(ev=>{
+                if(!$('#formulaireSelection li[onclick]:contains("CRH Complémentaire"):contains(Psy)').click().length){ // ouvrir si présent dans les raccourcis
                     $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
                     $.waitFor('#groupSelection li[onclick]:contains(Observations Médicales)').then($el=>{
                         $el.click()
-                        $.waitFor('#formulaireSelection li[onclick]:contains(FHR Observation Médicale - Psychiatrie)').then($el2=>{
+                        $.waitFor('#formulaireSelection li[onclick]:contains("CRH Complémentaire"):contains(Psy)').then($el2=>{
                             $el2.click()
                         })
                     })
@@ -1400,6 +1400,24 @@
         }
     }
 
+//Keyboard events
+//    ██   ██ ███████ ██    ██ ██████   ██████   █████  ██████  ██████
+//    ██  ██  ██       ██  ██  ██   ██ ██    ██ ██   ██ ██   ██ ██   ██
+//    █████   █████     ████   ██████  ██    ██ ███████ ██████  ██   ██
+//    ██  ██  ██         ██    ██   ██ ██    ██ ██   ██ ██   ██ ██   ██
+//    ██   ██ ███████    ██    ██████   ██████  ██   ██ ██   ██ ██████
+//
+
+
+    $(window).on('keyup', ev=>{
+        if(ev.keyCode == 46 && ev.key =="Delete"){
+            if(ev.ctrlKey){
+                //log(ev)
+                log($(".ligne[docid="+$(".easily-visionneuse-documentItem.easily-visionneuse-selectedBorder:visible").data('documentid')+"]:visible'"))
+            }
+        }
+    })
+
 
 //    ███    ███  ██████  ██    ██ ███████ ███████     ███████ ██    ██ ███████ ███    ██ ████████ ███████
 //    ████  ████ ██    ██ ██    ██ ██      ██          ██      ██    ██ ██      ████   ██    ██    ██
@@ -1529,6 +1547,8 @@
                             }).catch(err=>err)
                         }
                     }
+                    if($(ev.target).parents("#bloclistedocument").length){
+                    }
 
                     //Gestion du menu
                     if($(ev.target).closest('#easily-univers').length){
@@ -1571,7 +1591,7 @@
                         if(ev.type == "contextmenu"){
                             ev.preventDefault()
                             if(!$('#EasilyPlus_SecondFrame').dialog('open').length){
-                                $('<div id="EasilyPlus_SecondFrame"><iframe src="easily-prod.chu-clermontferrand.fr/medecin" style="width:100%;height:100%;"></iframe></div>').dialog({
+                                $('<div id="EasilyPlus_SecondFrame"><iframe src="/medecin" style="width:100%;height: calc(100% - 5px);"></iframe></div>').dialog({
                                     modal:true,
                                     autoOpen:true,
                                     title:"Easily+ Seconde Page",
@@ -2224,6 +2244,8 @@ function mainContentObserver(mutationsList){
         .btnPrevious.capMedecin-Retour {display:inline;position:absolute;top:0;left:0;}
         .btnPrevious.capMedecin-Retour:before {color:#005996;}
         .btnPrevious.capMedecin-Retour:after {color:white;}
+
+        #EasilyPlus_SecondFrame {width: 100%!important; height: calc(100% - 30px)!important;padding:0!important;}
     `).appendTo('body')
     }
     // Your code here...
@@ -2236,13 +2258,19 @@ function editDocument(lineElement){
     } else {
         ul=$(lineElement).parents('ul')[0]
     }
-    ul0=ul[Object.keys(ul).filter(t=>(t.search('__ko__')+1))[0]]
-    unsafeWindow.$easily.module.CM_Histoire.modifierDocument(ul0[Object.keys(ul0).filter(t=>(t.search('__ko__')+1))[0]].context.$data)
+    unsafeWindow.$easily.module.CM_Histoire.modifierDocument(getElement$Data(ul))
     /*
     try{$(lineElement).parents('li').next().find('.ligneExpanded').observe("c", mutL=>{
         $('.edit-document').click()
     }).end().end().find('.iconmodif>.line-expanded-off').click()}catch(e){}
     */
+}
+
+function getElement$Data(element){
+    let $ = unsafeWindow.jQuery, ul, ul0
+    ul = $(element)[0]
+    ul0=ul[Object.keys(ul).filter(t=>(t.search('__ko__')+1))[0]]
+    return ul0[Object.keys(ul0).filter(t=>(t.search('1__ko__')+1))[0]].context.$data
 }
 
 function changementContextePatient(){
