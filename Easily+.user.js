@@ -1413,7 +1413,8 @@
         if(ev.keyCode == 46 && ev.key =="Delete"){
             if(ev.ctrlKey){
                 //log(ev)
-                log($(".ligne[docid="+$(".easily-visionneuse-documentItem.easily-visionneuse-selectedBorder:visible").data('documentid')+"]:visible'"))
+                let $selectedDocLine = $(".ligne[docid="+$(".easily-visionneuse-documentItem.easily-visionneuse-selectedBorder:visible").data('documentid')+"]:visible")
+                µ.$easily.module.CM_Histoire.afficherPopupSuppressionDocument(getElement$Data($selectedDocLine))
             }
         }
     })
