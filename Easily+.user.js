@@ -2027,7 +2027,7 @@
         if (µ._data && µ._data.PatientId){
             try{
                 if(µ._data.PatientId != µ.currentPatient.ID){
-                    µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>[A-Z][a-z'\s-]*)\sn/.exec(µ._data.NomPatient).groups
+                    µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>([A-Z][a-z'\s-]*)+)\sn/.exec(µ._data.NomPatient).groups
                     Object.assign(µ.currentPatient, $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{1,2}\/\d{1,2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups)
                     //µ.currentPatient.IPP = $('.infosPatient:visible:first').text().split(' : ')[1]
                     //µ.currentPatient.DDN = $('.infosPatient:visible:first').text().split('le ')[1].split(" (")[0]
