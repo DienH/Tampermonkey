@@ -2024,7 +2024,8 @@
 //     | (__| ' \/ _` | ' \/ _` / -_) '  \/ -_) ' \  _| | '_ \/ _` |  _| / -_) ' \  _|
 //      \___|_||_\__,_|_||_\__, \___|_|_|_\___|_||_\__| | .__/\__,_|\__|_\___|_||_\__|
 //                         |___/                        |_|
-        if (µ._data && µ._data.PatientId){
+                if (µ._data && µ._data.PatientId){
+            //
             try{
                 if(µ._data.PatientId != µ.currentPatient.ID){
                     µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>([A-Z][a-z'\s-]*)+)\sn/.exec(µ._data.NomPatient).groups
@@ -2047,6 +2048,7 @@
                 }
                 changementContextePatient()
             }catch(e){
+                //log('Error de mes couilles : ', e)
             }
         }
     }
@@ -2279,14 +2281,18 @@ function changementContextePatient(){
     //<i class='fa fa-carret'></i>
     let $ = unsafeWindow.jQuery
     if($('.area-carrousel:visible li:contains(Histoire):not(.easily_plus)').length){
-        $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie')
-        $('.area-carrousel-wrapper li>a:contains("Liens")').siblings('img').addClass('synthese').attr('title', 'Ouvrir Synthèse CrossWay')
-        $('.area-carrousel-wrapper li>a:contains("Imagerie")').siblings('img').addClass('rechercher openPACS').attr('title', 'PACS - Examens Imagerie')
-        $('.area-carrousel li:contains(Biologie)').append($('<img src="/Modules/CM_Histoire/Content/Images/refresh.png" class="imgRefreshListe" title="Actualiser">').click(ev=>{
-            if($(ev.target).parent(':contains(Pres)').length){
+        $('.area-carrousel-wrapper li:contains("Biologie")').addClass('tab_Bio')
+        $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie').parent().addClass('tab_PresBio')
+        $('.area-carrousel-wrapper li>a:contains("Liens")').siblings('img').addClass('synthese').attr('title', 'Ouvrir Synthèse CrossWay').end().parent().addClass('tab_Histoire')
+        $('.area-carrousel-wrapper li>a:contains("Imagerie")').siblings('img').addClass('rechercher openPACS').attr('title', 'PACS - Examens Imagerie').end().parent().addClass('tab_PACS')
+        $('li:contains(Biologie), li:contains("Imagerie")', '.area-carrousel:visible').append($('<img src="/Modules/CM_Histoire/Content/Images/refresh.png" class="imgRefreshListe" title="Actualiser">').click(ev=>{
+            if($(ev.target).parent().is('.tab_PresBio')){
                 $('#presBioFrame').attr("src", "https://cyberlab.chu-clermontferrand.fr")
-            }else{
+            }else if($(ev.target).parent().is('.tab_Bio')){
                  $('#cyberlabFrame').attr("src", "https://cyberlab.chu-clermontferrand.fr")
+            }else if($(ev.target).parent().is('.tab_PACS')){
+                 $('#xploreFrame').attr("src", "")
+                setTimeout(()=>$('#xploreFrame').attr("src", $('#xploreFrame').attr('data-src')),100)
             }
         })).filter(':not(:contains(Pres))').find('img:first').addClass('labInfo').end()
         /*/
@@ -2308,7 +2314,8 @@ function changementContextePatient(){
             }, 500)
         }).catch(err=>err)
         $.waitFor('#module-bioboxes-imagerie').then($el=>{
-            $el.not(':has(#xploreFrame)').html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2='+unsafeWindow.currentPatient.IPP+'">')
+            let xploreURL = "https://xplore.chu-clermontferrand.fr/XaIntranet/#/ExternalOpener?login=aharry&name=FicheDemandeRV&target=WindowDefault&param1=CREATE-FROM-NUMIPP&param2="+unsafeWindow.currentPatient.IPP
+            $el.not(':has(#xploreFrame)').html("").addClass('xplore_frame').append('<iframe id="xploreFrame" style="width:100%;height:100%" src="'+xploreURL+'" data-src="'+xploreURL+'">')
         })
 
         $.waitFor('#module-bioboxes-anapath').then($el=>{
