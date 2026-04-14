@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260317
+// @version      1.0.260319
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -902,7 +902,7 @@
             })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="CRH UHDL">CRH</span>').click(ev=>{
                 if(!$('#formulaireSelection li[onclick]:contains("CRH Complémentaire"):contains(Psy)').click().length){ // ouvrir si présent dans les raccourcis
                     $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
-                    $.waitFor('#groupSelection li[onclick]:contains(Observations Médicales)').then($el=>{
+                    $.waitFor('#groupSelection li[onclick]:contains(Comptes-Rendus)').then($el=>{
                         $el.click()
                         $.waitFor('#formulaireSelection li[onclick]:contains("CRH Complémentaire"):contains(Psy)').then($el2=>{
                             $el2.click()
@@ -1412,7 +1412,7 @@
     $(window).on('keyup', ev=>{
         if(ev.keyCode == 46 && ev.key =="Delete"){
             if(ev.ctrlKey){
-                //log(ev)
+                //Supprimer la fiche / le document avec le raccourcis clavier Ctrl+Del lorsqu'il est sélectionné (ouvert)
                 let $selectedDocLine = $(".ligne[docid="+$(".easily-visionneuse-documentItem.easily-visionneuse-selectedBorder:visible").data('documentid')+"]:visible")
                 µ.$easily.module.CM_Histoire.afficherPopupSuppressionDocument(getElement$Data($selectedDocLine))
             }
@@ -1755,88 +1755,89 @@
             }
         })
         console.log(messageEvData.command, messageEvData)
-        switch(messageEvData.command){
-            case "SetPatient":
-                if(µ.setPatientAction){
-                    switch (µ.setPatientAction){
-                        case "sismo-openCR":
-                            $.post('/Module/CM_Histoire/Home/ObtenirListeDocumentsPatient', `dateMin=2023-03-13T23%3A00%3A00.218Z&dateMax=&intervenantId=${EasilyInfos.ID}&patientId=${messageEvData.data.patientID}&modeGHT=false`, r=>{
-                                for(let doc of r.LstDocuments){
-                                    if(doc.Resume && doc.Resume.search('PSY AD ECT') == 0){
-                                        if(typeof unsafeWindow.$easily.module.CM_Histoire == "object"){
-                                            unsafeWindow.$easily.module.CM_Histoire.modifierDocument(doc)
-                                        } else {
-                                            $.post('https://easily-prod.chu-clermontferrand.fr/Module/CM_Histoire/Home/Index', 'PatientID=62191', r=>{
-                                                $(r).filter('script').eq(0).appendTo('.easily-container:visible')
-                                                setTimeout(()=>{
-                                                    unsafeWindow.$easily.module.CM_Histoire.modifierDocument(doc)
-                                                }, 500)
-                                            })
+        if(messageEvData.command){
+            switch(messageEvData.command){
+                case "SetPatient":
+                    if(µ.setPatientAction){
+                        switch (µ.setPatientAction){
+                            case "sismo-openCR":
+                                $.post('/Module/CM_Histoire/Home/ObtenirListeDocumentsPatient', `dateMin=2023-03-13T23%3A00%3A00.218Z&dateMax=&intervenantId=${EasilyInfos.ID}&patientId=${messageEvData.data.patientID}&modeGHT=false`, r=>{
+                                    for(let doc of r.LstDocuments){
+                                        if(doc.Resume && doc.Resume.search('PSY AD ECT') == 0){
+                                            if(typeof unsafeWindow.$easily.module.CM_Histoire == "object"){
+                                                unsafeWindow.$easily.module.CM_Histoire.modifierDocument(doc)
+                                            } else {
+                                                $.post('https://easily-prod.chu-clermontferrand.fr/Module/CM_Histoire/Home/Index', 'PatientID=62191', r=>{
+                                                    $(r).filter('script').eq(0).appendTo('.easily-container:visible')
+                                                    setTimeout(()=>{
+                                                        unsafeWindow.$easily.module.CM_Histoire.modifierDocument(doc)
+                                                    }, 500)
+                                                })
+                                            }
+                                            break
                                         }
-                                        break
                                     }
-                                }
-                            })
-                            break
+                                })
+                                break
+                        }
+                        µ.setPatientAction = ""
                     }
-                    µ.setPatientAction = ""
-                }
-                break
+                    break
 
 //        _   ___ _   _ ___
 //       /_\ / __| | | | _ \
 //      / _ \\__ \ |_| |   /
 //     /_/ \_\___/\___/|_|_\
 //
-            case "allowASUR":
-                $('[data-action=habilitation]').click2()
-                $.waitFor(`ul.nav>li:contains("Demandes d'habilitation"):visible a:contains("Faire une demande d'habilitation temporaire")`).then($el=>{
-                    $.waitFor('h4:contains("Vous avez le rôle")').then(()=>setTimeout(()=>{
-                        $el.click()
-                        grantTempHabilitation()
-                    }, 300))
-                })
-                break
+                case "allowASUR":
+                    $('[data-action=habilitation]').click2()
+                    $.waitFor(`ul.nav>li:contains("Demandes d'habilitation"):visible a:contains("Faire une demande d'habilitation temporaire")`).then($el=>{
+                        $.waitFor('h4:contains("Vous avez le rôle")').then(()=>setTimeout(()=>{
+                            $el.click()
+                            grantTempHabilitation()
+                        }, 300))
+                    })
+                    break
 //       ___     _             _      _
 //      / __|  _| |__  ___ _ _| |__ _| |__
 //     | (_| || | '_ \/ -_) '_| / _` | '_ \
 //      \___\_, |_.__/\___|_| |_\__,_|_.__/
 //          |__/
-            case "cyberlab-getIPP":
-                if (message.origin == "https://cyberlab.chu-clermontferrand.fr"){
-                    $(frameOrigin).each((i,el)=>el.contentWindow.postMessage(unsafeWindow.currentPatient, "https://cyberlab.chu-clermontferrand.fr"))
-                }
-                break
-            case "cyberlab-getWindowName":
-                if (message.origin == "https://cyberlab.chu-clermontferrand.fr"){
-                    let cyberlabData = unsafeWindow.currentPatient
-                    cyberlabData.windowName = ($(frameOrigin).is('#cyberlabFrame') ? "resultats" : "prescription")
-                    $(frameOrigin).each((i,el)=>el.contentWindow.postMessage(cyberlabData, "https://cyberlab.chu-clermontferrand.fr"))
-                }
-                break
-            case "cyberlab-lastBio":
-                console.log(messageEvData.bio)
-                break
-            case "cyberlab-alertBio":
-                if(Object.keys(messageEvData.alert).length){
-                    let alert_title = '', important = false, $img
-                    for (let test in messageEvData.alert){
-                        alert_title+= test + " " + messageEvData.alert[test].alert + " (" + messageEvData.alert[test].value
-                        alert_title+= (messageEvData.alert[test].norme ? ", norme " + messageEvData.alert[test].norme : "") + ")\n"
-                        important = ( messageEvData.alert[test].alert == "très faible" || messageEvData.alert[test].alert == "très élevé")
+                case "cyberlab-getIPP":
+                    if (message.origin == "https://cyberlab.chu-clermontferrand.fr"){
+                        $(frameOrigin).each((i,el)=>el.contentWindow.postMessage(unsafeWindow.currentPatient, "https://cyberlab.chu-clermontferrand.fr"))
                     }
-                    $img = $('.area-carrousel li:contains(Biologie):not(:contains(Pres))').attr('title', alert_title).find('img.labInfo')
-                    if(important){
-                        $img.attr('source', "https://easilynlb-prod.chu-clermontferrand.fr/TempetePlus/TempetePlus.Web/Content/Images/alerte.png").css({width:"16px", "position":"absolute"})
-                    } else {
-                        $img.addClass('warning')
+                    break
+                case "cyberlab-getWindowName":
+                    if (message.origin == "https://cyberlab.chu-clermontferrand.fr"){
+                        let cyberlabData = unsafeWindow.currentPatient
+                        cyberlabData.windowName = ($(frameOrigin).is('#cyberlabFrame') ? "resultats" : "prescription")
+                        $(frameOrigin).each((i,el)=>el.contentWindow.postMessage(cyberlabData, "https://cyberlab.chu-clermontferrand.fr"))
                     }
-                }
-                break
-            case "cyberlab-reloadFrame":
-                $(frameOrigin).attr('src', "https://cyberlab.chu-clermontferrand.fr")
-                console.log(messageEvData.alert)
-                break
+                    break
+                case "cyberlab-lastBio":
+                    console.log(messageEvData.bio)
+                    break
+                case "cyberlab-alertBio":
+                    if(Object.keys(messageEvData.alert).length){
+                        let alert_title = '', important = false, $img
+                        for (let test in messageEvData.alert){
+                            alert_title+= test + " " + messageEvData.alert[test].alert + " (" + messageEvData.alert[test].value
+                            alert_title+= (messageEvData.alert[test].norme ? ", norme " + messageEvData.alert[test].norme : "") + ")\n"
+                            important = ( messageEvData.alert[test].alert == "très faible" || messageEvData.alert[test].alert == "très élevé")
+                        }
+                        $img = $('.area-carrousel li:contains(Biologie):not(:contains(Pres))').attr('title', alert_title).find('img.labInfo')
+                        if(important){
+                            $img.attr('source', "https://easilynlb-prod.chu-clermontferrand.fr/TempetePlus/TempetePlus.Web/Content/Images/alerte.png").css({width:"16px", "position":"absolute"})
+                        } else {
+                            $img.addClass('warning')
+                        }
+                    }
+                    break
+                case "cyberlab-reloadFrame":
+                    $(frameOrigin).attr('src', "https://cyberlab.chu-clermontferrand.fr")
+                    console.log(messageEvData.alert)
+                    break
 
 //    ___________.__       .__                  /\  ________
 //    \_   _____/|__| ____ |  |__   ____       / /  \______ \   ____   ____
@@ -1844,21 +1845,21 @@
 //     |     \   |  \  \___|   Y  \  ___/    / /     |    `   (  <_> )  \___
 //     \___  /   |__|\___  >___|  /\___  >  / /     /_______  /\____/ \___  >
 //         \/            \/     \/     \/   \/              \/            \/
-            case "create-FHR_Channel":
-                //console.log('FHR Channel créé', frameOrigin)
-                // create a channel
-                FHR_channel = new MessageChannel()
-                // listen on one end
-                FHR_channel.port1.onmessage = async ({data}) => {
-                    //console.log("Message de FHR_channel: " + data); // 3
-                    if(data == "FHR_getClipboard"){
-                        //clipboardContent = await navigator.clipboard.readText()
-                        FHR_channel.port1.postMessage(await navigator.clipboard.readText())
-                    }
-                };
-                // send the other end
-                frameOrigin.contentWindow.postMessage(JSON.stringify({'command':'FHR_channel-framePort'}), '*', [FHR_channel.port2]); // 1
-                break
+                case "create-FHR_Channel":
+                    //console.log('FHR Channel créé', frameOrigin)
+                    // create a channel
+                    FHR_channel = new MessageChannel()
+                    // listen on one end
+                    FHR_channel.port1.onmessage = async ({data}) => {
+                        //console.log("Message de FHR_channel: " + data); // 3
+                        if(data == "FHR_getClipboard"){
+                            //clipboardContent = await navigator.clipboard.readText()
+                            FHR_channel.port1.postMessage(await navigator.clipboard.readText())
+                        }
+                    };
+                    // send the other end
+                    frameOrigin.contentWindow.postMessage(JSON.stringify({'command':'FHR_channel-framePort'}), '*', [FHR_channel.port2]); // 1
+                    break
 
 //    ___________                                   .__              .__
 //    \__    ___/___________    ____   ______ _____ |__| ______ _____|__| ____   ____   ______
@@ -1867,9 +1868,9 @@
 //      |____|   |__|  (____  /___|  /____  >__|_|  /__/____  >____  >__|\____/|___|  /____  >
 //                          \/     \/     \/      \/        \/     \/               \/     \/
 
-            case "transmissions_get-CR-UF":
-                frameOrigin.contentWindow.postMessage(JSON.stringify({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]}))
-                break
+                case "transmissions_get-CR-UF":
+                    frameOrigin.contentWindow.postMessage(JSON.stringify({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]}))
+                    break
 
 //       _____                             .___
 //      /  _  \    ____   ____   ____    __| _/____
@@ -1878,44 +1879,17 @@
 //    \____|__  /\___  / \___  >___|  /\____ |(____  /
 //            \//_____/      \/     \/      \/     \/
 
-            case "agenda-OpenDossier":
-                $currentContainer = $('.easily-container:visible')
-                $('[data-applicationname="CapMedecin"]').click()
-                $('#container-DEFAULT-'+$('[data-applicationname="CapMedecin"]').data('pathid')).show()
-                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
-                    CR_selectionContainerID = $('.easily-container:visible').attr('id')
-                    $el.click()
-                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 5000).then($el2=>{
-                        $('.area-carrousel-wrapper li:contains(Saisir)').click()
-                        //$el.click()
-                    }).catch(err=>err)
-                    $.waitFor('.btnPrevious:visible').then($el=>{
-                        $el.click(ev=>{
-                            $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
-                                $el.hide()
-                                $currentContainer.show()
-                            })
-                        })
-                    })
-                }, 5000).catch(err=>{
-                    log(err)
-                })
-                break;
-            case "agenda-Sismo_openCR":
-                //µ.setPatientAction = "sismo-openCR"
-                /**/
-                $currentContainer = $('.easily-container:visible')
-                $('[data-applicationname="CapMedecin"]').click()
-                $('#container-DEFAULT-'+$('[data-applicationname="CapMedecin"]').data('pathid')).show()
-                $.waitFor('div.clickable[data-cr="'+(btoa(((EasilyInfos.CR ? EasilyInfos.CR.substr(0,4) : "1398")+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
-                    CR_selectionContainerID = $('.easily-container:visible').attr('id')
-                    $el.click()
-                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 10000).then($el2=>{
-                        $('.area-carrousel-wrapper li:contains(Saisir)').click()
-                        $('.area-carrousel-wrapper li:contains(Histoire)').click()
-                        $.waitFor('.resumedoc:contains("PSY AD ECT Séance")', 10000).then($el=>{
-                            editDocument($el.eq(0).log())
-                        }).catch(err=>log(err))
+                case "agenda-OpenDossier":
+                    $currentContainer = $('.easily-container:visible')
+                    $('[data-applicationname="CapMedecin"]').click()
+                    $('#container-DEFAULT-'+$('[data-applicationname="CapMedecin"]').data('pathid')).show()
+                    $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
+                        CR_selectionContainerID = $('.easily-container:visible').attr('id')
+                        $el.click()
+                        $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 5000).then($el2=>{
+                            $('.area-carrousel-wrapper li:contains(Saisir)').click()
+                            //$el.click()
+                        }).catch(err=>err)
                         $.waitFor('.btnPrevious:visible').then($el=>{
                             $el.click(ev=>{
                                 $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
@@ -1924,99 +1898,137 @@
                                 })
                             })
                         })
-                        //$el.click()
-                    }).catch(err=>err)
-                }, 5000).catch(err=>{
-                    log(err)
-                })
-                /**/
-                break;
-            case "agenda-Codage":
-                $currentContainer = $('.easily-container:visible')
-                µ.codageCora = true
-                $('[data-applicationname="CapMedecin"]').click()
-                $('#container-DEFAULT-'+$('[data-applicationname="CapMedecin"]').data('pathid')).show()
-                messageEvData.rdv_infos.date = (new Date(messageEvData.rdv_infos.date.split('/').reverse())).toLocaleDateString('fr-FR')
-                µ.CoraRDV_infos = messageEvData.rdv_infos
-                $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible', 5000).then($el=>{
-                    CR_selectionContainerID = $('.easily-container:visible').attr('id')
-                    $el.click()
-                    $.waitFor('.btnPrevious:visible').then($el=>{
-                        $el.click(ev=>{
-                            $.waitFor('#'+CR_selectionContainerID+':visible', 2000).then($el=>{
-                                $el.hide()
-                                $currentContainer.show()
-                            }).catch(err=>err)
-                        })
+                    }, 5000).catch(err=>{
+                        log(err)
                     })
-                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible', 10000).then($el2=>{
-                        $.waitFor('.infosPatient:visible:first').then($el3=>{
-                            messageEvData.rdv_infos.IPP = $el3.text().match(/le (?<DDN>\d{1,2}\/\d{1,2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups.IPP
-                            $('.btnPrevious:visible').click(ev=>{
+                    break;
+                case "agenda-Sismo_openCR":
+                    //µ.setPatientAction = "sismo-openCR"
+                    /**/
+                    $currentContainer = $('.easily-container:visible')
+                    $('[data-applicationname="CapMedecin"]').click()
+                    $('#container-DEFAULT-'+$('[data-applicationname="CapMedecin"]').data('pathid')).show()
+                    $.waitFor('div.clickable[data-cr="'+(btoa(((EasilyInfos.CR ? EasilyInfos.CR.substr(0,4) : "1398")+"C").split('').join('\x00')+"\x00"))+'"]:visible').then($el=>{
+                        CR_selectionContainerID = $('.easily-container:visible').attr('id')
+                        $el.click()
+                        $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]', 10000).then($el2=>{
+                            $('.area-carrousel-wrapper li:contains(Saisir)').click()
+                            $('.area-carrousel-wrapper li:contains(Histoire)').click()
+                            $.waitFor('.resumedoc:contains("PSY AD ECT Séance")', 10000).then($el=>{
+                                editDocument($el.eq(0).log())
+                            }).catch(err=>log(err))
+                            $.waitFor('.btnPrevious:visible').then($el=>{
+                                $el.click(ev=>{
+                                    $.waitFor('#'+CR_selectionContainerID+':visible').then($el=>{
+                                        $el.hide()
+                                        $currentContainer.show()
+                                    })
+                                })
+                            })
+                            //$el.click()
+                        }).catch(err=>err)
+                    }, 5000).catch(err=>{
+                        log(err)
+                    })
+                    /**/
+                    break;
+                case "agenda-Codage":
+                    $currentContainer = $('.easily-container:visible')
+                    µ.codageCora = true
+                    $('[data-applicationname="CapMedecin"]').click()
+                    $('#container-DEFAULT-'+$('[data-applicationname="CapMedecin"]').data('pathid')).show()
+                    messageEvData.rdv_infos.date = (new Date(messageEvData.rdv_infos.date.split('/').reverse())).toLocaleDateString('fr-FR')
+                    µ.CoraRDV_infos = messageEvData.rdv_infos
+                    $.waitFor('div.clickable[data-cr="'+(btoa((EasilyInfos.CR.substr(0,4)+"C").split('').join('\x00')+"\x00"))+'"]:visible', 5000).then($el=>{
+                        CR_selectionContainerID = $('.easily-container:visible').attr('id')
+                        $el.click()
+                        $.waitFor('.btnPrevious:visible').then($el=>{
+                            $el.click(ev=>{
                                 $.waitFor('#'+CR_selectionContainerID+':visible', 2000).then($el=>{
                                     $el.hide()
                                     $currentContainer.show()
                                 }).catch(err=>err)
                             })
-                            messageEvData.rdv_infos.IEP = $el2.closest('.grille').find('tr:contains("'+ messageEvData.rdv_infos.date + " " + messageEvData.rdv_infos.heure + '")').data('venuenum')
-                            $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
-                                setTimeout($el4=>{
-                                    $el4.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
-                                }, 500, $(el))
-                            })
-                            $('.btnPrevious:visible').click()
                         })
-                    }).catch(err=>err)
-                }).catch(err=>{
-                    µ.codageCora = false
-                    log(err+ " non trouvé.")
-                })
-                break;
-            case "pancarte-Ready":
-                if(µ.codageCora == true){
-                    µ.codageCora = false
-                    if(µ.CoraRDV_infos){
-                        µ.CoraRDV_infos.IEP = messageEvData.IEP
-                        if(typeof µ.CoraRDV_infos.IPP == "undefined"){
-                            µ.CoraRDV_infos.IPP = $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{1,2}\/\d{1,2}\/\d{4}).* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP
+                        $.waitFor('.internal-selection-venue tbody .venue-link:first:visible', 10000).then($el2=>{
+                            $.waitFor('.infosPatient:visible:first').then($el3=>{
+                                messageEvData.rdv_infos.IPP = $el3.text().match(/le (?<DDN>\d{1,2}\/\d{1,2}\/\d{4}\/*).* - IPP : (?<IPP>\d*)/).groups.IPP
+                                $('.btnPrevious:visible').click(ev=>{
+                                    $.waitFor('#'+CR_selectionContainerID+':visible', 2000).then($el=>{
+                                        $el.hide()
+                                        $currentContainer.show()
+                                    }).catch(err=>err)
+                                })
+                                messageEvData.rdv_infos.IEP = $el2.closest('.grille').find('tr:contains("'+ messageEvData.rdv_infos.date + " " + messageEvData.rdv_infos.heure + '")').data('venuenum')
+                                $('<a target="_blank">').attr('href', `Lancemodule: CORA;${messageEvData.rdv_infos.IPP};${messageEvData.rdv_infos.IEP};LOGINAD=${EasilyInfos.username}`).appendTo('body').click2().each((i,el)=>{
+                                    setTimeout($el4=>{
+                                        $el4.attr('href', `codagecora:${messageEvData.rdv_infos.date};${messageEvData.rdv_infos.heure};${messageEvData.rdv_infos.duree ?? "30"};${messageEvData.rdv_infos.lieu ?? "L02"};${messageEvData.rdv_infos.acte ?? "E"}`).click2().remove()
+                                    }, 500, $(el))
+                                })
+                                $('.btnPrevious:visible').click()
+                            })
+                        }).catch(err=>err)
+                    }).catch(err=>{
+                        µ.codageCora = false
+                        log(err+ " non trouvé.")
+                    })
+                    break;
+                case "pancarte-Ready":
+                    if(µ.codageCora == true){
+                        µ.codageCora = false
+                        if(µ.CoraRDV_infos){
+                            µ.CoraRDV_infos.IEP = messageEvData.IEP
+                            if(typeof µ.CoraRDV_infos.IPP == "undefined"){
+                                µ.CoraRDV_infos.IPP = $('.infosPatient:visible:first').text().match(/le (?<DDN>\d{1,2}\/\d{1,2}\/\d{4}).* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP
+                            }
+                            //log(µ.CoraRDV_infos)
+                            $('#iframe[src*="TempetePlus.Web/Pancarte"]').postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: µ.CoraRDV_infos}), "*")
                         }
-                        //log(µ.CoraRDV_infos)
-                        $('#iframe[src*="TempetePlus.Web/Pancarte"]').postMessage(JSON.stringify({command:"agenda-CodageFrame", rdv_infos: µ.CoraRDV_infos}), "*")
+                        setTimeout(()=>{$('.btnPrevious:visible').click()}, 2000)
+                    } else {
+                        $('#iframe[src*="TempetePlus.Web/Pancarte"]').postMessage(JSON.stringify({command:"agenda-CodageFrame", IPP: $('.infosPatient:visible:first').text().match(/le \d{1,2}\/\d{1,2}\/\d{4}.* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP}), "*")
                     }
-                    setTimeout(()=>{$('.btnPrevious:visible').click()}, 2000)
-                } else {
-                    $('#iframe[src*="TempetePlus.Web/Pancarte"]').postMessage(JSON.stringify({command:"agenda-CodageFrame", IPP: $('.infosPatient:visible:first').text().match(/le \d{1,2}\/\d{1,2}\/\d{4}.* - IPP : (?<IPP>\d*)/).groups.IPP || µ.currentPatient.IPP}), "*")
-                }
-                break;
-//
+                    break;
+                    //
 //     /\ /\ _ __ __ _
 //    / / \ \ '__/ _` |
 //    \ \_/ / | | (_| |
 //     \___/|_|  \__, |
 //               |___/
-            case "afficherASUR":
-                $('[title="ASUR (Urgences)"]').click()
-                $('#easily-header:hidden').show()
-                break
-            case "afficherDernierPassageUrg":
-                $.waitFor('!#saving_status_container:visible').catch(err=>{
-                    $('.lien-affichage.m-recherche:not(.selected)').click()
-                    if($('h2:contains("Une erreur est survenue lors du traitement de votre demande !")').length){
-                        window.parent.postMessage(JSON.stringify({command:"afficherASUR"}), "*")
-                    }
-                    $.waitFor('#frameRecherche:visible', 5000).then($el=>{
-                        $el.postMessage(JSON.stringify({command:"RechercheASUR-afficherDerniersPassages"}))
+                case "afficherASUR":
+                    $('[title="ASUR (Urgences)"]').click()
+                    $('#easily-header:hidden').show()
+                    break
+                case "afficherDernierPassageUrg":
+                    $.waitFor('!#saving_status_container:visible').catch(err=>{
+                        $('.lien-affichage.m-recherche:not(.selected)').click()
+                        if($('h2:contains("Une erreur est survenue lors du traitement de votre demande !")').length){
+                            window.parent.postMessage(JSON.stringify({command:"afficherASUR"}), "*")
+                        }
+                        $.waitFor('#frameRecherche:visible', 5000).then($el=>{
+                            $el.postMessage(JSON.stringify({command:"RechercheASUR-afficherDerniersPassages"}))
+                        }).catch(err=>log(err))
+                    })
+                    break
+                case "RechercheASUR-afficherDerniersPassages":
+                    $('iframe[src*=RechercheParPatient]').postMessage(JSON.stringify({command:"RechercheASUR-frame-afficherDerniersPassage"}))
+                    break
+                case "RechercheASUR-frame-afficherDerniersPassage":
+                    $.waitFor('#BtnRecherchePatientEnSession:visible', 5000).then($el=>{
+                        $el.click()
                     }).catch(err=>log(err))
-                })
-                break
-            case "RechercheASUR-afficherDerniersPassages":
-                $('iframe[src*=RechercheParPatient]').postMessage(JSON.stringify({command:"RechercheASUR-frame-afficherDerniersPassage"}))
-                break
-            case "RechercheASUR-frame-afficherDerniersPassage":
-                $.waitFor('#BtnRecherchePatientEnSession:visible', 5000).then($el=>{
-                    $el.click()
-                }).catch(err=>log(err))
-                break
+                    break
+            }
+        }
+        if(messageEvData.cmd){
+            switch(messageEvData.cmd){
+                case "callback-ChargerPatient": // Losqu'on ouvre les détails d'un RdV de CS
+                    $.waitFor(".module-agenda .module-bandeaupatient:visible").then($el=>{
+                        let $mailSpan=$el.find('.mailsDetails span+span')
+                            $mailSpan.wrapInner("<a href='mailto:"+$mailSpan.text().trim()+"'></a>")
+                    })
+                    break
+            }
         }
 
 //       ___ _                                     _                _   _         _
@@ -2024,8 +2036,7 @@
 //     | (__| ' \/ _` | ' \/ _` / -_) '  \/ -_) ' \  _| | '_ \/ _` |  _| / -_) ' \  _|
 //      \___|_||_\__,_|_||_\__, \___|_|_|_\___|_||_\__| | .__/\__,_|\__|_\___|_||_\__|
 //                         |___/                        |_|
-                if (µ._data && µ._data.PatientId){
-            //
+        if (µ._data && µ._data.PatientId){
             try{
                 if(µ._data.PatientId != µ.currentPatient.ID){
                     µ.currentPatient = /(?<nom>[A-Z'\s-]*)\s(?<prenom>([A-Z][a-z'\s-]*)+)\sn/.exec(µ._data.NomPatient).groups
@@ -2048,7 +2059,6 @@
                 }
                 changementContextePatient()
             }catch(e){
-                //log('Error de mes couilles : ', e)
             }
         }
     }
@@ -2247,6 +2257,7 @@ function mainContentObserver(mutationsList){
         .btnPrevious.capMedecin-Retour {display:inline;position:absolute;top:0;left:0;}
         .btnPrevious.capMedecin-Retour:before {color:#005996;}
         .btnPrevious.capMedecin-Retour:after {color:white;}
+        .mailsDetails>p>span+span {max-width:300px!important;}
 
         #EasilyPlus_SecondFrame {width: 100%!important; height: calc(100% - 30px)!important;padding:0!important;}
     `).appendTo('body')
@@ -2280,6 +2291,9 @@ function changementContextePatient(){
     let EasilyInfos = GM_getValue('EasilyInfos',{"user":"", "password":""})
     //<i class='fa fa-carret'></i>
     let $ = unsafeWindow.jQuery
+    $('.mailsDetails span+span').each((i,el)=>{
+        $(el).wrapInner("<a href='mailto:"+$(el).text().trim()+"'></a>")
+    })
     if($('.area-carrousel:visible li:contains(Histoire):not(.easily_plus)').length){
         $('.area-carrousel-wrapper li:contains("Biologie")').addClass('tab_Bio')
         $('.area-carrousel-wrapper li>a:contains("Anapath")').text('Pres Biologie').parent().addClass('tab_PresBio')
