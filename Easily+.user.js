@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260319
+// @version      1.0.260320
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -521,6 +521,22 @@
                     let CS_prefs = GM_getValue("CS_prefs", [])
                     CS_prefs.push(current_planning)
                     GM_setValue("CS_prefs", CS_prefs)
+                })).after($('<span id="alertCS" class="fa '+(EasilyInfos.CS_notifs && EasilyInfos.CS_notifs[$('#idComboSelected').val()] ? 'fa-bell' : 'fa-bell-slash-o')+'" style="vertical-align: -2px;"></span>').click(ev=>{
+                    if($(ev.target).is('.fa-bell-slash-o')){
+                        $('#alertCS.fa-bell-slash-o').removeClass('fa-bell-slash-o').addClass('fa-bell')
+                        if(typeof EasilyInfos.CS_notifs == "undefined"){
+                            EasilyInfos.CS_notifs = {}
+                        }
+                        EasilyInfos.CS_notifs[$('#idComboSelected').val()] = true
+                        GM_setValue("EasilyInfos", EasilyInfos)
+                    } else {
+                        $('#alertCS.fa-bell').removeClass('fa-bell').addClass('fa-bell-slash-o')
+                        if(typeof EasilyInfos.CS_notifs == "undefined"){
+                            EasilyInfos.CS_notifs = {}
+                        }
+                        delete EasilyInfos.CS_notifs[$('#idComboSelected').val()]
+                        GM_setValue("EasilyInfos", EasilyInfos)
+                    }
                 }))
                 let CS_prefs = GM_getValue("CS_prefs", [])
                 for (let k in CS_prefs){
@@ -667,6 +683,7 @@
         .context-menu-item.icon.icon-CR_sismo {font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Verdana, sans-serif !important; background-image: url("https://easily-prod.chu-clermontferrand.fr/Modules/WorklistsHospitalisation/Content/images/word.png");}
         .context-menu-item.icon.icon-CR_sismo:hover {cursor:pointer;background-color:#39f;}
         .context-menu-item.icon {line-height: 18px;}
+        #alertCS:hover {cursor:pointer}
     `)
     // Agenda
     //css : background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKXSURBVDiNfZJdSFMBGIbfM6c7rvbTNjeVRKeFPxPU8kJkFUqNakQR3nTTReGNlwU2qQslPRgzsAjLFuSKUd4JEgtH1DQwYiIEp9nc9Bzb3ETtJLFxpjvndNNNbu65ffkeeL/vIwwGwyW1Wm1FHkRRFBiGcQFY3Z8RbW1tax6PpyKfgOd5dHV1+YLBoG1/JtPr9ZLJZALHcdjZ2UF1dTVEUQTHceA4DqlUCg0NDTAajclccjkA+Hw+TLjfYn19Db4ZL0KhEKLRKABApVKhsbERPT09n/1+f24BQRBIp3lk9vZAEATC4TBomoZarYbT6QQAKJXKTM5+drudTafTUiQSkRiGkQ7CarVOH1iBpmkMPxgBIOGV+yXGx8extLQEiqLgdI5sffkaEEPLKydIUnWK5//M/bdEAGAYBnWWVhCyIvA8j5aWFoyOjuLGze6tsuaL2ntj743umeXyk9bOSaVS2ZolMJvN+EEHQEh7IEkSGo0GLMviUEklYWlul0uiiNdjg7g95CorKascyKpQX18PiroPmUwGhUIBk8mEaDQKjc4kdz3sQ/znCmxXrkOjNUBWIFdlCbxeL549n8BGIgb/pw+YnZ2FzWbDt3nHbt+jKcTYMGrqmuCbcifTqd+/sgQAQJLFKCwsBADE43E4HA4MDw1o7t66ulFxrKnA83SQj6/Qh892dpyZeTe9mtjmOgAwsNvtbDKZlAKBgLS4uJh1PlEUpVgsJlkslrny0tLHF063b39/80RqPl4VBlAl39zcJILBIABAEAQsLCxk3TqTyUAQhNR6IkEdKS46lxEE3eRgb83lXmqa0Ol057VabUfOL/uHIAi7LMu6AKwBKLWYj37s775W2/9iMpJvLh+68hL9HYVCUfsXADA9PQZbgT0AAAAASUVORK5CYII=);
@@ -1312,6 +1329,29 @@
 //
 //
     } else if (location.hostname == "easily-prod.chu-clermontferrand.fr" && window.top == window.self){
+        function askNotificationPermission() {
+            // On vérifie si le navigateur prend en charge les notifications
+            if (!("Notification" in window)) {
+                console.log("This browser does not support notifications.");
+                return;
+            }
+            Notification.requestPermission().then((permission) => {
+                if (permission === "granted"){
+                } else {
+                    alert("Permissions désactivées")
+                }
+            });
+        }
+
+        function sendNotification(title, body = "", icon = "/Content/images/favicon.png"){
+            askNotificationPermission()
+            Notification.requestPermission()
+            const notif = new Notification(title, {
+                body: body,
+                icon: icon,
+            });
+            return notif
+        }
         window.addEventListener("message", receiveMessage_Main);
 
         if(GM_getValue('fromLogin', false)){
@@ -1321,6 +1361,43 @@
                 $('')
             }, 1500)
         }
+
+        // Notifications pour la présence des patients de CS du jour
+        function patientsCSNotif(){
+            //let intervenantID = await $.get('https://easily-prod.clermontferrand.fr/module/worklistsconsultation/Main/GetAgendas', r=>r[0].intervenant.id)
+            if(typeof EasilyInfos.CS_notifs == "object"){
+                let todayISO = (new Date()).toISOString(), notifs_list = {}
+                for (let planning_ID in EasilyInfos.CS_notifs){
+                    notifs_list[planning_ID.toString()]=Number(EasilyInfos.ID)
+                }
+                $.post("https://easily-prod.chu-clermontferrand.fr/module/worklistsconsultation/Main/GetRendezvous", {"date":todayISO,"sids":JSON.stringify(notifs_list)}, r=>{
+                    for (let patient_RDV in r){
+                        let statut = r[patient_RDV].statutInfo.statut, patient_name = r[patient_RDV].patient.patientFormatNomPrenomCourt
+                        if(statut == 5){
+                            if(typeof µ.etat_CS == "object"){
+                                if(µ.etat_CS[patient_name]){
+                                } else {
+                                    µ.etat_CS[patient_name] = true
+                                    sendNotification(patient_name + " est arrivé")
+                                }
+                            } else {
+                                µ.etat_CS = {}
+                            }
+                        } else {
+                            if(typeof µ.etat_CS == "object"){
+                                if(µ.etat_CS[patient_name]){
+                                    delete µ.etat_CS[patient_name]
+                                }
+                            } else {
+                                µ.etat_CS = {}
+                            }
+                        }
+                    }
+                })
+            }
+        }
+        //setTimeout(patientsCSNotif, 1000)
+        setInterval(patientsCSNotif, 1000)
 
         // auto-relogon
         $('.verrouillage-nom').click(ev=>{
