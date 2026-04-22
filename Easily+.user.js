@@ -412,7 +412,7 @@
 //    ██   ██  ██████  ███████ ██   ████ ██████  ██   ██
 
 
-    else if(location.href.search("easilynlb-prod.chu-clermontferrand.fr/Agenda/Agenda.Web")+1){
+    else if(location.pathname == '/Agenda/Agenda.Web/CalendrierRendezVous'){
         function createFastActions(){
             $('div.event.chip:not(.fastActionMiddleClick)').on('mouseup', ev=>{
                 if(ev.button == 1){
@@ -466,6 +466,39 @@
                 })
             })
         }
+        function agendaMessageListener(message){
+            let waitTime = 0, messageEvData, frameOrigin
+            //console.log(message)
+            if (typeof message.data == "object"){
+                messageEvData = message.data
+            } else{
+                try {
+                    messageEvData = JSON.parse(message.data)
+                }catch(e){
+                    console.log('Error parsing data', message.data)
+                    return null
+                }
+            }
+            $('iframe').each((i,el)=>{
+                if(el.contentWindow == message.source){
+                    frameOrigin = el
+                }
+            })
+            //console.log(messageEvData.command, messageEvData)
+            switch(messageEvData.command){
+                case "CS_ouvrirDossier":
+                    log(messageEvData)
+                    if(!$('#rv_'+messageEvData.ID_rdv).trigger('dblclick').length){
+                        $('#linkaujourdhui').click()
+                        $.waitFor('#rv_'+messageEvData.ID_rdv).then($el=>{
+                            $el.trigger('dblclick')
+                        })
+                    }
+                    break
+            }
+        }
+        window.addEventListener("message", agendaMessageListener)
+
         $.waitFor('.rsNextDay, .rsPrevDay, .rsToday').then(()=>{
             $('.rsNextDay, .rsPrevDay, .rsToday').on('mouseup', ev=>{
                 if(ev.button == 0){
@@ -687,11 +720,26 @@
     `)
     // Agenda
     //css : background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKXSURBVDiNfZJdSFMBGIbfM6c7rvbTNjeVRKeFPxPU8kJkFUqNakQR3nTTReGNlwU2qQslPRgzsAjLFuSKUd4JEgtH1DQwYiIEp9nc9Bzb3ETtJLFxpjvndNNNbu65ffkeeL/vIwwGwyW1Wm1FHkRRFBiGcQFY3Z8RbW1tax6PpyKfgOd5dHV1+YLBoG1/JtPr9ZLJZALHcdjZ2UF1dTVEUQTHceA4DqlUCg0NDTAajclccjkA+Hw+TLjfYn19Db4ZL0KhEKLRKABApVKhsbERPT09n/1+f24BQRBIp3lk9vZAEATC4TBomoZarYbT6QQAKJXKTM5+drudTafTUiQSkRiGkQ7CarVOH1iBpmkMPxgBIOGV+yXGx8extLQEiqLgdI5sffkaEEPLKydIUnWK5//M/bdEAGAYBnWWVhCyIvA8j5aWFoyOjuLGze6tsuaL2ntj743umeXyk9bOSaVS2ZolMJvN+EEHQEh7IEkSGo0GLMviUEklYWlul0uiiNdjg7g95CorKascyKpQX18PiroPmUwGhUIBk8mEaDQKjc4kdz3sQ/znCmxXrkOjNUBWIFdlCbxeL549n8BGIgb/pw+YnZ2FzWbDt3nHbt+jKcTYMGrqmuCbcifTqd+/sgQAQJLFKCwsBADE43E4HA4MDw1o7t66ulFxrKnA83SQj6/Qh892dpyZeTe9mtjmOgAwsNvtbDKZlAKBgLS4uJh1PlEUpVgsJlkslrny0tLHF063b39/80RqPl4VBlAl39zcJILBIABAEAQsLCxk3TqTyUAQhNR6IkEdKS46lxEE3eRgb83lXmqa0Ol057VabUfOL/uHIAi7LMu6AKwBKLWYj37s775W2/9iMpJvLh+68hL9HYVCUfsXADA9PQZbgT0AAAAASUVORK5CYII=);
-    /*
-// association d'un menu à sa plage horaire
 
-// ouverture fiche patient pour récupérer IPP
-*/
+
+        // Gestion de la fenetre d'information d'un RdV
+    } else if(location.pathname == '/Agenda/Agenda.Web/Ext/RendezVousPlanifModule'){
+        $.waitFor("#blocGauche1").then($el=>{
+            $el.append($('<button id="start_CS">Faire la consultation</a>').click(ev=>{
+                ev.preventDefault()
+                $('#statutSyntheseId-list>ul>li:eq(6)').click()
+                window.parent.postMessage(JSON.stringify({command:"CS_loadDossierPatient"}), '*')
+                setTimeout(()=>{$('#btnValider').click()}, 500)
+            }))
+        })
+
+        let $style = $('#EasilyPlus_Style')
+        if(!$style.length){
+            $('body').append($style = $('<style id="EasilyPlus_Style">'))
+        }
+        $style.html(`
+        #start_CS {float:right;background:cadetblue;color:chartreuse;font-size:24px;}
+    `)
     }
 
 
@@ -1329,28 +1377,29 @@
 //
 //
     } else if (location.hostname == "easily-prod.chu-clermontferrand.fr" && window.top == window.self){
-        function askNotificationPermission() {
-            // On vérifie si le navigateur prend en charge les notifications
-            if (!("Notification" in window)) {
-                console.log("This browser does not support notifications.");
-                return;
-            }
+        //Gestion des notifications de consultation
+        function sendNotification(title, body = "", data = null){
             Notification.requestPermission().then((permission) => {
                 if (permission === "granted"){
+                    const notif = new Notification(title, {
+                        body: body,
+                        icon: "/Content/images/favicon.png",
+                        data:data
+                    });
+                    notif.onclick = ev=>{
+                        ev.target.close()
+                        window.focus();
+                        $('iframe[src*="Agenda.Web"]').postMessage(JSON.stringify({command:"CS_ouvrirDossier", ID_rdv:ev.target.data.ID}), "*")
+                        $.waitFor('.bandeaupatient-infospatient:visible').then($el=>{
+                            $el.log()
+                        })
+                    }
+                    return notif
                 } else {
                     alert("Permissions désactivées")
+                    return false;
                 }
             });
-        }
-
-        function sendNotification(title, body = "", icon = "/Content/images/favicon.png"){
-            askNotificationPermission()
-            Notification.requestPermission()
-            const notif = new Notification(title, {
-                body: body,
-                icon: icon,
-            });
-            return notif
         }
         window.addEventListener("message", receiveMessage_Main);
 
@@ -1372,13 +1421,13 @@
                 }
                 $.post("https://easily-prod.chu-clermontferrand.fr/module/worklistsconsultation/Main/GetRendezvous", {"date":todayISO,"sids":JSON.stringify(notifs_list)}, r=>{
                     for (let patient_RDV in r){
-                        let statut = r[patient_RDV].statutInfo.statut, patient_name = r[patient_RDV].patient.patientFormatNomPrenomCourt
+                        let statut = r[patient_RDV].statutInfo.statut, patient_name = r[patient_RDV].patient.patientFormatNomPrenomCourt, IDrdv = r[patient_RDV].statutInfo.idRdv
                         if(statut == 5){
                             if(typeof µ.etat_CS == "object"){
                                 if(µ.etat_CS[patient_name]){
                                 } else {
                                     µ.etat_CS[patient_name] = true
-                                    sendNotification(patient_name + " est arrivé")
+                                    sendNotification("Consultations", patient_name + " est arrivé", {"ID":IDrdv})
                                 }
                             } else {
                                 µ.etat_CS = {}
@@ -2050,6 +2099,10 @@
                         log(err+ " non trouvé.")
                     })
                     break;
+                case "CS_loadDossierPatient":
+                    $('#dossierPatient:visible').click()
+                    setTimeout(()=>$('.module-agenda-window:visible a[aria-label="Close"]').click(), 1000)
+                    break;
                 case "pancarte-Ready":
                     if(µ.codageCora == true){
                         µ.codageCora = false
@@ -2101,8 +2154,9 @@
             switch(messageEvData.cmd){
                 case "callback-ChargerPatient": // Losqu'on ouvre les détails d'un RdV de CS
                     $.waitFor(".module-agenda .module-bandeaupatient:visible").then($el=>{
-                        let $mailSpan=$el.find('.mailsDetails span+span')
-                            $mailSpan.wrapInner("<a href='mailto:"+$mailSpan.text().trim()+"'></a>")
+                        let $mailSpan=$el.find('.mailsDetails span+span'), $telP = $el.find('.telephoneDetails p')
+                        $mailSpan.wrapInner("<a href='mailto:"+$mailSpan.text().trim()+"'></a>")
+                        $telP.text((i,t)=>t.trim().replace(/^(.*)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(.*)$/, "$1$2-$3-$4-$5-$6$7"))
                     })
                     break
             }
