@@ -1816,8 +1816,10 @@
                 } else {
                     $('[id=parapheurCount]').text(n_doc).show()
                 }
+                $('.easily-univers-item:contains(hospitalisation)').addClass('cr_a_valider')
             } else {
                 $('[id=parapheurCount]').hide()
+                $('.easily-univers-item.cr_a_valider').removeClass('cr_a_valider')
             }
         })
     }
@@ -2391,6 +2393,7 @@ function mainContentObserver(mutationsList){
         .mailsDetails>p>span+span {max-width:300px!important;}
 
         #EasilyPlus_SecondFrame {width: 100%!important; height: calc(100% - 30px)!important;padding:0!important;}
+        .cr_a_valider::before {width: 12px; height: 12px; content: " "; position: absolute; float: right; top: 22px; border-radius: 12px; background: #01B7F1; margin-left: -8px;}
     `).appendTo('body')
     }
     // Your code here...
