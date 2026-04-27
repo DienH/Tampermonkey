@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260320
+// @version      1.0.260321
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -725,12 +725,29 @@
         // Gestion de la fenetre d'information d'un RdV
     } else if(location.pathname == '/Agenda/Agenda.Web/Ext/RendezVousPlanifModule'){
         $.waitFor("#blocGauche1").then($el=>{
-            $el.append($('<button id="start_CS">Faire la consultation</a>').click(ev=>{
-                ev.preventDefault()
-                $('#statutSyntheseId-list>ul>li:eq(6)').click()
-                window.parent.postMessage(JSON.stringify({command:"CS_loadDossierPatient"}), '*')
-                setTimeout(()=>{$('#btnValider').click()}, 500)
-            }))
+            let typeRdV = $('#rendezVousTypeId').parent().find('.k-input').text()
+            if(typeRdV.match(/PSY_LIAISON/)){
+                $el.append($(`<button id="start_Liaison">Donner l'avis de liaison</a>`).click(ev=>{
+                    ev.preventDefault()
+                    $('#statutSyntheseId-list>ul>li:eq(6)').click()
+                    window.parent.postMessage(JSON.stringify({command:"CS_loadDossierPatient"}), '*')
+                    setTimeout(()=>{$('#btnValider').click()}, 500)
+                }))
+            } else if(typeRdV.match(/PSY_CONSULTATION/)){
+                $el.append($('<button id="start_CS">Faire la consultation</a>').click(ev=>{
+                    ev.preventDefault()
+                    $('#statutSyntheseId-list>ul>li:eq(6)').click()
+                    window.parent.postMessage(JSON.stringify({command:"CS_loadDossierPatient"}), '*')
+                    setTimeout(()=>{$('#btnValider').click()}, 500)
+                }))
+            } else if(typeRdV.match(/_SISMOTHERAPIE/)){
+                $el.append($('<button id="start_CS">Démarre la séance ECT</a>').click(ev=>{
+                    ev.preventDefault()
+                    $('#statutSyntheseId-list>ul>li:eq(6)').click()
+                    window.parent.postMessage(JSON.stringify({command:"ECT_demarrerSeance"}), '*')
+                    setTimeout(()=>{$('#btnValider').click()}, 500)
+                }))
+            }
         })
 
         let $style = $('#EasilyPlus_Style')
@@ -738,7 +755,7 @@
             $('body').append($style = $('<style id="EasilyPlus_Style">'))
         }
         $style.html(`
-        #start_CS {float:right;background:cadetblue;color:chartreuse;font-size:24px;}
+        #start_CS, #start_Liaison {float:right;background:cadetblue;color:chartreuse;font-size:24px;}
     `)
     }
 
@@ -2043,7 +2060,14 @@
                             $('.area-carrousel-wrapper li:contains(Saisir)').click()
                             $('.area-carrousel-wrapper li:contains(Histoire)').click()
                             $.waitFor('.resumedoc:contains("PSY AD ECT Séance")', 10000).then($el=>{
-                                editDocument($el.eq(0).log())
+                                let $doc
+                                if(($doc=$el.filter('[title*=Maintenance]')).length){
+                                    editDocument($doc.eq(0))
+                                } else if(($doc=$el.filter('[title*=Consolidation]')).length){
+                                    editDocument($doc.eq(0))
+                                } else if(($doc=$el.filter('[title*=Attaque]')).length){
+                                    editDocument($doc.eq(0))
+                                }
                             }).catch(err=>log(err))
                             $.waitFor('.btnPrevious:visible').then($el=>{
                                 $el.click(ev=>{
@@ -2103,7 +2127,34 @@
                     break;
                 case "CS_loadDossierPatient":
                     $('#dossierPatient:visible').click()
-                    setTimeout(()=>$('.module-agenda-window:visible a[aria-label="Close"]').click(), 1000)
+                    $.waitFor('.module-agenda-window a[aria-label="Close"]:not(:visible)', 5000).then($el=>$el.click()).catch(err=>err)
+                    break;
+                case "ECT_demarrerSeance":
+                    $.waitFor('#dossierPatient:visible').then($el=>$el.click())
+                    $.waitFor('.module-agenda-window a[aria-label="Close"]:not(:visible)', 5000).then($el=>$el.click()).catch(err=>err)
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"], #bloclistedocument:visible', 10000).then($el2=>{
+                        $('.area-carrousel-wrapper li:contains(Saisir)').click()
+                        $('.area-carrousel-wrapper li:contains(Histoire)').click()
+                        $el2.log()
+                        $.waitFor('.resumedoc:contains("PSY AD ECT Séance")', 10000).then($el=>{
+                            // Programme de Maintenance
+                            // Programme de Consolidation
+                            // Programme d\'Attaque
+                            let $doc
+                            if(($doc=$el.filter('[title*=Maintenance]')).length){
+                                editDocument($doc.eq(0))
+                            } else if(($doc=$el.filter('[title*=Consolidation]')).length){
+                                editDocument($doc.eq(0))
+                            } else if(($doc=$el.filter('[title*=Attaque]')).length){
+                                editDocument($doc.eq(0))
+                            }
+                            $.waitFor('.btnPrevious:visible').then($el=>{
+                                $el.click()
+                                $.waitFor('.module-agenda-window:visible a[aria-label="Close"]', 5000).then($el=>$el.click()).catch(err=>err)
+                            })
+                        }).catch(err=>log(err))
+                        //$el.click()
+                    }).catch(err=>err)
                     break;
                 case "pancarte-Ready":
                     if(µ.codageCora == true){
@@ -2393,7 +2444,7 @@ function mainContentObserver(mutationsList){
         .mailsDetails>p>span+span {max-width:300px!important;}
 
         #EasilyPlus_SecondFrame {width: 100%!important; height: calc(100% - 30px)!important;padding:0!important;}
-        .cr_a_valider::before {width: 12px; height: 12px; content: " "; position: absolute; float: right; top: 22px; border-radius: 12px; background: #01B7F1; margin-left: -8px;}
+        .cr_a_valider::before {width: 8px; height: 8px; content: " "; position: absolute; float: right; top: 24px; border-radius: 12px; background: #01B7F1; margin-left: -6px;}
     `).appendTo('body')
     }
     // Your code here...
