@@ -26,6 +26,10 @@
 
 (function() {
     'use strict';
+
+    // Message Event logging
+    unsafeWindow.Log_messageEv = true;
+
     if (!GM_getValue('EasilyInfos', false)){
         GM_setValue('EasilyInfos', {user:"",password:"", nom:"", prenom:"", trajectoirePassword:"", phone:"", defaultsMenusClick:{}});
     }
@@ -731,21 +735,21 @@
                     ev.preventDefault()
                     $('#statutSyntheseId-list>ul>li:eq(6)').click()
                     window.parent.postMessage(JSON.stringify({command:"CS_loadDossierPatient"}), '*')
-                    setTimeout(()=>{$('#btnValider').click()}, 500)
+                    setTimeout(()=>{$('#btnValider').click()}, 1000)
                 }))
             } else if(typeRdV.match(/PSY_CONSULTATION/)){
                 $el.append($('<button id="start_CS">Faire la consultation</a>').click(ev=>{
                     ev.preventDefault()
                     $('#statutSyntheseId-list>ul>li:eq(6)').click()
                     window.parent.postMessage(JSON.stringify({command:"CS_loadDossierPatient"}), '*')
-                    setTimeout(()=>{$('#btnValider').click()}, 500)
+                    setTimeout(()=>{$('#btnValider').click()}, 1000)
                 }))
             } else if(typeRdV.match(/_SISMOTHERAPIE/)){
                 $el.append($('<button id="start_CS">Démarre la séance ECT</a>').click(ev=>{
                     ev.preventDefault()
                     $('#statutSyntheseId-list>ul>li:eq(6)').click()
                     window.parent.postMessage(JSON.stringify({command:"ECT_demarrerSeance"}), '*')
-                    setTimeout(()=>{$('#btnValider').click()}, 500)
+                    setTimeout(()=>{$('#btnValider').click()}, 1000)
                 }))
             }
         })
@@ -979,7 +983,7 @@
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         // Gestion des fiches du type Observation / FHR
         if(location.pathname.match(/^\/Dominho\/Main/i)){
-            $('#specialiteSelection').parent().append($('<button class="BoutonClassique"><span title="Documents de Psychiatrie">Psychiatrie</span>').click(ev=>{
+            $('#specialiteSelection').parent().append($('<button class="BoutonClassique"><span title="Documents de Psychiatrie">Psy</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
             })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="CRH UHDL">CRH</span>').click(ev=>{
                 if(!$('#formulaireSelection li[onclick]:contains("CRH Complémentaire"):contains(Psy)').click().length){ // ouvrir si présent dans les raccourcis
@@ -1899,7 +1903,7 @@
                 frameOrigin = el
             }
         })
-        console.log(messageEvData.command, messageEvData)
+        if(unsafeWindow.Log_messageEv)console.log(messageEvData.command, messageEvData)
         if(messageEvData.command){
             switch(messageEvData.command){
                 case "SetPatient":
@@ -2126,8 +2130,30 @@
                     })
                     break;
                 case "CS_loadDossierPatient":
-                    $('#dossierPatient:visible').click()
+                    $.waitFor('#dossierPatient:visible').then($el=>$el.click())
                     $.waitFor('.module-agenda-window a[aria-label="Close"]:not(:visible)', 5000).then($el=>$el.click()).catch(err=>err)
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"], #bloclistedocument:visible', 10000).then($el2=>{
+                        $('.area-carrousel-wrapper li:contains(Saisir)').click()
+                        $('.area-carrousel-wrapper li:contains(Histoire)').click()
+                        if(EasilyInfos.nom && EasilyInfos.prenom){
+                            $.waitFor(`.auteurdoc:containsI("${EasilyInfos.nom}"):containsI("${EasilyInfos.prenom}")`, 10000).then($el=>{
+                                // Programme de Maintenance
+                                // Programme de Consolidation
+                                // Programme d\'Attaque
+                                let $doc
+                                if(($doc=$el.parent().filter(':has(.libelledoc:contains("Fiche de Consultation"):not(:contains("Liaison")))')).length){
+                                    editDocument($doc.eq(0))
+                                } else {
+                                }
+                                if(($doc=$el.parent().filter(':has(.resumedoc:contains("PSY AD Bizone")), :has(.libelledoc:contains("Ordonnance - courrier"))')).length){
+                                    editDocument($doc.eq(0))
+                                }
+                                $('.btnPrevious:visible').click(ev=>{
+                                    $.waitFor('.module-agenda-window a[aria-label="Close"]:visible', 5000).then($el=>$el.click()).catch(err=>err)
+                                })
+                            }).catch(err=>log(err))
+                        }
+                    }).catch(err=>log(err))
                     break;
                 case "ECT_demarrerSeance":
                     $.waitFor('#dossierPatient:visible').then($el=>$el.click())
@@ -2135,7 +2161,6 @@
                     $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"], #bloclistedocument:visible', 10000).then($el2=>{
                         $('.area-carrousel-wrapper li:contains(Saisir)').click()
                         $('.area-carrousel-wrapper li:contains(Histoire)').click()
-                        $el2.log()
                         $.waitFor('.resumedoc:contains("PSY AD ECT Séance")', 10000).then($el=>{
                             // Programme de Maintenance
                             // Programme de Consolidation
@@ -2259,7 +2284,7 @@ function mainContentObserver(mutationsList){
     for (let mutation of mutationsList){
         switch (mutation.type){
             case "childList":
-                log({added:mutation.addedNodes, removed:mutation.removedNodes})
+                //log({added:mutation.addedNodes, removed:mutation.removedNodes})
                 $(mutation.addedNodes).each((i,el)=>{
                     if(el.id === "container-DEFAULT-278"){
                         $.waitFor('#container:visible').then($el=>{
