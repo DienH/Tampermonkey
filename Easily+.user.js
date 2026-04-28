@@ -734,7 +734,7 @@
                 $el.append($(`<button id="start_Liaison">Donner l'avis de liaison</a>`).click(ev=>{
                     ev.preventDefault()
                     $('#statutSyntheseId-list>ul>li:eq(6)').click()
-                    window.parent.postMessage(JSON.stringify({command:"CS_loadDossierPatient"}), '*')
+                    window.parent.postMessage(JSON.stringify({command:"Liaison_DonnerAvis"}), '*')
                     setTimeout(()=>{$('#btnValider').click()}, 1000)
                 }))
             } else if(typeRdV.match(/PSY_CONSULTATION/)){
@@ -982,7 +982,43 @@
 //
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         // Gestion des fiches du type Observation / FHR
-        if(location.pathname.match(/^\/Dominho\/Main/i)){
+        if(location.pathname.match(/^\/Dominho\/MainMenu/i)){
+            //Gestion des messages reçus
+            function receiveMessage_OngletSaisir(message) {
+                let waitTime = 0, messageEvData, frameOrigin, FHR_channel, clipboardContent, $currentContainer, CR_selectionContainerID
+                //console.log(message)
+                if (typeof message.data == "object"){
+                    messageEvData = message.data
+                } else{
+                    try {
+                        messageEvData = JSON.parse(message.data)
+                    }catch(e){
+                        console.log('Error parsing data', message.data)
+                        return null
+                    }
+                }
+                $('iframe').each((i,el)=>{
+                    if(el.contentWindow == message.source){
+                        frameOrigin = el
+                    }
+                })
+                if(unsafeWindow.Log_messageEv)console.log("Onglet Saisir", messageEvData.command, messageEvData)
+                if(messageEvData.command){
+                    switch(messageEvData.command){
+                        case "CreateDoc":
+                            if (messageEvData.docToCreate){
+                                switch (messageEvData.docToCreate){
+                                    case "Psy_Liaison":
+                                        $('#CreateDoc_PsyLiaison').log().click()
+                                        break
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+            window.addEventListener('message', receiveMessage_OngletSaisir)
+
             $('#specialiteSelection').parent().append($('<button class="BoutonClassique"><span title="Documents de Psychiatrie">Psy</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
             })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="CRH UHDL">CRH</span>').click(ev=>{
@@ -995,7 +1031,7 @@
                         })
                     })
                 }
-            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Observation de Liaison">Liaison</span>').click(ev=>{
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span id="CreateDoc_PsyLiaison" title="Observation de Liaison">Liaison</span>').click(ev=>{
                 if(!$('#formulaireSelection li[onclick]:contains(Fiche de Consultation Psy de Liaison)').click().length){ // ouvrir si présent dans les raccourcis
                     $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
                     $.waitFor('#groupSelection li[onclick]:contains(Observations Médicales)').then($el=>{
@@ -1005,7 +1041,7 @@
                         })
                     })
                 }
-            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Observation de Consultation">Consult</span>').click(ev=>{
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span id="CreateDoc_PsyCS" title="Observation de Consultation">Consult</span>').click(ev=>{
                 if(!$('#formulaireSelection li[onclick]:contains(Fiche de Consultation Psy):first').click().length){ // ouvrir si présent dans les raccourcis
                     $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
                     $.waitFor('#groupSelection li[onclick]:contains(Observations Médicales)').then($el=>{
@@ -1015,7 +1051,7 @@
                         })
                     })
                 }
-            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="Ordonnance de Psy">Ordo</span>').click(ev=>{
+            })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span id="CreateDoc_PsyOrdo" title="Ordonnance de Psy">Ordo</span>').click(ev=>{
                 if(!$('#formulaireSelection li[onclick]:contains("Ordonnance (Autre) Psy")').click().length){ // ouvrir si présent dans les raccourcis
                     $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
                     $.waitFor('#formulaireSelection li[onclick]:contains("Ordonnance (Autre) Psy")', 500).then($el1=>{
@@ -1903,7 +1939,7 @@
                 frameOrigin = el
             }
         })
-        if(unsafeWindow.Log_messageEv)console.log(messageEvData.command, messageEvData)
+        if(unsafeWindow.Log_messageEv)console.log("Principal", messageEvData.command, messageEvData)
         if(messageEvData.command){
             switch(messageEvData.command){
                 case "SetPatient":
@@ -2129,17 +2165,38 @@
                         log(err+ " non trouvé.")
                     })
                     break;
-                case "CS_loadDossierPatient":
+                case "Liaison_DonnerAvis":
                     $.waitFor('#dossierPatient:visible').then($el=>$el.click())
                     $.waitFor('.module-agenda-window a[aria-label="Close"]:not(:visible)', 5000).then($el=>$el.click()).catch(err=>err)
-                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"], #bloclistedocument:visible', 10000).then($el2=>{
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]:visible, #bloclistedocument:visible', 20000).then($el2=>{
                         $('.area-carrousel-wrapper li:contains(Saisir)').click()
                         $('.area-carrousel-wrapper li:contains(Histoire)').click()
                         if(EasilyInfos.nom && EasilyInfos.prenom){
-                            $.waitFor(`.auteurdoc:containsI("${EasilyInfos.nom}"):containsI("${EasilyInfos.prenom}")`, 10000).then($el=>{
-                                // Programme de Maintenance
-                                // Programme de Consolidation
-                                // Programme d\'Attaque
+                            $.waitFor(`.auteurdoc:containsI("${EasilyInfos.nom}"):containsI("${EasilyInfos.prenom}"):visible`, 10000).then($el=>{
+                                let $doc
+                                if(($doc=$el.parent().filter(':has(.libelledoc:contains("Fiche de Consultation Psy de Liaison"))')).length){
+                                    editDocument($doc.eq(0).log())
+                                } else {
+                                    $('iframe[src*="Dominho\/MainMenu"]').postMessage(JSON.stringify({command:"CreateDoc", docToCreate:"Psy_Liaison"}), "*")
+                                }
+                                if(($doc=$el.parent().filter(':has(.resumedoc:contains("PSY AD Bizone")), :has(.libelledoc:contains("Ordonnance - courrier"))')).length){
+                                    editDocument($doc.eq(0))
+                                }
+                                $('.btnPrevious:visible').click(ev=>{
+                                    $.waitFor('.module-agenda-window a[aria-label="Close"]:visible', 5000).then($el=>$el.click()).catch(err=>err)
+                                })
+                            }).catch(err=>{})
+                        }
+                    }).catch(err=>log(err))
+                    break;
+                case "CS_loadDossierPatient":
+                    $.waitFor('#dossierPatient:visible').then($el=>$el.click())
+                    $.waitFor('.module-agenda-window a[aria-label="Close"]:not(:visible)', 5000).then($el=>$el.click()).catch(err=>err)
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]:visible, #bloclistedocument:visible', 20000).then($el2=>{
+                        $('.area-carrousel-wrapper li:contains(Saisir)').click()
+                        $('.area-carrousel-wrapper li:contains(Histoire)').click()
+                        if(EasilyInfos.nom && EasilyInfos.prenom){
+                            $.waitFor(`.auteurdoc:containsI("${EasilyInfos.nom}"):containsI("${EasilyInfos.prenom}"):visible`, 10000).then($el=>{
                                 let $doc
                                 if(($doc=$el.parent().filter(':has(.libelledoc:contains("Fiche de Consultation"):not(:contains("Liaison")))')).length){
                                     editDocument($doc.eq(0))
@@ -2151,20 +2208,17 @@
                                 $('.btnPrevious:visible').click(ev=>{
                                     $.waitFor('.module-agenda-window a[aria-label="Close"]:visible', 5000).then($el=>$el.click()).catch(err=>err)
                                 })
-                            }).catch(err=>log(err))
+                            }).catch(err=>{})
                         }
                     }).catch(err=>log(err))
                     break;
                 case "ECT_demarrerSeance":
                     $.waitFor('#dossierPatient:visible').then($el=>$el.click())
                     $.waitFor('.module-agenda-window a[aria-label="Close"]:not(:visible)', 5000).then($el=>$el.click()).catch(err=>err)
-                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"], #bloclistedocument:visible', 10000).then($el2=>{
+                    $.waitFor('.internal-selection-venue tbody .venue-link:first:visible, #iframe[src*="TempetePlus.Web/Pancarte"]:visible, #bloclistedocument:visible', 20000).then($el2=>{
                         $('.area-carrousel-wrapper li:contains(Saisir)').click()
                         $('.area-carrousel-wrapper li:contains(Histoire)').click()
-                        $.waitFor('.resumedoc:contains("PSY AD ECT Séance")', 10000).then($el=>{
-                            // Programme de Maintenance
-                            // Programme de Consolidation
-                            // Programme d\'Attaque
+                        $.waitFor('.resumedoc:contains("PSY AD ECT Séance"):visible', 10000).then($el=>{
                             let $doc
                             if(($doc=$el.filter('[title*=Maintenance]')).length){
                                 editDocument($doc.eq(0))
