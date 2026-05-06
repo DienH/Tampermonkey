@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260321
+// @version      1.0.260323
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1122,6 +1122,8 @@
                         message.ports[0].postMessage('FHR_getClipboard')
                     })
                 //console.log(µ.getFHR_Clipboard)
+                } else if (messageEvData.command == "CS_start"){
+                    $('.k-nav-today').click()
                 }
             }
             switch(unsafeWindow._currentContext.FicheTitle){
@@ -1469,26 +1471,26 @@
         }
 
         // Notifications pour la présence des patients de CS du jour
-        function patientsCSNotif(){
+        function patientsCSNotif(autoCheck=false, autoCheck_delay=1000){
             //let intervenantID = await $.get('https://easily-prod.clermontferrand.fr/module/worklistsconsultation/Main/GetAgendas', r=>r[0].intervenant.id)
             if(typeof EasilyInfos.CS_notifs == "object"){
-                let todayISO = (new Date()).toISOString(), notifs_list = {}
+                let todayISO = (new Date()).toISOString(), notifs_list = {}, nbPatientsArrives = 0
                 for (let planning_ID in EasilyInfos.CS_notifs){
                     notifs_list[planning_ID.toString()]=Number(EasilyInfos.ID)
                 }
                 $.post("https://easily-prod.chu-clermontferrand.fr/module/worklistsconsultation/Main/GetRendezvous", {"date":todayISO,"sids":JSON.stringify(notifs_list)}, r=>{
                     for (let patient_RDV in r){
-                        let statut = r[patient_RDV].statutInfo.statut, patient_name = r[patient_RDV].patient.patientFormatNomPrenomCourt, IDrdv = r[patient_RDV].statutInfo.idRdv
+                        let statut = r[patient_RDV].statutInfo.statut, patient_name = r[patient_RDV].patient.patientFormatNomPrenomCourt, IDrdv = r[patient_RDV].statutInfo.idRdv, isWomen = r[patient_RDV].patient.sexe == 2
                         if(statut == 5){
-                            if(typeof µ.etat_CS == "object"){
-                                if(µ.etat_CS[patient_name]){
-                                } else {
-                                    µ.etat_CS[patient_name] = true
-                                    sendNotification("Consultations", patient_name + " est arrivé", {"ID":IDrdv})
-                                }
-                            } else {
+                            if(typeof µ.etat_CS !== "object"){
                                 µ.etat_CS = {}
                             }
+                            if(µ.etat_CS[patient_name]){
+                            } else {
+                                µ.etat_CS[patient_name] = true
+                                sendNotification("Consultations", patient_name + " est arrivé" + (isWomen ? "e" : ""), {"ID":IDrdv})
+                            }
+                            nbPatientsArrives++
                         } else {
                             if(typeof µ.etat_CS == "object"){
                                 if(µ.etat_CS[patient_name]){
@@ -1499,11 +1501,19 @@
                             }
                         }
                     }
+                    if(nbPatientsArrives){
+                        $('.easily-univers-item:contains(consultation)').addClass('cs_arrivees')
+                    } else {
+                        $('.easily-univers-item:contains(consultation)').removeClass('cs_arrivees')
+                    }
+                    if(autoCheck){
+                        setTimeout(patientsCSNotif, autoCheck_delay)
+                    }
                 })
             }
         }
-        //setTimeout(patientsCSNotif, 1000)
-        setInterval(patientsCSNotif, 1000)
+        patientsCSNotif(true)
+        //setInterval(patientsCSNotif, 1000)
 
         // auto-relogon
         $('.verrouillage-nom').click(ev=>{
@@ -1602,7 +1612,7 @@
         }
     })
 
-
+//Mouse events
 //    ███    ███  ██████  ██    ██ ███████ ███████     ███████ ██    ██ ███████ ███    ██ ████████ ███████
 //    ████  ████ ██    ██ ██    ██ ██      ██          ██      ██    ██ ██      ████   ██    ██    ██
 //    ██ ████ ██ ██    ██ ██    ██ ███████ █████       █████   ██    ██ █████   ██ ██  ██    ██    ███████
@@ -2200,9 +2210,10 @@
                                 let $doc
                                 if(($doc=$el.parent().filter(':has(.libelledoc:contains("Fiche de Consultation"):not(:contains("Liaison")))')).length){
                                     editDocument($doc.eq(0))
+                                    $.waitFor('iframe[src*="Fiche/Open"]').then($el=>$el.postMessage(JSON.stringify({command:'CS_start'}), '*'))
                                 } else {
                                 }
-                                if(($doc=$el.parent().filter(':has(.resumedoc:contains("PSY AD Bizone")), :has(.libelledoc:contains("Ordonnance - courrier"))')).length){
+                                if(($doc=$el.parent().filter(':has(.resumedoc:contains("PSY AD Bizone")), :has(.resumedoc:contains("PSY AD Ordo Vierge")), :has(.libelledoc:contains("Ordonnance - courrier"))')).length){
                                     editDocument($doc.eq(0))
                                 }
                                 $('.btnPrevious:visible').click(ev=>{
@@ -2523,7 +2534,9 @@ function mainContentObserver(mutationsList){
         .mailsDetails>p>span+span {max-width:300px!important;}
 
         #EasilyPlus_SecondFrame {width: 100%!important; height: calc(100% - 30px)!important;padding:0!important;}
-        .cr_a_valider::before {width: 8px; height: 8px; content: " "; position: absolute; float: right; top: 24px; border-radius: 12px; background: #01B7F1; margin-left: -6px;}
+        .cr_a_valider::before, .cs_arrivees::before {width: 8px; height: 8px; content: " "; position: absolute; float: right; top: 24px; border-radius: 12px; margin-left: -6px;}
+        .cr_a_valider::before {background: #01B7F1;}
+        .cs_arrivees::before {background: #4cff00;}
     `).appendTo('body')
     }
     // Your code here...
