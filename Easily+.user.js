@@ -1874,6 +1874,32 @@
         }
     })
 
+    async function get_CR_non_valides(delai=10){
+        let listePatients=[], listeCR_non_valides = []
+        await $.get('https://easily-prod.chu-clermontferrand.fr/module/worklistshospitalisation/Main/LoadWorklist?delai='+delai+'&ufCodes=3852&view=4', r=>{
+            for(let i in r.data){
+                listePatients.push({id:r.data[i].patient.id, identite:r.data[i].patient.identitePatient, hospit:r.data[i]})
+            }
+        })
+        for (let j in listePatients){
+            await $.post('https://easily-prod.chu-clermontferrand.fr/Module/CM_Histoire/Home/ObtenirListeDocumentsPatient', "dateMin=2025-01-01T00%3A00%3A00.000Z&dateMax=&intervenantId=2324&patientId="+listePatients[j].id+"&modeGHT=false", r=>{
+                for(let i in r.LstDocuments){
+                    let doc = r.LstDocuments[i]
+                    if(doc.IdTypeDocument == "00003" && doc.Resume && doc.Resume.search("PSY AD UHDL")+1 && !doc.Valide){
+                        listeCR_non_valides.push({id:doc.DocId, patient:listePatients[j].identite, hospit:listePatients[j].hospit})
+                    }
+                }
+            })
+        }
+        //log(listeCR_non_valides)
+        if(listeCR_non_valides.length){
+
+            for(let i in listeCR_non_valides){
+                µ.$('#module-worklistshospitalisation tbody>tr[data-uid]:eq(0)').data().$$kendoScope.openConteneur(listeCR_non_valides[i].hospit)
+            }
+            $('[ng-if="affichage.ongletSortis"]')
+        }
+    }
     function getParapheurNotif(){
         $.get('https://easily-prod.chu-clermontferrand.fr/Module/Parapheur/MainParapheur/GetCompteurAccueilParapheurPersoAsync/?idIntervenant=', r=>{
             let n_doc=r[3].NbMessages + r[4].NbMessages
