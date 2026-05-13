@@ -1862,7 +1862,7 @@
                     })
                     */
                 }
-                $el.after($('<button class="btn btn-success btn-sm" style="margin-left:5px" id="btnTransmissions">Transmissions</button>').click(ev=>{
+                $el.after($('<button class="btn btn-success btn-sm" style="margin-left:5px" id="btnTransmissions"><span class="fa fa-comments" style="margin-right:10px;"></span>Transmissions</button>').click(ev=>{
                     $('#transmissionsFrame').dialog('open').parent().height($(window).height() - 50).width($(window).width() - 50).position({my:"center", at:"center", of:window})
                     document.getElementById('transmissionsFrame').contentWindow.postMessage(JSON.stringify({cr:$('#dropdownCR').val().split(':')[1], uf:$('#dropdownUF').val().split(':')[1]}))
                 }))
@@ -1870,15 +1870,21 @@
 
                 //Notification du parapheur
                 getParapheurNotif()
+
+                //Bouton CR à faire
+                $el.before($('<button class="btn btn-warning btn-sm" style="margin-left:5px" id="btnCRaFaire"><span class="fa fa-file" style="margin-right:10px;"></span>CR à finir</button>').click(ev=>{
+                    $('#ListeCRaFaire').toggle()
+                }))
+                get_CR_non_valides(15)
             })
         }
     })
 
-    async function get_CR_non_valides(delai=10){
+    async function get_CR_non_valides(delai=15){
         let listePatients=[], listeCR_non_valides = []
         await $.get('https://easily-prod.chu-clermontferrand.fr/module/worklistshospitalisation/Main/LoadWorklist?delai='+delai+'&ufCodes=3852&view=4', r=>{
             for(let i in r.data){
-                listePatients.push({id:r.data[i].patient.id, identite:r.data[i].patient.identitePatient, hospit:r.data[i]})
+                listePatients.push({id:r.data[i].patient.id, identiteComplete:r.data[i].patient.identitePatient, identite:r.data[i].patient.identitePatientCourte, hospit:r.data[i]})
             }
         })
         for (let j in listePatients){
@@ -1893,9 +1899,15 @@
         }
         //log(listeCR_non_valides)
         if(listeCR_non_valides.length){
-
+            let $listeCRaFaire, lastPatient = ""
+            $('#btnCRaFaire').after($listeCRaFaire = $('<ul id="ListeCRaFaire"></ul>')).show()
             for(let i in listeCR_non_valides){
-                µ.$('#module-worklistshospitalisation tbody>tr[data-uid]:eq(0)').data().$$kendoScope.openConteneur(listeCR_non_valides[i].hospit)
+                if(listeCR_non_valides[i].patient != lastPatient){
+                    $listeCRaFaire.append($('<li>').text(listeCR_non_valides[i].patient).click(ev=>{
+                        µ.jQuery('#module-worklistshospitalisation tbody>tr[data-uid]:eq(0)').data().$$kendoScope.openConteneur(listeCR_non_valides[i].hospit)
+                    }))
+                    lastPatient = listeCR_non_valides[i].patient
+                }
             }
             $('[ng-if="affichage.ongletSortis"]')
         }
@@ -2563,6 +2575,9 @@ function mainContentObserver(mutationsList){
         .cr_a_valider::before, .cs_arrivees::before {width: 8px; height: 8px; content: " "; position: absolute; float: right; top: 24px; border-radius: 12px; margin-left: -6px;}
         .cr_a_valider::before {background: #01B7F1;}
         .cs_arrivees::before {background: #4cff00;}
+        #btnCRaFaire {margin-right:5px;display:none;}
+        #ListeCRaFaire {display:none;position:fixed;background:#E5EEF4;border-radius:10px;z-index:10000;padding:5px 15px 5px 25px;border:1px solid #ccc}
+        #ListeCRaFaire li {cursor:pointer}
     `).appendTo('body')
     }
     // Your code here...
