@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260324
+// @version      1.0.260519-001
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1847,6 +1847,12 @@
         } else if(location.href.search("https://easilynlb-prod.chu-clermontferrand.fr/")+1){
             switch(location.pathname){
                 case "/dominho/Fiche/Open":
+                    if($(ev.target).is('td.fm_button_label:contains(Valider)') && ev.type=="mouseup"){
+                        let current_obs_date_arr = $('.k-window input.fm_datepicker_input:visible').val().match(/(?<DD>\d\d)\/(?<MM>\d\d)\/(?<YYYY>\d\d\d\d)/).groups,
+                            current_obs_date = parseInt((new Date(current_obs_date_arr.YYYY+"-"+current_obs_date_arr.MM+"-"+current_obs_date_arr.DD).getTime() / 1000).toFixed(0)),
+                            last_obs_date = µ.jQuery('tr[ng-repeat*=observations_temp]:visible:eq(0)').data().$scope.item.model.date_observation.value
+                        $('#content input.fm_datepicker_input:visible').val((new Date(Math.max(last_obs_date, current_obs_date)*1000)).toLocaleDateString("fr-FR"))
+                    }
                     break
             }
         }
