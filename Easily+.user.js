@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260519-001
+// @version      1.0.260522-001
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1519,6 +1519,9 @@
         $('.verrouillage-nom').click(ev=>{
             if(EasilyInfos.password_store){$("#password-popup").val(EasilyInfos.password)}
             $("button.deverrouillage-button").click()
+            $.waitFor('.redir-login-button[title="Se déconnecter"]', 5000).then($el=>{
+                $el.click()
+            })
         })
 
         //Gestion affichage du menu
