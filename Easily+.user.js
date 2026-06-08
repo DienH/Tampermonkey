@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260522-001
+// @version      1.0.260608-001
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -45,10 +45,10 @@
     if (!$ || !$.fn) {try{ $ = µ.parent.jQuery || window.parent.jQuery}catch(e){}}
     if (!$ || !$.fn){
         if (location.href.search("cyberlab.chu-clermontferrand.fr")+1){
-            window.parent.postMessage(JSON.stringify({command:"cyberlab-reloadFrame"}, '*'))
+            window.parent.postMessage(JSON.stringify({command:"cyberlab-reloadFrame"}), '*')
         }
     }
-    if(!$('#DienScriptPlus', document).length){
+    else if(!$('#DienScriptPlus', document).length){
         $('body', document)
             .append($('<script id="DienScriptPlus">').html(GM_getResourceText('DienJS')))
     }
