@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260608-001
+// @version      1.0.260609-002
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -2157,6 +2157,8 @@
                             $('.area-carrousel-wrapper li:contains(Saisir)').click()
                             $('.area-carrousel-wrapper li:contains(Histoire)').click()
                             $.waitFor('.resumedoc:contains("PSY AD ECT Séance")', 10000).then($el=>{
+                                editDocument($el.eq(0))
+                                /*
                                 let $doc
                                 if(($doc=$el.filter('[title*=Maintenance]')).length){
                                     editDocument($doc.eq(0))
@@ -2165,6 +2167,7 @@
                                 } else if(($doc=$el.filter('[title*=Attaque]')).length){
                                     editDocument($doc.eq(0))
                                 }
+                                */
                             }).catch(err=>log(err))
                             $.waitFor('.btnPrevious:visible').then($el=>{
                                 $el.click(ev=>{
@@ -2229,20 +2232,18 @@
                         $('.area-carrousel-wrapper li:contains(Saisir)').click()
                         $('.area-carrousel-wrapper li:contains(Histoire)').click()
                         if(EasilyInfos.nom && EasilyInfos.prenom){
-                            $.waitFor(`.auteurdoc:containsI("${EasilyInfos.nom}"):containsI("${EasilyInfos.prenom}"):visible`, 10000).then($el=>{
+                            $.waitFor(`.auteurdoc:visible`, 10000).then($el=>{
                                 let $doc
-                                if(($doc=$el.parent().filter(':has(.libelledoc:contains("Fiche de Consultation Psy de Liaison"))')).length){
+                                if(($doc=$el.filter(`:containsI("${EasilyInfos.nom}"):containsI("${EasilyInfos.prenom}")`).parent().filter(':has(.libelledoc:contains("Fiche de Consultation Psy de Liaison"))')).length){
                                     editDocument($doc.eq(0).log())
                                 } else {
                                     $('iframe[src*="Dominho\/MainMenu"]').postMessage(JSON.stringify({command:"CreateDoc", docToCreate:"Psy_Liaison"}), "*")
                                 }
-                                if(($doc=$el.parent().filter(':has(.resumedoc:contains("PSY AD Bizone")), :has(.libelledoc:contains("Ordonnance - courrier"))')).length){
-                                    editDocument($doc.eq(0))
-                                }
                                 $('.btnPrevious:visible').click(ev=>{
                                     $.waitFor('.module-agenda-window a[aria-label="Close"]:visible', 5000).then($el=>$el.click()).catch(err=>err)
                                 })
-                            }).catch(err=>{})
+                            }).catch(err=>{
+                            })
                         }
                     }).catch(err=>log(err))
                     break;
@@ -2277,6 +2278,8 @@
                         $('.area-carrousel-wrapper li:contains(Saisir)').click()
                         $('.area-carrousel-wrapper li:contains(Histoire)').click()
                         $.waitFor('.resumedoc:contains("PSY AD ECT Séance"):visible', 10000).then($el=>{
+                            editDocument($el.eq(0))
+                            /*
                             let $doc
                             if(($doc=$el.filter('[title*=Maintenance]')).length){
                                 editDocument($doc.eq(0))
@@ -2285,6 +2288,7 @@
                             } else if(($doc=$el.filter('[title*=Attaque]')).length){
                                 editDocument($doc.eq(0))
                             }
+                            */
                             $.waitFor('.btnPrevious:visible').then($el=>{
                                 $el.click()
                                 $.waitFor('.module-agenda-window:visible a[aria-label="Close"]', 5000).then($el=>$el.click()).catch(err=>err)
