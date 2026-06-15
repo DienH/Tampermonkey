@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260609-002
+// @version      1.0.260615-001
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -352,8 +352,7 @@
 
     if (location.href.search("xplore.chu-clermontferrand.fr")+1){
         if (!$ || !$.fn) {$ = µ.jQuery || µ.$ || window.jQuery }
-        //console.log((location.pathname + location.hash) == "/XaIntranet/#/UserLogin")
-        if((location.pathname + location.hash) == "/XaIntranet/#/UserLogin"){
+        if((location.pathname) == "/XaIntranet/"){
             $.waitFor('#txtUSERNAME input').then(el=>{
                 $(el).val(EasilyInfos.username).each((i,elem)=>{
                     $(elem).on('change', ev=>{
@@ -363,11 +362,10 @@
                             })
                             elem2.dispatchEvent(new Event('change'))
                             elem2.dispatchEvent(new Event('updateValueFromGrid'))
-                            /**/
                         })
                     })
-                    elem.dispatchEvent(new Event('change'))
                     elem.dispatchEvent(new Event('updateValueFromGrid'))
+                    elem.dispatchEvent(new Event('change'))
                 })
             })
         }
