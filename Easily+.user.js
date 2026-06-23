@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260615-001
+// @version      1.0.260623-001
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1852,7 +1852,7 @@
                         let current_obs_date_arr = $('.k-window input.fm_datepicker_input:visible').val().match(/(?<DD>\d\d)\/(?<MM>\d\d)\/(?<YYYY>\d\d\d\d)/).groups,
                             current_obs_date = parseInt((new Date(current_obs_date_arr.YYYY+"-"+current_obs_date_arr.MM+"-"+current_obs_date_arr.DD).getTime() / 1000).toFixed(0)),
                             last_obs_date = µ.jQuery('tr[ng-repeat*=observations_temp]:visible:eq(0)').data().$scope.item.model.date_observation.value
-                        $('#content input.fm_datepicker_input:visible').val((new Date(Math.max(last_obs_date, current_obs_date)*1000)).toLocaleDateString("fr-FR"))
+                        $('#content input.fm_datepicker_input:visible').val((new Date(Math.max(last_obs_date, current_obs_date)*1000)).toLocaleDateString("fr-FR")).trigger('keypress')
                     }
                     break
             }
