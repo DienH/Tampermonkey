@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260623-001
+// @version      1.0.260624-001
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -980,6 +980,13 @@
 //
     if(location.hostname == "easilynlb-prod.chu-clermontferrand.fr"){
         // Gestion des fiches du type Observation / FHR
+
+        $(document).on('keyup', ev=>{
+            if(ev.key == "v" && ev.altKey == true && ev.ctrlKey == true){
+                $(':focus').val(µ.lastText)
+            }
+        })
+
         if(location.pathname.match(/^\/Dominho\/MainMenu/i)){
             //Gestion des messages reçus
             function receiveMessage_OngletSaisir(message) {
@@ -1017,6 +1024,7 @@
             }
             window.addEventListener('message', receiveMessage_OngletSaisir)
 
+            // Boutons rapides de création de documents dans l'onglet Saisir
             $('#specialiteSelection').parent().append($('<button class="BoutonClassique"><span title="Documents de Psychiatrie">Psy</span>').click(ev=>{
                 $('#selectedDossierSpecialite-list li>span:contains(Psychiatrie)').click()
             })).append($('<button class="BoutonClassique" style="margin-left:5px;"><span title="CRH UHDL">CRH</span>').click(ev=>{
@@ -1085,7 +1093,12 @@
         } else if(location.pathname.match(/^\/(d|D)ominho\/(f|F)iche\/((O|o)pen|(C|c)reate)/i)){
             if(!unsafeWindow._currentContext){return}
             let docType = $('head>title').text().split(' -')[0]
-            //Expension des catégories "Contexte", "Sejour" et "Sortie" avec simple click
+
+            $(document).on('keypress', 'textarea, input', ev=>{
+                µ.lastText = $(ev.target).val()
+            })
+
+            // Expension des catégories "Contexte", "Sejour" et "Sortie" avec simple click
             $('.fm_grid_cell.fm_group_header.fm_group_header_lightgray, .fm_grid_cell.fm_group_header.fm_group_header_default').off().click(ev=>{
                 //console.log($(ev.target).is('div.fm_group_header_expander'), $(ev.delegateTarget).find('div.fm_group_header_expander.image_expanded_png'))
                 if(!$(ev.target).is('div.fm_group_header_expander') && !$(ev.target).closest('[fm-css-image="image_plus_png"]').length){
@@ -1093,6 +1106,7 @@
                     ev.preventDefault()
                 }
             }).css('cursor','pointer').filter('.fm_group_header_default:contains(Histoire de la maladie)').add('.fm_grid_cell.fm_group_header.fm_group_header_warning').click()
+
             window.parent.postMessage({'command':'create-FHR_Channel'}, "*")
             window.onmessage = message=>{
                 let messageEvData
