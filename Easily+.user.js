@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260624-001
+// @version      1.0.260708-001
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -2683,16 +2683,23 @@ function changementContextePatient(){
         })
 
         let $last_left_tab = $('.area-carrousel:visible:eq(0)>ul>li:last:not(#synth_patient)')
+        $last_left_tab.after($last_left_tab.clone().attr('id', 'planning').find('a').text('Planning').attr('id','').end().click(ev=>{
+            $(ev.currentTarget).siblings('.selected').removeClass('selected').end().addClass('selected')
+            $('#area-content-1')
+                .filter(':not(:has(#area-content-1-planning)')
+                .append($('<iframe id="area-content-1-planning" style="height: calc(100% - 7px); width: calc(100% - 7px);" src="https://easilynlb-prod.chu-clermontferrand.fr/Agenda/Agenda.Web/CalendrierRendezVous">')
+                        //.find('iframe').on('load', ev=>$(ev.target).postMessage(JSON.stringify({command:'afficherDernierPassageUrg'}), '*'))
+                       ).end()
+            .find('[id^=area-content-1]').hide().end().find('#area-content-1-planning').show()
+        }))
         $last_left_tab.after($last_left_tab.clone().attr('id', 'urg_patient').find('a').text('Urg').attr('id','').end().click(ev=>{
             $(ev.currentTarget).siblings('.selected').removeClass('selected').end().addClass('selected')
             $('#area-content-1')
                 .filter(':not(:has(#area-content-1-urg)')
-                .append($('<div id="area-content-1-urg" style="display:none; height: calc(100% - 7px); width: calc(100% - 7px);"><iframe id="area-content-1-urg" style="width:100%;height:100%;" src="https://easilynlb-prod.chu-clermontferrand.fr/Urgences/Urgences.Web/">')
+                .append($('<iframe id="area-content-1-urg" style=" height: calc(100% - 7px); width: calc(100% - 7px);" src="https://easilynlb-prod.chu-clermontferrand.fr/Urgences/Urgences.Web/">')
                         .find('iframe').on('load', ev=>$(ev.target).postMessage(JSON.stringify({command:'afficherDernierPassageUrg'}), '*'))).end()
             .find('[id^=area-content-1]').hide().end().find('#area-content-1-urg').show()
-
         }))
-
     }
     //modules
     // Lancemodule: SYNTHESE_PAT;${IPP};LOGINAD=${username}   == Synthèse Logon
