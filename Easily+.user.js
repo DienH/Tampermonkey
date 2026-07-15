@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260708-001
+// @version      1.0.260715-001
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -2697,7 +2697,7 @@ function changementContextePatient(){
             $('#area-content-1')
                 .filter(':not(:has(#area-content-1-urg)')
                 .append($('<iframe id="area-content-1-urg" style=" height: calc(100% - 7px); width: calc(100% - 7px);" src="https://easilynlb-prod.chu-clermontferrand.fr/Urgences/Urgences.Web/">')
-                        .find('iframe').on('load', ev=>$(ev.target).postMessage(JSON.stringify({command:'afficherDernierPassageUrg'}), '*'))).end()
+                        .on('load', ev=>$(ev.target).postMessage(JSON.stringify({command:'afficherDernierPassageUrg'}), '*'))).end()
             .find('[id^=area-content-1]').hide().end().find('#area-content-1-urg').show()
         }))
     }
