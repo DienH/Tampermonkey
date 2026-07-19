@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260715-001
+// @version      1.0.260719-001
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -1897,9 +1897,37 @@
                     $('#ListeCRaFaire').toggle()
                 }))
                 get_CR_non_valides(15)
+
+                $('#module-worklistshospitalisation>div>div[if="!errorMessage"]').observe("c", ev=>{
+                    log(ev)
+                    anniversairesPatients($('#dropdownUF').val().split(':')[1])
+                })
+                anniversairesPatients($('#dropdownUF').val().split(':')[1])
             })
         }
     })
+
+    function anniversairesPatients(codeUF){
+        let now = new Date(), nowM = now.getMonth(), compareY
+        if(nowM < 6){
+            compareY = -1
+        } else {
+            compareY = 1
+        }
+        $.get(`https://easily-prod.chu-clermontferrand.fr/module/worklistshospitalisation/Main/LoadWorklist?ufCodes=${codeUF}&view=1&worklistType=4`, r=>{for(let a in r.data){
+            let DN = new Date(r.data[a].patient.dateNaissance),
+                diff1 = Math.floor((DN.setFullYear(now.getFullYear()) - now)/86400000),
+                diff2 = Math.floor((DN.setFullYear(now.getFullYear() + compareY) - now)/86400000),
+                diff = Math.abs(diff1) < Math.abs(diff2) ? diff1 : diff2,
+                diffAbs = Math.abs(diff),
+                annivText
+            if(diffAbs < 21){
+                annivText = `L'anniversaire de ${r.data[a].patient.identitePatientCourte} est ${diff = 0 ? "aujourd'hui !" : ((diff < 0 ? "passé de " : "dans ") + diffAbs + " jours")}`
+                $('span[ng-bind="dataItem.patient.identitePatient"]:contains("'+r.data[a].patient.identitePatient+'"):not(:has(.fa-birthday-cake))').append('').append(`<span class="fa fa-birthday-cake ${diff == 0 ? "flashit" : ""}" style="font-size:${diffAbs < 7 ? "32px" : (diffAbs < 14 ? "24px" : "16px")};color:red;float:right;" title="${annivText}">`)
+                log(annivText)
+            }
+        }})
+    }
 
     async function get_CR_non_valides(delai=15){
         let listePatients=[], listeCR_non_valides = []
@@ -2603,6 +2631,8 @@ function mainContentObserver(mutationsList){
         #btnCRaFaire {margin-right:5px;display:none;}
         #ListeCRaFaire {display:none;position:fixed;background:#E5EEF4;border-radius:10px;z-index:10000;padding:5px 15px 5px 25px;border:1px solid #ccc}
         #ListeCRaFaire li {cursor:pointer}
+        @keyframes flash {0% { opacity: 1; } 50% { opacity: .1; } 100% { opacity: 1; }}
+        .flashit{animation: flash linear 1s infinite;}
     `).appendTo('body')
     }
     // Your code here...
