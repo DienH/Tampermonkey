@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Easily+
 // @namespace    http://tampermonkey.net/
-// @version      1.0.260721-001
+// @version      1.0.260722-001
 // @description  Easily plus facile
 // @author       You
 // @match        https://easily-prod.chu-clermontferrand.fr/*
@@ -2390,7 +2390,7 @@
                     $.waitFor(".module-agenda .module-bandeaupatient:visible").then($el=>{
                         let $mailSpan=$el.find('.mailsDetails span+span:not(.mail_link)'), $telP = $el.find('.telephoneDetails p')
                         $mailSpan.wrapInner("<a href='mailto:"+$mailSpan.text().trim()+"'></a>").addClass('mail_link')
-                            .after("<span title='Envoyer ordonnance à "+$mailSpan.text().trim()+"'>(<a href='mailto:"+$mailSpan.text().trim()+"?subject=Ordonnance&body=Bonjour%2C%0A%0ACi-joint%20l%27ordonnance.%0A%0ABien%20cordialement%2C%0A%0ADr%20Adrien%20HARRY%0ASecr%C3%A9tariat%20%3A%2004.73.75.21.25'>Ordo</a>)</span>")
+                            .after("<span class='mail_link' title='Envoyer ordonnance à "+$mailSpan.text().trim()+"'>(<a href='mailto:"+$mailSpan.text().trim()+"?subject=Ordonnance&body=Bonjour%2C%0A%0ACi-joint%20l%27ordonnance.%0A%0ABien%20cordialement%2C%0A%0ADr%20Adrien%20HARRY%0ASecr%C3%A9tariat%20%3A%2004.73.75.21.25'>Ordo</a>)</span>")
                         $telP.text((i,t)=>t.trim().replace(/^(.*)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(.*)$/, "$1$2-$3-$4-$5-$6$7"))
                     })
                     break
@@ -2667,7 +2667,7 @@ function changementContextePatient(){
     let $ = unsafeWindow.jQuery
     $('.mailsDetails span+span:not(.mail_link)').each((i,el)=>{
         $(el).wrapInner("<a href='mailto:"+$(el).text().trim()+"'></a>").addClass('mail_link')
-            .after("<span title='Envoyer ordonnance à "+$(el).text().trim()+"'>(<a href='mailto:"+$(el).text().trim()+"?subject=Ordonnance&body=Bonjour%2C%0A%0ACi-joint%20l%27ordonnance.%0A%0ABien%20cordialement%2C%0A%0ADr%20Adrien%20HARRY%0ASecr%C3%A9tariat%20%3A%2004.73.75.21.25'>Ordo</a>)</span>")
+            .after("<span class='mail_link' title='Envoyer ordonnance à "+$(el).text().trim()+"'>(<a href='mailto:"+$(el).text().trim()+"?subject=Ordonnance&body=Bonjour%2C%0A%0ACi-joint%20l%27ordonnance.%0A%0ABien%20cordialement%2C%0A%0ADr%20Adrien%20HARRY%0ASecr%C3%A9tariat%20%3A%2004.73.75.21.25'>Ordo</a>)</span>")
     })
     if($('.area-carrousel:visible li:contains(Histoire):not(.easily_plus)').length){
         $('.area-carrousel-wrapper li:contains("Biologie")').addClass('tab_Bio')
